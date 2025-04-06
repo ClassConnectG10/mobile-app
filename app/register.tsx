@@ -1,9 +1,32 @@
 import { Button, Divider, TextInput, useTheme } from "react-native-paper";
-import { StyleSheet, ScrollView, View, Image } from "react-native";
-import { Link, Stack } from "expo-router";
+import { StyleSheet, ScrollView, View, Image, Alert } from "react-native";
+import { useRouter } from "expo-router";
+import { useState } from "react";
 
 export default function RegisterPage() {
   const theme = useTheme();
+  const router = useRouter();
+  const [firstNames, setFirstNames] = useState("");
+  const [lastNames, setLastNames] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
+  const createUserAlreadyExistsAlert = () => {
+    Alert.alert(
+      "Error al registrar usuario",
+      "El usuario con los datos ingresados ya existe",
+      [{ text: "OK" }]
+    );
+  };
+
+  const handleRegister = () => {
+    if (!firstNames || !lastNames || !email || !password || !confirmPassword) {
+      createUserAlreadyExistsAlert();
+      return;
+    }
+    router.push("/home");
+  };
 
   return (
     <View
@@ -29,20 +52,37 @@ export default function RegisterPage() {
         style={styles.container}
         contentContainerStyle={styles.contentContainer}
       >
-        <TextInput label="Nombres"></TextInput>
-        <TextInput label="Apellidos"></TextInput>
+        <TextInput
+          label="Nombres"
+          value={firstNames}
+          onChangeText={setFirstNames}
+        ></TextInput>
+        <TextInput
+          label="Apellidos"
+          value={lastNames}
+          onChangeText={setLastNames}
+        ></TextInput>
         <Divider />
-        <TextInput label="Correo electrónico"></TextInput>
-        <TextInput label="Contraseña" secureTextEntry={true}></TextInput>
+        <TextInput
+          label="Correo electrónico"
+          value={email}
+          onChangeText={setEmail}
+        ></TextInput>
+        <TextInput
+          label="Contraseña"
+          secureTextEntry={true}
+          value={password}
+          onChangeText={setPassword}
+        ></TextInput>
         <TextInput
           label="Repetir contraseña"
           secureTextEntry={true}
+          value={confirmPassword}
+          onChangeText={setConfirmPassword}
         ></TextInput>
-        <Link href="/home" asChild>
-          <Button icon="account-plus" mode="contained">
-            Registrar
-          </Button>
-        </Link>
+        <Button icon="account-plus" mode="contained" onPress={handleRegister}>
+          Registrar
+        </Button>
         <Divider />
         <Button icon="google" mode="outlined">
           Continuar con Google
