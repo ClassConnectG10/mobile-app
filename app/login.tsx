@@ -1,30 +1,44 @@
-import { Button, Divider, Surface, Text, TextInput, useTheme } from "react-native-paper";
-import { Pressable, StyleSheet, View } from 'react-native';
-import { Link, Stack } from "expo-router";
+import { Button, Divider, Text, TextInput, useTheme } from "react-native-paper";
+import { StyleSheet, View, Image } from "react-native";
+import { Link } from "expo-router";
 
 export default function LoginPage() {
   const theme = useTheme();
 
   return (
-    <View style={styles.container}>
-      <Stack.Screen options={{ headerShown: false }} />
-      <Surface style={styles.logo} elevation={4}>
-        <Text variant="displaySmall">Class Connect Logo</Text>
-      </Surface>
+    <View
+      style={[styles.container, { backgroundColor: theme.colors.background }]}
+    >
+      <View
+        style={[
+          styles.logoContainer,
+          { backgroundColor: theme.colors.primaryContainer },
+        ]}
+      >
+        <Image
+          style={styles.logo}
+          resizeMode="cover"
+          source={require("@/assets/images/logo.png")}
+        />
+      </View>
       <TextInput label="Correo electrónico"></TextInput>
       <TextInput label="Contraseña" secureTextEntry={true}></TextInput>
       <Link href="/home" asChild>
-        <Button icon="login" mode='contained'>Ingresar</Button>
+        <Button icon="login" mode="contained">
+          Ingresar
+        </Button>
       </Link>
       <Divider />
-      <Button icon="google" mode='outlined'>Continuar con Google</Button>
-      <Button icon="microsoft" mode='outlined'>Continuar con Microsoft</Button>
+      <Button icon="google" mode="outlined">
+        Continuar con Google
+      </Button>
+      <Button icon="microsoft" mode="outlined">
+        Continuar con Microsoft
+      </Button>
       <Text style={styles.linkText}>
         ¿No tenés una cuenta?{" "}
         <Link href="/register">
-          <Text
-            style={[styles.link, { color: theme.colors.primary }]}
-          >
+          <Text style={[styles.link, { color: theme.colors.primary }]}>
             Registrate
           </Text>
         </Link>
@@ -38,13 +52,13 @@ const styles = StyleSheet.create({
     paddingVertical: 40,
     paddingHorizontal: 20,
     gap: 20,
+    flex: 1,
   },
-  logo: {
-    paddingVertical: 40,
-    paddingHorizontal: 10,
+  logoContainer: {
+    padding: 10,
     justifyContent: "center",
     alignItems: "center",
-    borderRadius: 20,
+    borderRadius: 4,
   },
   loginContainer: {
     flex: 1,
@@ -57,6 +71,10 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   link: {
-    textDecorationLine: "underline"
+    textDecorationLine: "underline",
+  },
+  logo: {
+    width: 150,
+    height: 150,
   },
 });

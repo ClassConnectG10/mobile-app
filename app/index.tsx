@@ -1,16 +1,16 @@
-import { Image, StyleSheet, View, Pressable  } from 'react-native';
-import { Link, Stack } from "expo-router";
+import { Image, StyleSheet, View, Pressable } from "react-native";
+import { Link } from "expo-router";
 
 export default function Index() {
-
   return (
-    <View style={styles.container}>
-      <Stack.Screen options={{ headerShown: false }} />
+    <View style={styles.background}>
       <Link href="/login" asChild>
         <Pressable>
-          <Image style={styles.image} 
-            source={require('@/assets/images/react-logo.png')}
-          ></Image>
+          <Image
+            style={styles.logo}
+            resizeMode="cover"
+            source={require("@/assets/images/logo.png")}
+          />
         </Pressable>
       </Link>
     </View>
@@ -18,14 +18,15 @@ export default function Index() {
 }
 
 const styles = StyleSheet.create({
-  container: {
+  background: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F5FCFF',
+    backgroundColor: "#DBC1FF",
+    justifyContent: "center",
+    alignItems: "center",
   },
-  image: {
-    width: 200,
-    height: 200,
+
+  logo: {
+    width: 250,
+    height: 250,
   },
 });
