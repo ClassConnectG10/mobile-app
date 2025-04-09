@@ -1,4 +1,4 @@
-package com.anonymous.ClassConnect
+package com.grupo10.ClassConnect
 import expo.modules.splashscreen.SplashScreenManager
 
 import android.os.Build

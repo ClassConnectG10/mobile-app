@@ -86,9 +86,9 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace 'com.anonymous.ClassConnect'
+    namespace 'com.grupo10.ClassConnect'
     defaultConfig {
-        applicationId 'com.anonymous.ClassConnect'
+        applicationId 'com.grupo10.ClassConnect'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
