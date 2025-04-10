@@ -173,4 +173,9 @@ dependencies {
     } else {
         implementation jscFlavor
     }
+
+    implementation platform('com.google.firebase:firebase-bom:32.2.0')
+    implementation 'com.google.firebase:firebase-auth'
 }
+
+apply plugin: 'com.google.gms.google-services'
