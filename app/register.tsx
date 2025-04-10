@@ -2,6 +2,7 @@ import { Button, Divider, TextInput, useTheme } from "react-native-paper";
 import { StyleSheet, ScrollView, View, Image, Alert } from "react-native";
 import { useRouter } from "expo-router";
 import { useState } from "react";
+import { signUp } from "./utils/auth/authUtils";
 
 export default function RegisterPage() {
   const theme = useTheme();
@@ -25,6 +26,7 @@ export default function RegisterPage() {
       createUserAlreadyExistsAlert();
       return;
     }
+    signUp(email, password);
     router.push("/home");
   };
 

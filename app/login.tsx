@@ -2,6 +2,7 @@ import { Button, Divider, Text, TextInput, useTheme } from "react-native-paper";
 import { StyleSheet, View, Image, Alert } from "react-native";
 import { Link, useRouter } from "expo-router";
 import { useState } from "react";
+import { signIn } from "./utils/auth/authUtils";
 
 export default function LoginPage() {
   const theme = useTheme();
@@ -22,6 +23,7 @@ export default function LoginPage() {
       createInvalidCredentialsAlert();
       return;
     }
+    signIn(email, password);
     router.push("/home");
   };
 

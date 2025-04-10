@@ -39,3 +39,4 @@ app-example
 
 # firebase
 android/app/google-services.json
+.env
