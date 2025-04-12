@@ -1,5 +1,5 @@
 import { Button, Divider, Text, TextInput, useTheme } from "react-native-paper";
-import { StyleSheet, View, Image, Alert } from "react-native";
+import { StyleSheet, View, Image, Alert, ScrollView } from "react-native";
 import { Link, useRouter } from "expo-router";
 import { useState } from "react";
 import { signIn } from "./utils/auth/authUtils";
@@ -29,7 +29,10 @@ export default function LoginPage() {
 
   return (
     <View
-      style={[styles.container, { backgroundColor: theme.colors.background }]}
+      style={[
+        styles.mainContainer,
+        { backgroundColor: theme.colors.background },
+      ]}
     >
       <View
         style={[
@@ -43,51 +46,63 @@ export default function LoginPage() {
           source={require("@/assets/images/logo.png")}
         />
       </View>
-      <TextInput
-        label="Correo electrónico"
-        value={email}
-        onChangeText={setEmail}
-      />
-      <TextInput
-        label="Contraseña"
-        secureTextEntry={true}
-        value={password}
-        onChangeText={setPassword}
-      />
-      <Button icon="login" mode="contained" onPress={handleLogin}>
-        Ingresar
-      </Button>
-      <Divider />
-      <Button icon="google" mode="outlined">
-        Continuar con Google
-      </Button>
-      <Button icon="microsoft" mode="outlined">
-        Continuar con Microsoft
-      </Button>
-      <Text style={styles.linkText}>
-        ¿No tenés una cuenta?{" "}
-        <Link href="/register">
-          <Text style={[styles.link, { color: theme.colors.primary }]}>
-            Registrate
-          </Text>
-        </Link>
-      </Text>
+
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={styles.contentContainer}
+      >
+        <TextInput
+          label="Correo electrónico"
+          value={email}
+          onChangeText={setEmail}
+        ></TextInput>
+        <TextInput
+          label="Contraseña"
+          secureTextEntry={true}
+          value={password}
+          onChangeText={setPassword}
+        ></TextInput>
+        <Button icon="login" mode="contained" onPress={handleLogin}>
+          Ingresar
+        </Button>
+        <Divider />
+        <Button icon="google" mode="outlined">
+          Continuar con Google
+        </Button>
+        <Button icon="microsoft" mode="outlined">
+          Continuar con Microsoft
+        </Button>
+        <Text style={styles.linkText}>
+          ¿No tenés una cuenta?{" "}
+          <Link href="/register">
+            <Text style={[styles.link, { color: theme.colors.primary }]}>
+              Registrate
+            </Text>
+          </Link>
+        </Text>
+      </ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    paddingVertical: 40,
+  mainContainer: {
+    flex: 1,
+    paddingTop: 40,
     paddingHorizontal: 20,
-    gap: 20,
+  },
+  container: {
     flex: 1,
   },
-  logoContainer: {
-    padding: 10,
+  contentContainer: {
+    paddingTop: 20,
+    paddingBottom: 40,
     justifyContent: "center",
-    alignItems: "center",
-    borderRadius: 4,
+    gap: 20,
+  },
+  logo: {
+    width: 150,
+    height: 150,
   },
   loginContainer: {
     flex: 1,
@@ -102,8 +117,10 @@ const styles = StyleSheet.create({
   link: {
     textDecorationLine: "underline",
   },
-  logo: {
-    width: 150,
-    height: 150,
+  logoContainer: {
+    padding: 10,
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 4,
   },
 });

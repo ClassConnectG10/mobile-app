@@ -1,14 +1,12 @@
-import { Button, Divider, TextInput, useTheme } from "react-native-paper";
+import { Button, Divider, TextInput, useTheme, Text } from "react-native-paper";
 import { StyleSheet, ScrollView, View, Image, Alert } from "react-native";
-import { useRouter } from "expo-router";
+import { Link, useRouter } from "expo-router";
 import { useState } from "react";
 import { signUp } from "./utils/auth/authUtils";
 
 export default function RegisterPage() {
   const theme = useTheme();
   const router = useRouter();
-  const [firstNames, setFirstNames] = useState("");
-  const [lastNames, setLastNames] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -22,12 +20,12 @@ export default function RegisterPage() {
   };
 
   const handleRegister = () => {
-    if (!firstNames || !lastNames || !email || !password || !confirmPassword) {
+    if (!email || !password || !confirmPassword) {
       createUserAlreadyExistsAlert();
       return;
     }
     signUp(email, password);
-    router.push("/home");
+    router.push("/registerDetails");
   };
 
   return (
@@ -55,17 +53,6 @@ export default function RegisterPage() {
         contentContainerStyle={styles.contentContainer}
       >
         <TextInput
-          label="Nombres"
-          value={firstNames}
-          onChangeText={setFirstNames}
-        ></TextInput>
-        <TextInput
-          label="Apellidos"
-          value={lastNames}
-          onChangeText={setLastNames}
-        ></TextInput>
-        <Divider />
-        <TextInput
           label="Correo electrónico"
           value={email}
           onChangeText={setEmail}
@@ -92,6 +79,14 @@ export default function RegisterPage() {
         <Button icon="microsoft" mode="outlined">
           Continuar con Microsoft
         </Button>
+        <Text style={styles.linkText}>
+          ¿Ya tenés una cuenta?{" "}
+          <Link href="/login">
+            <Text style={[styles.link, { color: theme.colors.primary }]}>
+              Iniciá sesión
+            </Text>
+          </Link>
+        </Text>
       </ScrollView>
     </View>
   );
