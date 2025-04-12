@@ -38,5 +38,7 @@ yarn-error.*
 app-example
 
 # firebase
-android/app/google-services.json
 .env
+
+# build
+android/
