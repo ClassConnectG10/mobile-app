@@ -2,12 +2,16 @@ import { Avatar, Button, TextInput, useTheme, Text } from "react-native-paper";
 import { StyleSheet, ScrollView, View, Alert } from "react-native";
 import { useRouter } from "expo-router";
 import { useState } from "react";
+import CountryPicker from "../components/CountryPicker";
+
+const DEFAULT_SELECTED_COUNTRY: string = "Argentina";
 
 export default function RegisterPage() {
   const theme = useTheme();
   const router = useRouter();
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [countryName, setCountryName] = useState(DEFAULT_SELECTED_COUNTRY);
 
   const handleConfirmUserData = () => {
     if (!firstName || !lastName) {
@@ -19,6 +23,11 @@ export default function RegisterPage() {
       return;
     }
     router.push("/home");
+  };
+
+  const handleCountrySelect = (country: string) => {
+    setCountryName(country);
+    console.log("País seleccionado:", countryName);
   };
 
   return (
@@ -51,6 +60,8 @@ export default function RegisterPage() {
           value={lastName}
           onChangeText={setLastName}
         ></TextInput>
+
+        <CountryPicker onCountrySelect={handleCountrySelect} />
 
         <Button
           icon="badge-account"
