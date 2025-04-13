@@ -3,6 +3,7 @@ import { StyleSheet, ScrollView, View, Alert } from "react-native";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import CountryPicker from "../components/CountryPicker";
+import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 
 const DEFAULT_SELECTED_COUNTRY: string = "Argentina";
 
@@ -12,14 +13,19 @@ export default function RegisterPage() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [countryName, setCountryName] = useState(DEFAULT_SELECTED_COUNTRY);
+  const [errorMessageVisible, setErrorMessageVisible] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+
+  const onDismissErrorMessage = () => setErrorMessageVisible(false);
+
+  const showErrorMessageSnackbar = (message: string) => {
+    setErrorMessage(message);
+    setErrorMessageVisible(true);
+  };
 
   const handleConfirmUserData = () => {
     if (!firstName || !lastName) {
-      Alert.alert(
-        "Error al registrar usuario",
-        "Por favor, complete todos los campos",
-        [{ text: "OK" }]
-      );
+      showErrorMessageSnackbar("Por favor, complete todos los campos");
       return;
     }
     router.push("/home");
@@ -71,6 +77,11 @@ export default function RegisterPage() {
           Confirmar datos
         </Button>
       </ScrollView>
+      <ErrorMessageSnackbar
+        visible={errorMessageVisible}
+        message={errorMessage}
+        onDismiss={onDismissErrorMessage}
+      />
     </View>
   );
 }

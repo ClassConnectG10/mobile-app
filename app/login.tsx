@@ -1,26 +1,28 @@
 import { Button, Divider, Text, TextInput, useTheme } from "react-native-paper";
-import { StyleSheet, View, Image, Alert, ScrollView } from "react-native";
+import { StyleSheet, View, Image, ScrollView } from "react-native";
 import { Link, useRouter } from "expo-router";
 import { useState } from "react";
 import { signIn } from "./utils/auth/authUtils";
+import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 
 export default function LoginPage() {
   const theme = useTheme();
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [errorMessageVisible, setErrorMessageVisible] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
-  const createInvalidCredentialsAlert = () => {
-    Alert.alert(
-      "Error al iniciar sesión",
-      "Correo electrónico o contraseña inválidos",
-      [{ text: "OK" }]
-    );
+  const onDismissErrorMessage = () => setErrorMessageVisible(false);
+
+  const showErrorMessageSnackbar = (message: string) => {
+    setErrorMessage(message);
+    setErrorMessageVisible(true);
   };
 
   const handleLogin = () => {
     if (!email || !password) {
-      createInvalidCredentialsAlert();
+      showErrorMessageSnackbar("Por favor, complete todos los campos");
       return;
     }
     signIn(email, password);
@@ -81,6 +83,11 @@ export default function LoginPage() {
           </Link>
         </Text>
       </ScrollView>
+      <ErrorMessageSnackbar
+        visible={errorMessageVisible}
+        message={errorMessage}
+        onDismiss={onDismissErrorMessage}
+      />
     </View>
   );
 }

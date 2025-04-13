@@ -1,8 +1,9 @@
 import { Button, Divider, TextInput, useTheme, Text } from "react-native-paper";
-import { StyleSheet, ScrollView, View, Image, Alert } from "react-native";
+import { StyleSheet, ScrollView, View, Image } from "react-native";
 import { Link, useRouter } from "expo-router";
 import { useState } from "react";
 import { signUp } from "./utils/auth/authUtils";
+import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 
 export default function RegisterPage() {
   const theme = useTheme();
@@ -10,18 +11,23 @@ export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [errorMessageVisible, setErrorMessageVisible] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
-  const createUserAlreadyExistsAlert = () => {
-    Alert.alert(
-      "Error al registrar usuario",
-      "El usuario con los datos ingresados ya existe",
-      [{ text: "OK" }]
-    );
+  const onDismissErrorMessage = () => setErrorMessageVisible(false);
+
+  const showErrorMessageSnackbar = (message: string) => {
+    setErrorMessage(message);
+    setErrorMessageVisible(true);
   };
 
   const handleRegister = () => {
     if (!email || !password || !confirmPassword) {
-      createUserAlreadyExistsAlert();
+      showErrorMessageSnackbar("Por favor, complete todos los campos");
+      return;
+    }
+    if (password !== confirmPassword) {
+      showErrorMessageSnackbar("Las contraseñas no coinciden");
       return;
     }
     signUp(email, password);
@@ -88,6 +94,11 @@ export default function RegisterPage() {
           </Link>
         </Text>
       </ScrollView>
+      <ErrorMessageSnackbar
+        visible={errorMessageVisible}
+        message={errorMessage}
+        onDismiss={onDismissErrorMessage}
+      />
     </View>
   );
 }
