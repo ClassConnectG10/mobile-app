@@ -15,6 +15,7 @@ export default function RegisterPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [errorMessageVisible, setErrorMessageVisible] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [buttonDisabled, setButtonDisabled] = useState(false);
 
   const onDismissErrorMessage = () => setErrorMessageVisible(false);
 
@@ -24,12 +25,15 @@ export default function RegisterPage() {
   };
 
   const handleRegister = async () => {
+    setButtonDisabled(true);
     if (!email || !password || !confirmPassword) {
       showErrorMessageSnackbar("Por favor, complete todos los campos");
+      setButtonDisabled(false);
       return;
     }
     if (password !== confirmPassword) {
       showErrorMessageSnackbar("Las contraseñas no coinciden");
+      setButtonDisabled(false);
       return;
     }
     try {
@@ -43,6 +47,8 @@ export default function RegisterPage() {
       } else {
         showErrorMessageSnackbar("Error al registrar el usuario");
       }
+    } finally {
+      setButtonDisabled(false);
     }
   };
 
@@ -72,22 +78,30 @@ export default function RegisterPage() {
       >
         <TextInput
           label="Correo electrónico"
+          autoCapitalize="none"
           value={email}
           onChangeText={setEmail}
         ></TextInput>
         <TextInput
           label="Contraseña"
+          autoCapitalize="none"
           secureTextEntry={true}
           value={password}
           onChangeText={setPassword}
         ></TextInput>
         <TextInput
           label="Repetir contraseña"
+          autoCapitalize="none"
           secureTextEntry={true}
           value={confirmPassword}
           onChangeText={setConfirmPassword}
         ></TextInput>
-        <Button icon="account-plus" mode="contained" onPress={handleRegister}>
+        <Button
+          icon="account-plus"
+          mode="contained"
+          disabled={buttonDisabled}
+          onPress={handleRegister}
+        >
           Registrar
         </Button>
         <Divider />

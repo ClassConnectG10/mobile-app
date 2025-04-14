@@ -16,6 +16,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [errorMessageVisible, setErrorMessageVisible] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [buttonDisabled, setButtonDisabled] = useState(false);
 
   const onDismissErrorMessage = () => setErrorMessageVisible(false);
 
@@ -25,8 +26,10 @@ export default function LoginPage() {
   };
 
   const handleLogin = async () => {
+    setButtonDisabled(true);
     if (!email || !password) {
       showErrorMessageSnackbar("Por favor, complete todos los campos");
+      setButtonDisabled(false);
       return;
     }
     try {
@@ -40,6 +43,8 @@ export default function LoginPage() {
       } else {
         showErrorMessageSnackbar("Error al iniciar sesión");
       }
+    } finally {
+      setButtonDisabled(false);
     }
   };
 
@@ -69,16 +74,23 @@ export default function LoginPage() {
       >
         <TextInput
           label="Correo electrónico"
+          autoCapitalize="none"
           value={email}
           onChangeText={setEmail}
         ></TextInput>
         <TextInput
           label="Contraseña"
+          autoCapitalize="none"
           secureTextEntry={true}
           value={password}
           onChangeText={setPassword}
         ></TextInput>
-        <Button icon="login" mode="contained" onPress={handleLogin}>
+        <Button
+          icon="login"
+          mode="contained"
+          disabled={buttonDisabled}
+          onPress={handleLogin}
+        >
           Ingresar
         </Button>
         <Divider />

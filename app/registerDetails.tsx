@@ -18,6 +18,7 @@ export default function RegisterDetailsPage() {
   const [countryName, setCountryName] = useState(DEFAULT_SELECTED_COUNTRY);
   const [errorMessageVisible, setErrorMessageVisible] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [buttonDisabled, setButtonDisabled] = useState(false);
 
   const onDismissErrorMessage = () => setErrorMessageVisible(false);
 
@@ -27,8 +28,10 @@ export default function RegisterDetailsPage() {
   };
 
   const handleConfirmUserData = async () => {
+    setButtonDisabled(true);
     if (!firstName || !lastName) {
       showErrorMessageSnackbar("Por favor, complete todos los campos");
+      setButtonDisabled(false);
       return;
     }
     try {
@@ -55,6 +58,8 @@ export default function RegisterDetailsPage() {
       } else {
         showErrorMessageSnackbar("Error al registrar el usuario");
       }
+    } finally {
+      setButtonDisabled(false);
     }
   };
 
@@ -101,6 +106,7 @@ export default function RegisterDetailsPage() {
         <Button
           icon="badge-account"
           mode="contained"
+          disabled={buttonDisabled}
           onPress={handleConfirmUserData}
         >
           Confirmar datos
