@@ -9,8 +9,13 @@ interface CountryPickerProps {
   onCountrySelect: (country: string) => void;
 }
 
+/**
+ *  Dropdown menu to select user's country on registration
+ */
 const CountryPicker: React.FC<CountryPickerProps> = ({ onCountrySelect }) => {
-  const [selectedCountry, setSelectedCountry] = useState(DEFAULT_SELECTED_COUNTRY);
+  const [selectedCountry, setSelectedCountry] = useState(
+    DEFAULT_SELECTED_COUNTRY
+  );
 
   const handleValueChange = (itemValue: string, itemIndex: number) => {
     setSelectedCountry(itemValue);

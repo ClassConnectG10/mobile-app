@@ -8,6 +8,9 @@ interface ErrorMessageSnackbarProps {
   onDismiss: () => void;
 }
 
+/**
+ *  General purpose snackbar to show error messages
+ */
 const ErrorMessageSnackbar: React.FC<ErrorMessageSnackbarProps> = ({
   visible,
   message,

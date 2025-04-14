@@ -4,13 +4,13 @@ import { useRouter } from "expo-router";
 import { useState } from "react";
 import CountryPicker from "../components/CountryPicker";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
-import { registerUser, loginUser } from "@/utils/requests/userManagement";
+import { registerUser } from "@/utils/requests/userManagement";
 import { getStoredValue, storeObject } from "@/utils/storage/secureStorage";
 import { credentialViewsStyles } from "@/styles/credentialViewsStyles";
 
 const DEFAULT_SELECTED_COUNTRY: string = "Argentina";
 
-export default function RegisterPage() {
+export default function RegisterDetailsPage() {
   const theme = useTheme();
   const router = useRouter();
   const [firstName, setFirstName] = useState("");
