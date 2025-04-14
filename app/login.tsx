@@ -2,8 +2,9 @@ import { Button, Divider, Text, TextInput, useTheme } from "react-native-paper";
 import { StyleSheet, View, Image, ScrollView } from "react-native";
 import { Link, useRouter } from "expo-router";
 import { useState } from "react";
-import { signIn } from "./utils/auth/authUtils";
+import { signIn } from "@/utils/auth/authUtils";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
+import { loginUser } from "@/utils/requests/userManagement";
 
 export default function LoginPage() {
   const theme = useTheme();
@@ -20,13 +21,18 @@ export default function LoginPage() {
     setErrorMessageVisible(true);
   };
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (!email || !password) {
       showErrorMessageSnackbar("Por favor, complete todos los campos");
       return;
     }
-    signIn(email, password);
-    router.push("/home");
+    try {
+      const uid = await signIn(email, password);
+      await loginUser(uid);
+      router.push("/home");
+    } catch (error) {
+      showErrorMessageSnackbar("Error al iniciar sesión");
+    }
   };
 
   return (

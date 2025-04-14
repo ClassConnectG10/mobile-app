@@ -2,8 +2,9 @@ import { Button, Divider, TextInput, useTheme, Text } from "react-native-paper";
 import { StyleSheet, ScrollView, View, Image } from "react-native";
 import { Link, useRouter } from "expo-router";
 import { useState } from "react";
-import { signUp } from "./utils/auth/authUtils";
+import { signUp } from "@/utils/auth/authUtils";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
+import { saveCredential } from "@/utils/storage/credentialsStorage";
 
 export default function RegisterPage() {
   const theme = useTheme();
@@ -21,7 +22,7 @@ export default function RegisterPage() {
     setErrorMessageVisible(true);
   };
 
-  const handleRegister = () => {
+  const handleRegister = async () => {
     if (!email || !password || !confirmPassword) {
       showErrorMessageSnackbar("Por favor, complete todos los campos");
       return;
@@ -30,7 +31,9 @@ export default function RegisterPage() {
       showErrorMessageSnackbar("Las contraseñas no coinciden");
       return;
     }
-    signUp(email, password);
+    const uid = await signUp(email, password);
+    saveCredential("email", email);
+    saveCredential("uid", uid);
     router.push("/registerDetails");
   };
 

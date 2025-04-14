@@ -4,6 +4,8 @@ import { useRouter } from "expo-router";
 import { useState } from "react";
 import CountryPicker from "../components/CountryPicker";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
+import { registerUser } from "@/utils/requests/userManagement";
+import { getCredentialByKey } from "@/utils/storage/credentialsStorage";
 
 const DEFAULT_SELECTED_COUNTRY: string = "Argentina";
 
@@ -23,12 +25,25 @@ export default function RegisterPage() {
     setErrorMessageVisible(true);
   };
 
-  const handleConfirmUserData = () => {
+  const handleConfirmUserData = async () => {
     if (!firstName || !lastName) {
       showErrorMessageSnackbar("Por favor, complete todos los campos");
       return;
     }
-    router.push("/home");
+    try {
+      const email = await getCredentialByKey("email");
+      const uid = await getCredentialByKey("uid");
+      if (!email || !uid) {
+        showErrorMessageSnackbar(
+          "Error en el registro de credenciales de usuario"
+        );
+        return;
+      }
+      await registerUser(uid, firstName, lastName, email, countryName);
+      router.push("/home");
+    } catch (error) {
+      showErrorMessageSnackbar("Error al registrar el usuario");
+    }
   };
 
   const handleCountrySelect = (country: string) => {
