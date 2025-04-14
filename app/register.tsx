@@ -4,7 +4,7 @@ import { Link, useRouter } from "expo-router";
 import { useState } from "react";
 import { signUp } from "@/utils/auth/authUtils";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
-import { saveCredential } from "@/utils/storage/credentialsStorage";
+import { storeValue } from "@/utils/storage/secureStorage";
 
 export default function RegisterPage() {
   const theme = useTheme();
@@ -31,10 +31,18 @@ export default function RegisterPage() {
       showErrorMessageSnackbar("Las contraseñas no coinciden");
       return;
     }
-    const uid = await signUp(email, password);
-    saveCredential("email", email);
-    saveCredential("uid", uid);
-    router.push("/registerDetails");
+    try {
+      const uid = await signUp(email, password);
+      storeValue("email", email);
+      storeValue("uid", uid);
+      router.push("/registerDetails");
+    } catch (error) {
+      if (error instanceof Error) {
+        showErrorMessageSnackbar(error.message);
+      } else {
+        showErrorMessageSnackbar("Error al registrar el usuario");
+      }
+    }
   };
 
   return (

@@ -1,11 +1,11 @@
 import { Avatar, Button, TextInput, useTheme, Text } from "react-native-paper";
-import { StyleSheet, ScrollView, View, Alert } from "react-native";
+import { StyleSheet, ScrollView, View } from "react-native";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import CountryPicker from "../components/CountryPicker";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import { registerUser } from "@/utils/requests/userManagement";
-import { getCredentialByKey } from "@/utils/storage/credentialsStorage";
+import { getStoredValue } from "@/utils/storage/secureStorage";
 
 const DEFAULT_SELECTED_COUNTRY: string = "Argentina";
 
@@ -31,8 +31,8 @@ export default function RegisterPage() {
       return;
     }
     try {
-      const email = await getCredentialByKey("email");
-      const uid = await getCredentialByKey("uid");
+      const email = await getStoredValue("email");
+      const uid = await getStoredValue("uid");
       if (!email || !uid) {
         showErrorMessageSnackbar(
           "Error en el registro de credenciales de usuario"
@@ -42,13 +42,16 @@ export default function RegisterPage() {
       await registerUser(uid, firstName, lastName, email, countryName);
       router.push("/home");
     } catch (error) {
-      showErrorMessageSnackbar("Error al registrar el usuario");
+      if (error instanceof Error) {
+        showErrorMessageSnackbar(error.message);
+      } else {
+        showErrorMessageSnackbar("Error al registrar el usuario");
+      }
     }
   };
 
   const handleCountrySelect = (country: string) => {
     setCountryName(country);
-    console.log("País seleccionado:", countryName);
   };
 
   return (

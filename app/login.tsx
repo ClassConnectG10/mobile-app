@@ -5,6 +5,8 @@ import { useState } from "react";
 import { signIn } from "@/utils/auth/authUtils";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import { loginUser } from "@/utils/requests/userManagement";
+import { storeObject } from "@/utils/storage/secureStorage";
+import UserInformation from "@/types/userInformation";
 
 export default function LoginPage() {
   const theme = useTheme();
@@ -28,10 +30,15 @@ export default function LoginPage() {
     }
     try {
       const uid = await signIn(email, password);
-      await loginUser(uid);
+      const userInfo = await loginUser(uid);
+      storeObject("userInformation", userInfo);
       router.push("/home");
     } catch (error) {
-      showErrorMessageSnackbar("Error al iniciar sesión");
+      if (error instanceof Error) {
+        showErrorMessageSnackbar(error.message);
+      } else {
+        showErrorMessageSnackbar("Error al iniciar sesión");
+      }
     }
   };
 

@@ -1,33 +1,33 @@
-const axios = require('axios').default;
+import UserInformation from "@/types/userInformation";
+const axios = require("axios").default;
 
-const BASE_URL = "https://cc-middleend.onrender.com";
+const BASE_URL = process.env.EXPO_PUBLIC_MIDDLEEND_BASE_URL;
 
-export async function registerUser(uid: string, firstName: string, lastName: string, email: string, country: string) {
-  try {
-    console.log("Registering user with UID:", uid);
-    const response = await axios.post(`${BASE_URL}/users`, {
-      uid: uid,
-      name: firstName,
-      surname: lastName,
-      email: email,
-      role: "user",
-      country: country,
-    });
-    console.log("User registered:", response.data);
-    return response.data;
-  } catch (error) {
-    console.log("Error registering user:", error);
-    throw error;
-  }
+export async function registerUser(
+  uid: string,
+  firstName: string,
+  lastName: string,
+  email: string,
+  country: string
+) {
+  const response = await axios.post(`${BASE_URL}/users`, {
+    uid: uid,
+    name: firstName,
+    surname: lastName,
+    email: email,
+    role: "user",
+    country: country,
+  });
 }
 
 export async function loginUser(uid: string) {
-  try {
-    const response = await axios.get(`${BASE_URL}/users/login/${uid}`);
-    console.log("User logged in:", response.data);
-    return response.data;
-  } catch (error) {
-    console.log("Error logging in user:", error);
-    throw error;
-  }
+  const response = await axios.get(`${BASE_URL}/users/login/${uid}`);
+  const userInfo = new UserInformation(
+    response.data.data.name,
+    response.data.data.surname,
+    response.data.data.email,
+    response.data.data.country
+  );
+  console.log("User logged in:", response.data);
+  return userInfo;
 }
