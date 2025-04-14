@@ -10,24 +10,38 @@ export async function registerUser(
   email: string,
   country: string
 ) {
-  await axios.post(`${BASE_URL}/users`, {
-    uid: uid,
-    name: firstName,
-    surname: lastName,
-    email: email,
-    role: "user",
-    country: country,
-  });
+  try {
+    const response = await axios.post(`${BASE_URL}/users`, {
+      uid: uid,
+      name: firstName,
+      surname: lastName,
+      email: email,
+      role: "user",
+      country: country,
+    });
+    const userInfo = new UserInformation(
+      response.data.data.name,
+      response.data.data.surname,
+      response.data.data.email,
+      response.data.data.country
+    );
+    return userInfo;
+  } catch (error) {
+    throw new Error(`Error al registrar el usuario: ${error}`);
+  }
 }
 
 export async function loginUser(uid: string) {
-  const response = await axios.get(`${BASE_URL}/users/login/${uid}`);
-  const userInfo = new UserInformation(
-    response.data.data.name,
-    response.data.data.surname,
-    response.data.data.email,
-    response.data.data.country
-  );
-  console.log("User logged in:", response.data);
-  return userInfo;
+  try {
+    const response = await axios.get(`${BASE_URL}/users/login/${uid}`);
+    const userInfo = new UserInformation(
+      response.data.data.name,
+      response.data.data.surname,
+      response.data.data.email,
+      response.data.data.country
+    );
+    return userInfo;
+  } catch (error) {
+    throw new Error(`Error al iniciar sesion: ${error}`);
+  }
 }

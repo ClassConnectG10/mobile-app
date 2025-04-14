@@ -4,8 +4,8 @@ import { useRouter } from "expo-router";
 import { useState } from "react";
 import CountryPicker from "../components/CountryPicker";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
-import { registerUser } from "@/utils/requests/userManagement";
-import { getStoredValue } from "@/utils/storage/secureStorage";
+import { registerUser, loginUser } from "@/utils/requests/userManagement";
+import { getStoredValue, storeObject } from "@/utils/storage/secureStorage";
 import { credentialViewsStyles } from "@/styles/credentialViewsStyles";
 
 const DEFAULT_SELECTED_COUNTRY: string = "Argentina";
@@ -40,7 +40,14 @@ export default function RegisterPage() {
         );
         return;
       }
-      await registerUser(uid, firstName, lastName, email, countryName);
+      const userInfo = await registerUser(
+        uid,
+        firstName,
+        lastName,
+        email,
+        countryName
+      );
+      storeObject("userInformation", userInfo);
       router.push("/home");
     } catch (error) {
       if (error instanceof Error) {
