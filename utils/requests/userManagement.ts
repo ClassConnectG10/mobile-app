@@ -10,7 +10,7 @@ export async function registerUser(
   email: string,
   country: string
 ) {
-  const response = await axios.post(`${BASE_URL}/users`, {
+  await axios.post(`${BASE_URL}/users`, {
     uid: uid,
     name: firstName,
     surname: lastName,

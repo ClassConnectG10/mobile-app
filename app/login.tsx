@@ -1,5 +1,5 @@
 import { Button, Divider, Text, TextInput, useTheme } from "react-native-paper";
-import { StyleSheet, View, Image, ScrollView } from "react-native";
+import { View, Image, ScrollView } from "react-native";
 import { Link, useRouter } from "expo-router";
 import { useState } from "react";
 import { signIn } from "@/utils/auth/authUtils";
@@ -7,6 +7,7 @@ import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import { loginUser } from "@/utils/requests/userManagement";
 import { storeObject } from "@/utils/storage/secureStorage";
 import UserInformation from "@/types/userInformation";
+import { credentialViewsStyles } from "@/styles/credentialViewsStyles";
 
 export default function LoginPage() {
   const theme = useTheme();
@@ -30,7 +31,7 @@ export default function LoginPage() {
     }
     try {
       const uid = await signIn(email, password);
-      const userInfo = await loginUser(uid);
+      const userInfo: UserInformation = await loginUser(uid);
       storeObject("userInformation", userInfo);
       router.push("/home");
     } catch (error) {
@@ -45,26 +46,26 @@ export default function LoginPage() {
   return (
     <View
       style={[
-        styles.mainContainer,
+        credentialViewsStyles.mainContainer,
         { backgroundColor: theme.colors.background },
       ]}
     >
       <View
         style={[
-          styles.logoContainer,
+          credentialViewsStyles.logoContainer,
           { backgroundColor: theme.colors.primaryContainer },
         ]}
       >
         <Image
-          style={styles.logo}
+          style={credentialViewsStyles.logo}
           resizeMode="cover"
           source={require("@/assets/images/logo.png")}
         />
       </View>
 
       <ScrollView
-        style={styles.container}
-        contentContainerStyle={styles.contentContainer}
+        style={credentialViewsStyles.container}
+        contentContainerStyle={credentialViewsStyles.contentContainer}
       >
         <TextInput
           label="Correo electrónico"
@@ -87,10 +88,15 @@ export default function LoginPage() {
         <Button icon="microsoft" mode="outlined">
           Continuar con Microsoft
         </Button>
-        <Text style={styles.linkText}>
+        <Text style={credentialViewsStyles.linkText}>
           ¿No tenés una cuenta?{" "}
           <Link href="/register">
-            <Text style={[styles.link, { color: theme.colors.primary }]}>
+            <Text
+              style={[
+                credentialViewsStyles.link,
+                { color: theme.colors.primary },
+              ]}
+            >
               Registrate
             </Text>
           </Link>
@@ -104,43 +110,3 @@ export default function LoginPage() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  mainContainer: {
-    flex: 1,
-    paddingTop: 40,
-    paddingHorizontal: 20,
-  },
-  container: {
-    flex: 1,
-  },
-  contentContainer: {
-    paddingTop: 20,
-    paddingBottom: 40,
-    justifyContent: "center",
-    gap: 20,
-  },
-  logo: {
-    width: 150,
-    height: 150,
-  },
-  loginContainer: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  linkText: {
-    textAlign: "center",
-    marginTop: 20,
-  },
-  link: {
-    textDecorationLine: "underline",
-  },
-  logoContainer: {
-    padding: 10,
-    justifyContent: "center",
-    alignItems: "center",
-    borderRadius: 4,
-  },
-});

@@ -1,11 +1,12 @@
 import { Avatar, Button, TextInput, useTheme, Text } from "react-native-paper";
-import { StyleSheet, ScrollView, View } from "react-native";
+import { ScrollView, View } from "react-native";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import CountryPicker from "../components/CountryPicker";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import { registerUser } from "@/utils/requests/userManagement";
 import { getStoredValue } from "@/utils/storage/secureStorage";
+import { credentialViewsStyles } from "@/styles/credentialViewsStyles";
 
 const DEFAULT_SELECTED_COUNTRY: string = "Argentina";
 
@@ -57,21 +58,24 @@ export default function RegisterPage() {
   return (
     <View
       style={[
-        styles.mainContainer,
+        credentialViewsStyles.mainContainer,
         { backgroundColor: theme.colors.background },
       ]}
     >
       <ScrollView
-        style={styles.container}
-        contentContainerStyle={styles.contentContainer}
+        style={credentialViewsStyles.container}
+        contentContainerStyle={credentialViewsStyles.contentContainer}
       >
         <Text
           variant="titleLarge"
-          style={[styles.title, { color: theme.colors.onBackground }]}
+          style={[
+            credentialViewsStyles.title,
+            { color: theme.colors.onBackground },
+          ]}
         >
           Completá tus datos personales
         </Text>
-        <View style={styles.userIconContainer}>
+        <View style={credentialViewsStyles.userIconContainer}>
           <Avatar.Icon size={96} icon="account" />
         </View>
         <TextInput
@@ -103,33 +107,3 @@ export default function RegisterPage() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  mainContainer: {
-    flex: 1,
-    paddingTop: 40,
-    paddingHorizontal: 20,
-  },
-  container: {
-    flex: 1,
-  },
-  contentContainer: {
-    paddingTop: 20,
-    paddingBottom: 40,
-    justifyContent: "center",
-    gap: 20,
-  },
-  linkText: {
-    textAlign: "center",
-    marginTop: 20,
-  },
-  link: {
-    textDecorationLine: "underline",
-  },
-  userIconContainer: {
-    alignItems: "center",
-  },
-  title: {
-    textAlign: "center",
-  },
-});
