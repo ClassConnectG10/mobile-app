@@ -1,86 +1,107 @@
-import { Button, Divider, TextInput, useTheme } from "react-native-paper";
-import { StyleSheet, ScrollView, View, Image, Alert } from "react-native";
-import { useRouter } from "expo-router";
+import { Button, Divider, TextInput, useTheme, Text } from "react-native-paper";
+import { ScrollView, View, Image } from "react-native";
+import { Link, useRouter } from "expo-router";
 import { useState } from "react";
+import { signUp } from "@/utils/auth/authUtils";
+import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
+import { storeValue } from "@/utils/storage/secureStorage";
+import { credentialViewsStyles } from "@/styles/credentialViewsStyles";
 
 export default function RegisterPage() {
   const theme = useTheme();
   const router = useRouter();
-  const [firstNames, setFirstNames] = useState("");
-  const [lastNames, setLastNames] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [errorMessageVisible, setErrorMessageVisible] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [buttonDisabled, setButtonDisabled] = useState(false);
 
-  const createUserAlreadyExistsAlert = () => {
-    Alert.alert(
-      "Error al registrar usuario",
-      "El usuario con los datos ingresados ya existe",
-      [{ text: "OK" }]
-    );
+  const onDismissErrorMessage = () => setErrorMessageVisible(false);
+
+  const showErrorMessageSnackbar = (message: string) => {
+    setErrorMessage(message);
+    setErrorMessageVisible(true);
   };
 
-  const handleRegister = () => {
-    if (!firstNames || !lastNames || !email || !password || !confirmPassword) {
-      createUserAlreadyExistsAlert();
+  const handleRegister = async () => {
+    setButtonDisabled(true);
+    if (!email || !password || !confirmPassword) {
+      showErrorMessageSnackbar("Por favor, complete todos los campos");
+      setButtonDisabled(false);
       return;
     }
-    router.push("/home");
+    if (password !== confirmPassword) {
+      showErrorMessageSnackbar("Las contraseñas no coinciden");
+      setButtonDisabled(false);
+      return;
+    }
+    try {
+      const uid = await signUp(email, password);
+      storeValue("email", email);
+      storeValue("uid", uid);
+      router.push("/registerDetails");
+    } catch (error) {
+      if (error instanceof Error) {
+        showErrorMessageSnackbar(error.message);
+      } else {
+        showErrorMessageSnackbar("Error al registrar el usuario");
+      }
+    } finally {
+      setButtonDisabled(false);
+    }
   };
 
   return (
     <View
       style={[
-        styles.mainContainer,
+        credentialViewsStyles.mainContainer,
         { backgroundColor: theme.colors.background },
       ]}
     >
       <View
         style={[
-          styles.logoContainer,
+          credentialViewsStyles.logoContainer,
           { backgroundColor: theme.colors.primaryContainer },
         ]}
       >
         <Image
-          style={styles.logo}
+          style={credentialViewsStyles.logo}
           resizeMode="cover"
           source={require("@/assets/images/logo.png")}
         />
       </View>
 
       <ScrollView
-        style={styles.container}
-        contentContainerStyle={styles.contentContainer}
+        style={credentialViewsStyles.container}
+        contentContainerStyle={credentialViewsStyles.contentContainer}
       >
         <TextInput
-          label="Nombres"
-          value={firstNames}
-          onChangeText={setFirstNames}
-        ></TextInput>
-        <TextInput
-          label="Apellidos"
-          value={lastNames}
-          onChangeText={setLastNames}
-        ></TextInput>
-        <Divider />
-        <TextInput
           label="Correo electrónico"
+          autoCapitalize="none"
           value={email}
           onChangeText={setEmail}
         ></TextInput>
         <TextInput
           label="Contraseña"
+          autoCapitalize="none"
           secureTextEntry={true}
           value={password}
           onChangeText={setPassword}
         ></TextInput>
         <TextInput
           label="Repetir contraseña"
+          autoCapitalize="none"
           secureTextEntry={true}
           value={confirmPassword}
           onChangeText={setConfirmPassword}
         ></TextInput>
-        <Button icon="account-plus" mode="contained" onPress={handleRegister}>
+        <Button
+          icon="account-plus"
+          mode="contained"
+          disabled={buttonDisabled}
+          onPress={handleRegister}
+        >
           Registrar
         </Button>
         <Divider />
@@ -90,47 +111,25 @@ export default function RegisterPage() {
         <Button icon="microsoft" mode="outlined">
           Continuar con Microsoft
         </Button>
+        <Text style={credentialViewsStyles.linkText}>
+          ¿Ya tenés una cuenta?{" "}
+          <Link href="/login">
+            <Text
+              style={[
+                credentialViewsStyles.link,
+                { color: theme.colors.primary },
+              ]}
+            >
+              Iniciá sesión
+            </Text>
+          </Link>
+        </Text>
       </ScrollView>
+      <ErrorMessageSnackbar
+        visible={errorMessageVisible}
+        message={errorMessage}
+        onDismiss={onDismissErrorMessage}
+      />
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  mainContainer: {
-    flex: 1,
-    paddingTop: 40,
-    paddingHorizontal: 20,
-  },
-  container: {
-    flex: 1,
-  },
-  contentContainer: {
-    paddingTop: 20,
-    paddingBottom: 40,
-    justifyContent: "center",
-    gap: 20,
-  },
-  logo: {
-    width: 150,
-    height: 150,
-  },
-  loginContainer: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  linkText: {
-    textAlign: "center",
-    marginTop: 20,
-  },
-  link: {
-    textDecorationLine: "underline",
-  },
-  logoContainer: {
-    padding: 10,
-    justifyContent: "center",
-    alignItems: "center",
-    borderRadius: 4,
-  },
-});

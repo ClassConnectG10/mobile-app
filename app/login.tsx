@@ -1,107 +1,124 @@
 import { Button, Divider, Text, TextInput, useTheme } from "react-native-paper";
-import { StyleSheet, View, Image, Alert } from "react-native";
+import { View, Image, ScrollView } from "react-native";
 import { Link, useRouter } from "expo-router";
 import { useState } from "react";
+import { signIn } from "@/utils/auth/authUtils";
+import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
+import { loginUser } from "@/utils/requests/userManagement";
+import { storeObject } from "@/utils/storage/secureStorage";
+import UserInformation from "@/types/userInformation";
+import { credentialViewsStyles } from "@/styles/credentialViewsStyles";
 
 export default function LoginPage() {
   const theme = useTheme();
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [errorMessageVisible, setErrorMessageVisible] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [buttonDisabled, setButtonDisabled] = useState(false);
 
-  const createInvalidCredentialsAlert = () => {
-    Alert.alert(
-      "Error al iniciar sesión",
-      "Correo electrónico o contraseña inválidos",
-      [{ text: "OK" }]
-    );
+  const onDismissErrorMessage = () => setErrorMessageVisible(false);
+
+  const showErrorMessageSnackbar = (message: string) => {
+    setErrorMessage(message);
+    setErrorMessageVisible(true);
   };
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
+    setButtonDisabled(true);
     if (!email || !password) {
-      createInvalidCredentialsAlert();
+      showErrorMessageSnackbar("Por favor, complete todos los campos");
+      setButtonDisabled(false);
       return;
     }
-    router.push("/home");
+    try {
+      const uid = await signIn(email, password);
+      const userInfo: UserInformation = await loginUser(uid);
+      storeObject("userInformation", userInfo);
+      router.push("/home");
+    } catch (error) {
+      if (error instanceof Error) {
+        showErrorMessageSnackbar(error.message);
+      } else {
+        showErrorMessageSnackbar("Error al iniciar sesión");
+      }
+    } finally {
+      setButtonDisabled(false);
+    }
   };
 
   return (
     <View
-      style={[styles.container, { backgroundColor: theme.colors.background }]}
+      style={[
+        credentialViewsStyles.mainContainer,
+        { backgroundColor: theme.colors.background },
+      ]}
     >
       <View
         style={[
-          styles.logoContainer,
+          credentialViewsStyles.logoContainer,
           { backgroundColor: theme.colors.primaryContainer },
         ]}
       >
         <Image
-          style={styles.logo}
+          style={credentialViewsStyles.logo}
           resizeMode="cover"
           source={require("@/assets/images/logo.png")}
         />
       </View>
-      <TextInput
-        label="Correo electrónico"
-        value={email}
-        onChangeText={setEmail}
+
+      <ScrollView
+        style={credentialViewsStyles.container}
+        contentContainerStyle={credentialViewsStyles.contentContainer}
+      >
+        <TextInput
+          label="Correo electrónico"
+          autoCapitalize="none"
+          value={email}
+          onChangeText={setEmail}
+        ></TextInput>
+        <TextInput
+          label="Contraseña"
+          autoCapitalize="none"
+          secureTextEntry={true}
+          value={password}
+          onChangeText={setPassword}
+        ></TextInput>
+        <Button
+          icon="login"
+          mode="contained"
+          disabled={buttonDisabled}
+          onPress={handleLogin}
+        >
+          Ingresar
+        </Button>
+        <Divider />
+        <Button icon="google" mode="outlined">
+          Continuar con Google
+        </Button>
+        <Button icon="microsoft" mode="outlined">
+          Continuar con Microsoft
+        </Button>
+        <Text style={credentialViewsStyles.linkText}>
+          ¿No tenés una cuenta?{" "}
+          <Link href="/register">
+            <Text
+              style={[
+                credentialViewsStyles.link,
+                { color: theme.colors.primary },
+              ]}
+            >
+              Registrate
+            </Text>
+          </Link>
+        </Text>
+      </ScrollView>
+      <ErrorMessageSnackbar
+        visible={errorMessageVisible}
+        message={errorMessage}
+        onDismiss={onDismissErrorMessage}
       />
-      <TextInput
-        label="Contraseña"
-        secureTextEntry={true}
-        value={password}
-        onChangeText={setPassword}
-      />
-      <Button icon="login" mode="contained" onPress={handleLogin}>
-        Ingresar
-      </Button>
-      <Divider />
-      <Button icon="google" mode="outlined">
-        Continuar con Google
-      </Button>
-      <Button icon="microsoft" mode="outlined">
-        Continuar con Microsoft
-      </Button>
-      <Text style={styles.linkText}>
-        ¿No tenés una cuenta?{" "}
-        <Link href="/register">
-          <Text style={[styles.link, { color: theme.colors.primary }]}>
-            Registrate
-          </Text>
-        </Link>
-      </Text>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    paddingVertical: 40,
-    paddingHorizontal: 20,
-    gap: 20,
-    flex: 1,
-  },
-  logoContainer: {
-    padding: 10,
-    justifyContent: "center",
-    alignItems: "center",
-    borderRadius: 4,
-  },
-  loginContainer: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  linkText: {
-    textAlign: "center",
-    marginTop: 20,
-  },
-  link: {
-    textDecorationLine: "underline",
-  },
-  logo: {
-    width: 150,
-    height: 150,
-  },
-});
