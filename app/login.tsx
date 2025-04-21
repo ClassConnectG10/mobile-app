@@ -9,8 +9,7 @@ import { getStoredObject, storeObject } from "@/utils/storage/secureStorage";
 import UserInformation from "@/types/userInformation";
 import { credentialViewsStyles } from "@/styles/credentialViewsStyles";
 import { loginSchema } from "@/validations/users";
-
-const USER_INFORMATION_KEY = "userInformation";
+import { USER_INFORMATION_KEY } from "@/utils/constants/storedKeys";
 
 export default function LoginPage() {
   const theme = useTheme();

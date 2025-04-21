@@ -4,11 +4,11 @@ import * as SecureStore from "expo-secure-store";
  * Stores a value securely in the device's storage.
  *
  * @param key - The key under which the value will be stored.
- * @param credential_value - The value to be securely stored.
+ * @param value - The value to be securely stored.
  * @returns A promise that resolves when the value has been successfully stored.
  */
-export async function storeValue(key: string, credential_value: string) {
-  await SecureStore.setItemAsync(key, credential_value);
+export async function storeValue(key: string, value: string) {
+  await SecureStore.setItemAsync(key, value);
 }
 
 /**
@@ -19,11 +19,26 @@ export async function storeValue(key: string, credential_value: string) {
  * @throws An error if the value is not found in secure storage.
  */
 export async function getStoredValue(key: string) {
-  let credential = await SecureStore.getItemAsync(key);
-  if (!credential) {
+  let value = await SecureStore.getItemAsync(key);
+  if (!value) {
     throw new Error("Value not found");
   }
-  return credential;
+  return value;
+}
+
+/**
+ * Deletes a stored value from secure storage using the provided key.
+ *
+ * @param key - The key associated with the value to delete.
+ * @returns A promise that resolves when the value has been successfully deleted.
+ * @throws An error if the value is not found in secure storage.
+ */
+export async function deleteStoredValue(key: string) {
+  let value = await SecureStore.getItemAsync(key);
+  if (!value) {
+    throw new Error("Value not found");
+  }
+  await SecureStore.deleteItemAsync(key);
 }
 
 /**
@@ -51,4 +66,19 @@ export async function getStoredObject(key: string) {
     throw new Error("Object not found");
   }
   return JSON.parse(jsonValue);
+}
+
+/**
+ * Deletes a stored object from secure storage using the provided key.
+ *
+ * @param key - The key associated with the object to delete.
+ * @returns A promise that resolves when the object has been successfully deleted.
+ * @throws An error if the object is not found or the key does not exist.
+ */
+export async function deleteStoredObject(key: string) {
+  const jsonValue = await SecureStore.getItemAsync(key);
+  if (!jsonValue) {
+    throw new Error("Object not found");
+  }
+  await SecureStore.deleteItemAsync(key);
 }

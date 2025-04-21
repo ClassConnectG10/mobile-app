@@ -8,6 +8,7 @@ import { registerUser } from "@/utils/requests/userManagement";
 import { getStoredValue, storeObject } from "@/utils/storage/secureStorage";
 import { credentialViewsStyles } from "@/styles/credentialViewsStyles";
 import { registerDetailsSchema } from "@/validations/users";
+import { USER_INFORMATION_KEY } from "@/utils/constants/storedKeys";
 
 const DEFAULT_SELECTED_COUNTRY: string = "Argentina";
 
@@ -53,7 +54,7 @@ export default function RegisterDetailsPage() {
         email,
         countryName,
       );
-      storeObject("userInformation", userInfo);
+      storeObject(USER_INFORMATION_KEY, userInfo);
       router.push("/home");
     } catch (error) {
       if (error instanceof Error) {
