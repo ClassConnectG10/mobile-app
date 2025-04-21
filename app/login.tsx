@@ -8,6 +8,7 @@ import { loginUser } from "@/utils/requests/userManagement";
 import { storeObject } from "@/utils/storage/secureStorage";
 import UserInformation from "@/types/userInformation";
 import { credentialViewsStyles } from "@/styles/credentialViewsStyles";
+import { loginSchema } from "@/validations/users";
 
 export default function LoginPage() {
   const theme = useTheme();
@@ -27,12 +28,10 @@ export default function LoginPage() {
 
   const handleLogin = async () => {
     setButtonDisabled(true);
-    if (!email || !password) {
-      showErrorMessageSnackbar("Por favor, complete todos los campos");
-      setButtonDisabled(false);
-      return;
-    }
+
     try {
+      loginSchema.parse({ email, password });
+
       const uid = await signIn(email, password);
       const userInfo: UserInformation = await loginUser(uid);
       storeObject("userInformation", userInfo);

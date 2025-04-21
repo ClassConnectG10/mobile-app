@@ -6,6 +6,7 @@ import { signUp } from "@/utils/auth/authUtils";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import { storeValue } from "@/utils/storage/secureStorage";
 import { credentialViewsStyles } from "@/styles/credentialViewsStyles";
+import { registerSchema } from "@/validations/users";
 
 export default function RegisterPage() {
   const theme = useTheme();
@@ -26,17 +27,14 @@ export default function RegisterPage() {
 
   const handleRegister = async () => {
     setButtonDisabled(true);
-    if (!email || !password || !confirmPassword) {
-      showErrorMessageSnackbar("Por favor, complete todos los campos");
-      setButtonDisabled(false);
-      return;
-    }
-    if (password !== confirmPassword) {
-      showErrorMessageSnackbar("Las contraseñas no coinciden");
-      setButtonDisabled(false);
-      return;
-    }
+
     try {
+      registerSchema.parse({
+        email,
+        password,
+        confirmPassword,
+      });
+
       const uid = await signUp(email, password);
       storeValue("email", email);
       storeValue("uid", uid);

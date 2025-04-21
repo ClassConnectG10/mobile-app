@@ -7,6 +7,7 @@ import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import { registerUser } from "@/utils/requests/userManagement";
 import { getStoredValue, storeObject } from "@/utils/storage/secureStorage";
 import { credentialViewsStyles } from "@/styles/credentialViewsStyles";
+import { registerDetailsSchema } from "@/validations/users";
 
 const DEFAULT_SELECTED_COUNTRY: string = "Argentina";
 
@@ -29,17 +30,19 @@ export default function RegisterDetailsPage() {
 
   const handleConfirmUserData = async () => {
     setButtonDisabled(true);
-    if (!firstName || !lastName) {
-      showErrorMessageSnackbar("Por favor, complete todos los campos");
-      setButtonDisabled(false);
-      return;
-    }
+
     try {
+      registerDetailsSchema.parse({
+        firstName,
+        lastName,
+        countryName,
+      });
+
       const email = await getStoredValue("email");
       const uid = await getStoredValue("uid");
       if (!email || !uid) {
         showErrorMessageSnackbar(
-          "Error en el registro de credenciales de usuario"
+          "Error en el registro de credenciales de usuario",
         );
         return;
       }
@@ -48,7 +51,7 @@ export default function RegisterDetailsPage() {
         firstName,
         lastName,
         email,
-        countryName
+        countryName,
       );
       storeObject("userInformation", userInfo);
       router.push("/home");

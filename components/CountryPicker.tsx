@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { StyleSheet, View, Text } from "react-native";
 import { Picker } from "@react-native-picker/picker";
-import countries from "./countries";
+import countries from "../utils/constants/countries";
 
 const DEFAULT_SELECTED_COUNTRY: string = "Argentina";
 
@@ -14,7 +14,7 @@ interface CountryPickerProps {
  */
 const CountryPicker: React.FC<CountryPickerProps> = ({ onCountrySelect }) => {
   const [selectedCountry, setSelectedCountry] = useState(
-    DEFAULT_SELECTED_COUNTRY
+    DEFAULT_SELECTED_COUNTRY,
   );
 
   const handleValueChange = (itemValue: string, itemIndex: number) => {
