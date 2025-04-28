@@ -64,7 +64,6 @@ export default function HomePage() {
       >
         Cerrar sesión
       </Button>
-      1
     </View>
   );
 }

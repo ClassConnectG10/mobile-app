@@ -4,7 +4,7 @@ import { useRouter } from "expo-router";
 import { useState } from "react";
 import CountryPicker from "../components/CountryPicker";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
-import { registerUser } from "@/utils/requests/userManagement";
+import { registerUser } from "@/services/userManagement";
 import { getStoredValue, storeObject } from "@/utils/storage/secureStorage";
 import { credentialViewsStyles } from "@/styles/credentialViewsStyles";
 import { registerDetailsSchema } from "@/validations/users";
@@ -43,7 +43,7 @@ export default function RegisterDetailsPage() {
       const uid = await getStoredValue("uid");
       if (!email || !uid) {
         showErrorMessageSnackbar(
-          "Error en el registro de credenciales de usuario",
+          "Error en el registro de credenciales de usuario"
         );
         return;
       }
@@ -52,7 +52,7 @@ export default function RegisterDetailsPage() {
         firstName,
         lastName,
         email,
-        countryName,
+        countryName
       );
       storeObject(USER_INFORMATION_KEY, userInfo);
       router.push("/home");

@@ -2,9 +2,9 @@ import { Button, Divider, Text, TextInput, useTheme } from "react-native-paper";
 import { View, Image, ScrollView } from "react-native";
 import { Link, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import { signIn } from "@/utils/auth/authUtils";
+import { signIn } from "@/services/auth/authUtils";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
-import { loginUser } from "@/utils/requests/userManagement";
+import { loginUser } from "@/services/userManagement";
 import { getStoredObject, storeObject } from "@/utils/storage/secureStorage";
 import UserInformation from "@/types/userInformation";
 import { credentialViewsStyles } from "@/styles/credentialViewsStyles";
@@ -53,6 +53,7 @@ export default function LoginPage() {
       storeObject(USER_INFORMATION_KEY, userInfo);
       router.push("/home");
     } catch (error) {
+      console.error(error);
       if (error instanceof Error) {
         showErrorMessageSnackbar(error.message);
       } else {

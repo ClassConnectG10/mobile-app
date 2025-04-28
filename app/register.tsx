@@ -2,7 +2,7 @@ import { Button, Divider, TextInput, useTheme, Text } from "react-native-paper";
 import { ScrollView, View, Image } from "react-native";
 import { Link, useRouter } from "expo-router";
 import { useState } from "react";
-import { signUp } from "@/utils/auth/authUtils";
+import { signUp } from "@/services/auth/authUtils";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import { storeValue } from "@/utils/storage/secureStorage";
 import { credentialViewsStyles } from "@/styles/credentialViewsStyles";
@@ -41,6 +41,7 @@ export default function RegisterPage() {
       router.push("/registerDetails");
     } catch (error) {
       if (error instanceof Error) {
+        console.error(error);
         showErrorMessageSnackbar(error.message);
       } else {
         showErrorMessageSnackbar("Error al registrar el usuario");
