@@ -5,10 +5,10 @@ import { useState } from "react";
 import CountryPicker from "../components/CountryPicker";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import { registerUser } from "@/services/userManagement";
-import { getStoredValue, storeObject } from "@/utils/storage/secureStorage";
 import { credentialViewsStyles } from "@/styles/credentialViewsStyles";
 import { registerDetailsSchema } from "@/validations/users";
-import { USER_INFORMATION_KEY } from "@/utils/constants/storedKeys";
+import { useUserInformation } from "@/utils/storage/userInformationContext";
+import { getAuth } from "firebase/auth";
 
 const DEFAULT_SELECTED_COUNTRY: string = "Argentina";
 
@@ -21,6 +21,8 @@ export default function RegisterDetailsPage() {
   const [errorMessageVisible, setErrorMessageVisible] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [buttonDisabled, setButtonDisabled] = useState(false);
+  const { setUserInformation } = useUserInformation();
+  const auth = getAuth();
 
   const onDismissErrorMessage = () => setErrorMessageVisible(false);
 
@@ -38,9 +40,9 @@ export default function RegisterDetailsPage() {
         lastName,
         countryName,
       });
-
-      const email = await getStoredValue("email");
-      const uid = await getStoredValue("uid");
+      const user = auth.currentUser;
+      const email = user?.email;
+      const uid = user?.uid;
       if (!email || !uid) {
         showErrorMessageSnackbar(
           "Error en el registro de credenciales de usuario"
@@ -54,7 +56,7 @@ export default function RegisterDetailsPage() {
         email,
         countryName
       );
-      storeObject(USER_INFORMATION_KEY, userInfo);
+      setUserInformation(userInfo);
       router.push("/home");
     } catch (error) {
       if (error instanceof Error) {

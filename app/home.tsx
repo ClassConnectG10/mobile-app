@@ -1,31 +1,24 @@
 import { Avatar, Text, Button } from "react-native-paper";
 import { StyleSheet, View } from "react-native";
 import { router, Stack } from "expo-router";
-import { useEffect, useState } from "react";
-import {
-  getStoredObject,
-  deleteStoredObject,
-} from "@/utils/storage/secureStorage";
-import UserInformation from "@/types/userInformation";
-import { USER_INFORMATION_KEY } from "@/utils/constants/storedKeys";
+import { useState } from "react";
+import { useUserInformation } from "@/utils/storage/userInformationContext";
+import { getAuth, signOut } from "firebase/auth";
 
 export default function HomePage() {
-  const [userInfo, setUserInfo] = useState<UserInformation | null>(null);
   const [buttonDisabled, setButtonDisabled] = useState(false);
-
-  useEffect(() => {
-    const fetchUserInfo = async () => {
-      const data = await getStoredObject(USER_INFORMATION_KEY);
-      setUserInfo(data);
-    };
-
-    fetchUserInfo();
-  }, []);
+  const { userInformation, deleteUserInformation } = useUserInformation();
+  const auth = getAuth();
 
   const handleLogout = async () => {
-    setButtonDisabled(true);
-    await deleteStoredObject(USER_INFORMATION_KEY);
-    router.replace("/login");
+    try {
+      setButtonDisabled(true);
+      deleteUserInformation();
+      await signOut(auth);
+      router.replace("/login");
+    } catch {
+      console.error("Error al cerrar sesión");
+    }
   };
 
   return (
@@ -51,10 +44,10 @@ export default function HomePage() {
         <Avatar.Icon size={96} icon="account" />
       </View>
       <View style={styles.dataContainer}>
-        <Text variant="titleMedium">Nombre: {userInfo?.firstName}</Text>
-        <Text variant="titleMedium">Apellido: {userInfo?.lastName}</Text>
-        <Text variant="titleMedium">Email: {userInfo?.email}</Text>
-        <Text variant="titleMedium">País: {userInfo?.country}</Text>
+        <Text variant="titleMedium">Nombre: {userInformation?.firstName}</Text>
+        <Text variant="titleMedium">Apellido: {userInformation?.lastName}</Text>
+        <Text variant="titleMedium">Email: {userInformation?.email}</Text>
+        <Text variant="titleMedium">País: {userInformation?.country}</Text>
       </View>
       <Button
         mode="contained"
