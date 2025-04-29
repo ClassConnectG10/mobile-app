@@ -9,6 +9,8 @@ import UserInformation from "@/types/userInformation";
 import { credentialViewsStyles } from "@/styles/credentialViewsStyles";
 import { loginSchema } from "@/validations/users";
 import { useUserInformation } from "@/utils/storage/userInformationContext";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { ZodError } from "zod";
 
 export default function LoginPage() {
   const theme = useTheme();
@@ -38,8 +40,9 @@ export default function LoginPage() {
       setUserInformation(userInfo);
       router.replace("/home");
     } catch (error) {
-      console.error(error);
-      if (error instanceof Error) {
+      if (error instanceof ZodError) {
+        showErrorMessageSnackbar(error.errors[0].message);
+      } else if (error instanceof Error) {
         showErrorMessageSnackbar(error.message);
       } else {
         showErrorMessageSnackbar("Error al iniciar sesión");
