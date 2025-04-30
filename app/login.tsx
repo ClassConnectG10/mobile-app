@@ -1,7 +1,7 @@
 import { Button, Divider, Text, TextInput, useTheme } from "react-native-paper";
 import { View, Image, ScrollView } from "react-native";
 import { Link, useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { signIn } from "@/services/auth/authUtils";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import { loginUser } from "@/services/userManagement";
@@ -9,7 +9,6 @@ import UserInformation from "@/types/userInformation";
 import { credentialViewsStyles } from "@/styles/credentialViewsStyles";
 import { loginSchema } from "@/validations/users";
 import { useUserInformation } from "@/utils/storage/userInformationContext";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
 
 export default function LoginPage() {
   const theme = useTheme();
@@ -20,23 +19,6 @@ export default function LoginPage() {
   const [errorMessage, setErrorMessage] = useState("");
   const [buttonDisabled, setButtonDisabled] = useState(false);
   const { setUserInformation } = useUserInformation();
-
-  useEffect(() => {
-    const auth = getAuth();
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        try {
-          const userInfo: UserInformation = await loginUser(user.uid);
-          setUserInformation(userInfo);
-          router.replace("/home");
-        } catch {
-          console.log("No user session found");
-        }
-      }
-    });
-
-    return unsubscribe;
-  }, [router, setUserInformation]);
 
   const onDismissErrorMessage = () => setErrorMessageVisible(false);
 
@@ -54,7 +36,7 @@ export default function LoginPage() {
       const uid = await signIn(email, password);
       const userInfo: UserInformation = await loginUser(uid);
       setUserInformation(userInfo);
-      router.push("/home");
+      router.replace("/home");
     } catch (error) {
       console.error(error);
       if (error instanceof Error) {

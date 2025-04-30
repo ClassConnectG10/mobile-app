@@ -1,6 +1,5 @@
 import { Avatar, Button, TextInput, useTheme, Text } from "react-native-paper";
 import { ScrollView, View } from "react-native";
-import { useRouter } from "expo-router";
 import { useState } from "react";
 import CountryPicker from "../components/CountryPicker";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
@@ -9,12 +8,13 @@ import { credentialViewsStyles } from "@/styles/credentialViewsStyles";
 import { registerDetailsSchema } from "@/validations/users";
 import { useUserInformation } from "@/utils/storage/userInformationContext";
 import { getAuth } from "firebase/auth";
+import { useNavigation, CommonActions } from "@react-navigation/native";
 
 const DEFAULT_SELECTED_COUNTRY: string = "Argentina";
 
 export default function RegisterDetailsPage() {
   const theme = useTheme();
-  const router = useRouter();
+  const navigation = useNavigation();
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [countryName, setCountryName] = useState(DEFAULT_SELECTED_COUNTRY);
@@ -57,7 +57,12 @@ export default function RegisterDetailsPage() {
         countryName
       );
       setUserInformation(userInfo);
-      router.push("/home");
+      navigation.dispatch(
+        CommonActions.reset({
+          index: 0,
+          routes: [{ name: "home" }],
+        })
+      );
     } catch (error) {
       if (error instanceof Error) {
         showErrorMessageSnackbar(error.message);
