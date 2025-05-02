@@ -2,10 +2,10 @@ import { Button, Divider, TextInput, useTheme, Text } from "react-native-paper";
 import { ScrollView, View, Image } from "react-native";
 import { Link, useRouter } from "expo-router";
 import { useState } from "react";
-import { signUp } from "@/utils/auth/authUtils";
+import { signUp } from "@/services/auth/authUtils";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
-import { storeValue } from "@/utils/storage/secureStorage";
 import { credentialViewsStyles } from "@/styles/credentialViewsStyles";
+import { registerSchema } from "@/validations/users";
 
 export default function RegisterPage() {
   const theme = useTheme();
@@ -26,23 +26,19 @@ export default function RegisterPage() {
 
   const handleRegister = async () => {
     setButtonDisabled(true);
-    if (!email || !password || !confirmPassword) {
-      showErrorMessageSnackbar("Por favor, complete todos los campos");
-      setButtonDisabled(false);
-      return;
-    }
-    if (password !== confirmPassword) {
-      showErrorMessageSnackbar("Las contraseñas no coinciden");
-      setButtonDisabled(false);
-      return;
-    }
+
     try {
-      const uid = await signUp(email, password);
-      storeValue("email", email);
-      storeValue("uid", uid);
+      registerSchema.parse({
+        email,
+        password,
+        confirmPassword,
+      });
+
+      await signUp(email, password);
       router.push("/registerDetails");
     } catch (error) {
       if (error instanceof Error) {
+        console.error(error);
         showErrorMessageSnackbar(error.message);
       } else {
         showErrorMessageSnackbar("Error al registrar el usuario");

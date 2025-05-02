@@ -1,21 +1,25 @@
-import { Avatar, Text } from "react-native-paper";
+import { Avatar, Text, Button } from "react-native-paper";
 import { StyleSheet, View } from "react-native";
-import { Stack } from "expo-router";
-import { useEffect, useState } from "react";
-import { getStoredObject } from "@/utils/storage/secureStorage";
-import UserInformation from "@/types/userInformation";
+import { router, Stack } from "expo-router";
+import { useState } from "react";
+import { useUserInformation } from "@/utils/storage/userInformationContext";
+import { getAuth, signOut } from "firebase/auth";
 
 export default function HomePage() {
-  const [userInfo, setUserInfo] = useState<UserInformation | null>(null);
+  const [buttonDisabled, setButtonDisabled] = useState(false);
+  const { userInformation, deleteUserInformation } = useUserInformation();
+  const auth = getAuth();
 
-  useEffect(() => {
-    const fetchUserInfo = async () => {
-      const data = await getStoredObject("userInformation");
-      setUserInfo(data);
-    };
-
-    fetchUserInfo();
-  }, []);
+  const handleLogout = async () => {
+    try {
+      setButtonDisabled(true);
+      deleteUserInformation();
+      await signOut(auth);
+      router.replace("/login");
+    } catch {
+      console.error("Error al cerrar sesión");
+    }
+  };
 
   return (
     <View style={styles.mainContainer}>
@@ -40,11 +44,19 @@ export default function HomePage() {
         <Avatar.Icon size={96} icon="account" />
       </View>
       <View style={styles.dataContainer}>
-        <Text variant="titleMedium">Nombre: {userInfo?.firstName}</Text>
-        <Text variant="titleMedium">Apellido: {userInfo?.lastName}</Text>
-        <Text variant="titleMedium">Email: {userInfo?.email}</Text>
-        <Text variant="titleMedium">País: {userInfo?.country}</Text>
+        <Text variant="titleMedium">Nombre: {userInformation?.firstName}</Text>
+        <Text variant="titleMedium">Apellido: {userInformation?.lastName}</Text>
+        <Text variant="titleMedium">Email: {userInformation?.email}</Text>
+        <Text variant="titleMedium">País: {userInformation?.country}</Text>
       </View>
+      <Button
+        mode="contained"
+        onPress={handleLogout}
+        disabled={buttonDisabled}
+        style={{ marginTop: 20 }}
+      >
+        Cerrar sesión
+      </Button>
     </View>
   );
 }

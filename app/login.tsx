@@ -2,12 +2,15 @@ import { Button, Divider, Text, TextInput, useTheme } from "react-native-paper";
 import { View, Image, ScrollView } from "react-native";
 import { Link, useRouter } from "expo-router";
 import { useState } from "react";
-import { signIn } from "@/utils/auth/authUtils";
+import { signIn } from "@/services/auth/authUtils";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
-import { loginUser } from "@/utils/requests/userManagement";
-import { storeObject } from "@/utils/storage/secureStorage";
+import { loginUser } from "@/services/userManagement";
 import UserInformation from "@/types/userInformation";
 import { credentialViewsStyles } from "@/styles/credentialViewsStyles";
+import { loginSchema } from "@/validations/users";
+import { useUserInformation } from "@/utils/storage/userInformationContext";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { ZodError } from "zod";
 
 export default function LoginPage() {
   const theme = useTheme();
@@ -17,6 +20,7 @@ export default function LoginPage() {
   const [errorMessageVisible, setErrorMessageVisible] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [buttonDisabled, setButtonDisabled] = useState(false);
+  const { setUserInformation } = useUserInformation();
 
   const onDismissErrorMessage = () => setErrorMessageVisible(false);
 
@@ -27,18 +31,18 @@ export default function LoginPage() {
 
   const handleLogin = async () => {
     setButtonDisabled(true);
-    if (!email || !password) {
-      showErrorMessageSnackbar("Por favor, complete todos los campos");
-      setButtonDisabled(false);
-      return;
-    }
+
     try {
+      loginSchema.parse({ email, password });
+
       const uid = await signIn(email, password);
       const userInfo: UserInformation = await loginUser(uid);
-      storeObject("userInformation", userInfo);
-      router.push("/home");
+      setUserInformation(userInfo);
+      router.replace("/home");
     } catch (error) {
-      if (error instanceof Error) {
+      if (error instanceof ZodError) {
+        showErrorMessageSnackbar(error.errors[0].message);
+      } else if (error instanceof Error) {
         showErrorMessageSnackbar(error.message);
       } else {
         showErrorMessageSnackbar("Error al iniciar sesión");

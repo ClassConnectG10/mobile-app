@@ -1,24 +1,28 @@
 import { Avatar, Button, TextInput, useTheme, Text } from "react-native-paper";
 import { ScrollView, View } from "react-native";
-import { useRouter } from "expo-router";
 import { useState } from "react";
 import CountryPicker from "../components/CountryPicker";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
-import { registerUser } from "@/utils/requests/userManagement";
-import { getStoredValue, storeObject } from "@/utils/storage/secureStorage";
+import { registerUser } from "@/services/userManagement";
 import { credentialViewsStyles } from "@/styles/credentialViewsStyles";
+import { registerDetailsSchema } from "@/validations/users";
+import { useUserInformation } from "@/utils/storage/userInformationContext";
+import { getAuth } from "firebase/auth";
+import { useNavigation, CommonActions } from "@react-navigation/native";
 
 const DEFAULT_SELECTED_COUNTRY: string = "Argentina";
 
 export default function RegisterDetailsPage() {
   const theme = useTheme();
-  const router = useRouter();
+  const navigation = useNavigation();
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [countryName, setCountryName] = useState(DEFAULT_SELECTED_COUNTRY);
   const [errorMessageVisible, setErrorMessageVisible] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [buttonDisabled, setButtonDisabled] = useState(false);
+  const { setUserInformation } = useUserInformation();
+  const auth = getAuth();
 
   const onDismissErrorMessage = () => setErrorMessageVisible(false);
 
@@ -29,14 +33,16 @@ export default function RegisterDetailsPage() {
 
   const handleConfirmUserData = async () => {
     setButtonDisabled(true);
-    if (!firstName || !lastName) {
-      showErrorMessageSnackbar("Por favor, complete todos los campos");
-      setButtonDisabled(false);
-      return;
-    }
+
     try {
-      const email = await getStoredValue("email");
-      const uid = await getStoredValue("uid");
+      registerDetailsSchema.parse({
+        firstName,
+        lastName,
+        countryName,
+      });
+      const user = auth.currentUser;
+      const email = user?.email;
+      const uid = user?.uid;
       if (!email || !uid) {
         showErrorMessageSnackbar(
           "Error en el registro de credenciales de usuario"
@@ -50,8 +56,13 @@ export default function RegisterDetailsPage() {
         email,
         countryName
       );
-      storeObject("userInformation", userInfo);
-      router.push("/home");
+      setUserInformation(userInfo);
+      navigation.dispatch(
+        CommonActions.reset({
+          index: 0,
+          routes: [{ name: "home" }],
+        })
+      );
     } catch (error) {
       if (error instanceof Error) {
         showErrorMessageSnackbar(error.message);

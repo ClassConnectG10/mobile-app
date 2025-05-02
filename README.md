@@ -18,7 +18,7 @@ Aplicación móvil del trabajo práctico grupal ClassConnect de la materia [Inge
 
 2. Incluir en el directorio raíz del proyecto un archivo `.env` con las siguientes variables de entorno:
 
-   ```
+   ```ini
    EXPO_PUBLIC_FIREBASE_API_KEY=<firebase api key>
    EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN=<firebase auth domain>
    EXPO_PUBLIC_FIREBASE_PROJECT_ID=<firebase project id>
@@ -32,5 +32,5 @@ Aplicación móvil del trabajo práctico grupal ClassConnect de la materia [Inge
 3. Iniciar la aplicación:
 
    ```bash
-    npm run start
+   npm run start
    ```

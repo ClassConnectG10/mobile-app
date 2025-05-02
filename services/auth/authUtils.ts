@@ -1,4 +1,4 @@
-import firebaseApp from "./firebaseConfig";
+import { firebaseApp } from "./firebaseConfig";
 import { authErrorMessages } from "./authErrorMessages";
 import {
   getAuth,

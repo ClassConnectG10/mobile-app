@@ -1,7 +1,5 @@
 import UserInformation from "@/types/userInformation";
-const axios = require("axios").default;
-
-const BASE_URL = process.env.EXPO_PUBLIC_MIDDLEEND_BASE_URL;
+import { createRegisterUserRequest, createLoginUserRequest } from "@/api/axios";
 
 /**
  * Registers a new user in the system by sending their information to the server.
@@ -22,7 +20,8 @@ export async function registerUser(
   country: string
 ) {
   try {
-    const response = await axios.post(`${BASE_URL}/users`, {
+    const request = createRegisterUserRequest();
+    const response = await request.post("", {
       uid: uid,
       name: firstName,
       surname: lastName,
@@ -52,7 +51,8 @@ export async function registerUser(
  */
 export async function loginUser(uid: string) {
   try {
-    const response = await axios.get(`${BASE_URL}/users/login/${uid}`);
+    const request = createLoginUserRequest();
+    const response = await request.get(`${uid}`);
     const userInfo = new UserInformation(
       response.data.data.name,
       response.data.data.surname,
