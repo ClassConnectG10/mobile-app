@@ -10,6 +10,7 @@ import { getAuth } from "firebase/auth";
 import { useNavigation, CommonActions } from "@react-navigation/native";
 import { countries, defaultCountry } from "@/utils/constants/countries";
 import OptionPicker from "@/components/OptionPicker";
+import { ZodError } from "zod";
 
 export default function RegisterDetailsPage() {
   const theme = useTheme();
@@ -63,7 +64,9 @@ export default function RegisterDetailsPage() {
         }),
       );
     } catch (error) {
-      if (error instanceof Error) {
+      if (error instanceof ZodError) {
+        showErrorMessageSnackbar(error.errors[0].message);
+      } else if (error instanceof Error) {
         showErrorMessageSnackbar(error.message);
       } else {
         showErrorMessageSnackbar("Error al registrar el usuario");
