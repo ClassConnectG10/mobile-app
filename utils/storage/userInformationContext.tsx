@@ -7,8 +7,8 @@ interface UserInformationContext {
   deleteUserInformation: () => void;
 }
 
-const UserInformationContext = createContext<UserInformationContext | null>(
-  null
+const userInformationContext = createContext<UserInformationContext | null>(
+  null,
 );
 
 export const UserInformationProvider: React.FC<{ children: ReactNode }> = ({
@@ -22,19 +22,19 @@ export const UserInformationProvider: React.FC<{ children: ReactNode }> = ({
   };
 
   return (
-    <UserInformationContext.Provider
+    <userInformationContext.Provider
       value={{ userInformation, setUserInformation, deleteUserInformation }}
     >
       {children}
-    </UserInformationContext.Provider>
+    </userInformationContext.Provider>
   );
 };
 
 export const useUserInformationContext = (): UserInformationContext => {
-  const context = useContext(UserInformationContext);
+  const context = useContext(userInformationContext);
   if (!context) {
     throw new Error(
-      "useUserInformation must be used within a UserInformationProvider"
+      "useUserInformation must be used within a UserInformationProvider",
     );
   }
   return context;

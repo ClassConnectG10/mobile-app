@@ -1,6 +1,5 @@
 import UserInformation from "@/types/userInformation";
 import { useState } from "react";
-import { defaultCountry } from "@/utils/constants/countries";
 
 export interface UserInformationHook {
   userInformation: UserInformation;
@@ -12,7 +11,7 @@ export interface UserInformationHook {
 }
 
 export function useUserInformation(
-  initialUserInformation: UserInformation
+  initialUserInformation: UserInformation,
 ): UserInformationHook {
   const [userInformation, setUserInformation] = useState<UserInformation>({
     ...initialUserInformation,

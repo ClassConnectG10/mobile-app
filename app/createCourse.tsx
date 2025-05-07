@@ -1,24 +1,18 @@
 import { View, ScrollView } from "react-native";
-import { Appbar, Button, Text, TextInput, useTheme } from "react-native-paper";
+import { Appbar, Button, Text, TextInput } from "react-native-paper";
 import { useRouter } from "expo-router";
-import { useState } from "react";
 import OptionPicker from "@/components/OptionPicker";
 import {
   levels,
   modalities,
   categories,
 } from "@/utils/constants/courseDetails";
-import { useCourseDetails, CourseDetailsHook } from "@/hooks/useCourseDetails";
+import { useCourseDetails } from "@/hooks/useCourseDetails";
 import { globalStyles } from "@/styles/globalStyles";
 import { DatePickerButton } from "@/components/DatePickerButton";
 
 export default function CreateCoursePage() {
-  const theme = useTheme();
   const router = useRouter();
-
-  const [startDatePickerVisible, setStartDatePickerVisible] = useState(false);
-  const [endDatePickerVisible, setEndDatePickerVisible] = useState(false);
-
   const courseDetailsHook = useCourseDetails();
   const courseDetails = courseDetailsHook.courseDetails;
 

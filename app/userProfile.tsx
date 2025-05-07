@@ -1,25 +1,16 @@
 import { View, ScrollView } from "react-native";
-import {
-  Avatar,
-  Appbar,
-  Button,
-  Text,
-  TextInput,
-  useTheme,
-} from "react-native-paper";
+import { Avatar, Appbar } from "react-native-paper";
 import { useRouter } from "expo-router";
 import { useState } from "react";
-import { useCourseDetails, CourseDetailsHook } from "@/hooks/useCourseDetails";
 import { globalStyles } from "@/styles/globalStyles";
 import { useUserInformationContext } from "@/utils/storage/userInformationContext";
 import OptionPicker from "@/components/OptionPicker";
-import { countries, defaultCountry } from "@/utils/constants/countries";
+import { countries } from "@/utils/constants/countries";
 import { useUserInformation } from "@/hooks/useUserInformation";
 import UserInformation from "@/types/userInformation";
 import { ToggleableTextInput } from "@/components/ToggleableTextInput";
 
 export default function UserProfilePage() {
-  const theme = useTheme();
   const router = useRouter();
 
   const userInformationContextHook = useUserInformationContext();

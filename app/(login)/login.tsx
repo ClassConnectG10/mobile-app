@@ -1,16 +1,15 @@
 import { Button, Divider, Text, TextInput, useTheme } from "react-native-paper";
-import { View, Image, ScrollView } from "react-native";
-import { Link, useRouter } from "expo-router";
-import { useState } from "react";
-import { signIn } from "@/services/auth/authUtils";
-import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
-import { loginUser } from "@/services/userManagement";
-import UserInformation from "@/types/userInformation";
 import { globalStyles } from "@/styles/globalStyles";
+import { Link, useRouter } from "expo-router";
 import { loginSchema } from "@/validations/users";
+import { loginUser } from "@/services/userManagement";
+import { signIn } from "@/services/auth/authUtils";
+import { useState } from "react";
 import { useUserInformationContext } from "@/utils/storage/userInformationContext";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { View, Image, ScrollView } from "react-native";
 import { ZodError } from "zod";
+import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
+import UserInformation from "@/types/userInformation";
 
 export default function LoginPage() {
   const theme = useTheme();

@@ -44,7 +44,7 @@ export default function RegisterDetailsPage() {
       const uid = user?.uid;
       if (!email || !uid) {
         showErrorMessageSnackbar(
-          "Error en el registro de credenciales de usuario"
+          "Error en el registro de credenciales de usuario",
         );
         return;
       }
@@ -53,14 +53,14 @@ export default function RegisterDetailsPage() {
         firstName,
         lastName,
         email,
-        countryName
+        countryName,
       );
       setUserInformation(userInfo);
       navigation.dispatch(
         CommonActions.reset({
           index: 0,
           routes: [{ name: "home" }],
-        })
+        }),
       );
     } catch (error) {
       if (error instanceof Error) {
@@ -71,10 +71,6 @@ export default function RegisterDetailsPage() {
     } finally {
       setButtonDisabled(false);
     }
-  };
-
-  const handleCountrySelect = (country: string) => {
-    setCountryName(country);
   };
 
   return (
