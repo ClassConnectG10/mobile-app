@@ -1,5 +1,5 @@
 import { View, ScrollView } from "react-native";
-import { Avatar, Appbar } from "react-native-paper";
+import { Avatar, Appbar, Button } from "react-native-paper";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { globalStyles } from "@/styles/globalStyles";
@@ -9,22 +9,21 @@ import { countries } from "@/utils/constants/countries";
 import { useUserInformation } from "@/hooks/useUserInformation";
 import UserInformation from "@/types/userInformation";
 import { ToggleableTextInput } from "@/components/ToggleableTextInput";
+import { getAuth, signOut } from "firebase/auth";
 
 export default function UserProfilePage() {
   const router = useRouter();
+  const auth = getAuth();
+
+  const [isEditing, setIsEditing] = useState(false);
+  const [buttonDisabled, setButtonDisabled] = useState(false);
 
   const userInformationContextHook = useUserInformationContext();
-  if (!userInformationContextHook.userInformation) {
-    router.replace("/login");
-  }
-
   const userInformationContext =
     userInformationContextHook.userInformation as UserInformation;
 
   const userInformationHook = useUserInformation({ ...userInformationContext });
   const userInformation = userInformationHook.userInformation;
-
-  const [isEditing, setIsEditing] = useState(false);
 
   const handleCancelEdit = () => {
     userInformationHook.setUserInformation({ ...userInformationContext });
@@ -35,6 +34,17 @@ export default function UserProfilePage() {
     // TODO: llamar a la API
     userInformationContextHook.setUserInformation({ ...userInformation });
     setIsEditing(false);
+  };
+
+  const handleLogout = async () => {
+    try {
+      setButtonDisabled(true);
+      userInformationContextHook.deleteUserInformation();
+      await signOut(auth);
+      router.replace("/login");
+    } catch {
+      console.error("Error al cerrar sesión");
+    }
   };
 
   return (
@@ -86,6 +96,25 @@ export default function UserProfilePage() {
             items={countries}
             enabled={isEditing}
           />
+
+          {!isEditing ? (
+            <Button
+              mode="contained"
+              onPress={() => setIsEditing(true)}
+              style={{ marginTop: 20 }}
+            >
+              Editar
+            </Button>
+          ) : (
+            <Button
+              mode="contained"
+              onPress={handleLogout}
+              disabled={buttonDisabled}
+              style={{ marginTop: 20 }}
+            >
+              Cerrar sesión
+            </Button>
+          )}
         </ScrollView>
       </View>
     </>

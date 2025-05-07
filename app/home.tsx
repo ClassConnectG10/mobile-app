@@ -1,98 +1,80 @@
-import { Avatar, Text, Button } from "react-native-paper";
-import { StyleSheet, View } from "react-native";
-import { router, Stack } from "expo-router";
-import { useState } from "react";
-import { useUserInformationContext } from "@/utils/storage/userInformationContext";
-import { getAuth, signOut } from "firebase/auth";
+import { ScrollView, StyleSheet, View } from "react-native";
+import { Appbar, FAB } from "react-native-paper";
+import { router } from "expo-router";
+import CourseCard from "@/components/CourseCard";
+import { getCoursesByUser } from "@/services/courses";
+import { useEffect, useState } from "react";
+import CourseInfo from "@/types/courseInfo";
 
 export default function HomePage() {
-  const [buttonDisabled, setButtonDisabled] = useState(false);
-  const { userInformation, deleteUserInformation } =
-    useUserInformationContext();
-  const auth = getAuth();
+  const [courses, setCourses] = useState<CourseInfo[]>([]);
 
-  const handleLogout = async () => {
-    try {
-      setButtonDisabled(true);
-      deleteUserInformation();
-      await signOut(auth);
-      router.replace("/login");
-    } catch {
-      console.error("Error al cerrar sesión");
-    }
-  };
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        const coursesData = await getCoursesByUser();
+        setCourses(coursesData);
+      } catch (error) {
+        console.error("Error fetching courses:", error);
+      }
+    };
+
+    fetchCourses();
+  }, []);
 
   return (
-    <View style={styles.mainContainer}>
-      <Stack.Screen
-        name="home"
-        options={{
-          title: "Home",
-          headerShown: true,
-          headerBackVisible: false,
-          headerTitleAlign: "center",
-          headerStyle: {
-            backgroundColor: "#6200ee",
-          },
-          headerTintColor: "#fff",
-          headerTitleStyle: {
-            fontWeight: "bold",
-          },
-        }}
-      ></Stack.Screen>
-      <Text variant="headlineLarge">Tus datos</Text>
-      <View style={styles.userIconContainer}>
-        <Avatar.Icon size={96} icon="account" />
-      </View>
-      <View style={styles.dataContainer}>
-        <Text variant="titleMedium">Nombre: {userInformation?.firstName}</Text>
-        <Text variant="titleMedium">Apellido: {userInformation?.lastName}</Text>
-        <Text variant="titleMedium">Email: {userInformation?.email}</Text>
-        <Text variant="titleMedium">País: {userInformation?.country}</Text>
-      </View>
-      <Button
-        mode="contained"
-        onPress={() => {
-          router.push("/createCourse");
-        }}
-        disabled={buttonDisabled}
-        style={{ marginTop: 20 }}
-      >
-        Crear curso
-      </Button>
-      <Button
-        mode="contained"
-        onPress={() => {
-          router.push("/userProfile");
-        }}
-        disabled={buttonDisabled}
-        style={{ marginTop: 20 }}
-      >
-        Mis datos
-      </Button>
-      <Button
-        mode="contained"
-        onPress={handleLogout}
-        disabled={buttonDisabled}
-        style={{ marginTop: 20 }}
-      >
-        Cerrar sesión
-      </Button>
+    <View style={styles.container}>
+      {/* Top bar */}
+      <Appbar.Header>
+        <Appbar.Action icon="menu" onPress={() => {}} />
+        <Appbar.Content title="Class Connect" />
+        <Appbar.Action
+          icon="account"
+          onPress={() => router.push("/userProfile")}
+        />
+      </Appbar.Header>
+
+      {/* Main scrollable content */}
+      <ScrollView contentContainerStyle={styles.scrollContainer}>
+        {courses.map((course, index) => (
+          <CourseCard
+            key={index}
+            name={course.name}
+            description={course.description}
+            code={course.code}
+            category={course.category}
+          />
+        ))}
+      </ScrollView>
+
+      {/* Floating action button */}
+      <FAB
+        icon="plus"
+        style={styles.fab}
+        onPress={() => router.push("/createCourse")}
+      />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  mainContainer: {
+  container: {
     flex: 1,
-    gap: 20,
+    position: "relative",
+  },
+  scrollContainer: {
+    padding: 16,
+    paddingBottom: 100,
+    gap: 16,
+  },
+  fab: {
+    position: "absolute",
+    right: 16,
+    bottom: 16,
+    width: 64,
+    height: 64,
+    borderRadius: 32,
     justifyContent: "center",
-    alignItems: "center",
-  },
-  userIconContainer: {
-    alignItems: "center",
-  },
-  dataContainer: {
     alignItems: "center",
   },
 });
