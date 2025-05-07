@@ -1,5 +1,6 @@
 import { StyleSheet, View, Text } from "react-native";
-import { Picker } from "@react-native-picker/picker";
+import { Dropdown } from "react-native-paper-dropdown";
+import { ToggleableTextInput } from "./ToggleableTextInput";
 
 interface OptionPickerProps {
   label: string;
@@ -18,36 +19,28 @@ const OptionPicker: React.FC<OptionPickerProps> = ({
 }) => {
   return (
     <View>
-      <Text style={styles.label}>{label}:</Text>
-      <View style={styles.pickerContainer}>
-        <Picker
-          selectedValue={value}
-          onValueChange={(v, _) => setValue(v)}
-          enabled={enabled}
-          style={styles.picker}
-        >
-          {items.map((v, i) => (
-            <Picker.Item key={i} label={v} value={v} />
-          ))}
-        </Picker>
-      </View>
+      {enabled ? (
+        <Dropdown
+          label={label}
+          value={value}
+          onSelect={(selectedValue) => {
+            if (selectedValue !== undefined) {
+              setValue(selectedValue);
+            }
+          }}
+          options={items.map((v) => ({ label: v, value: v }))}
+        />
+      ) : (
+        <ToggleableTextInput
+          label={label}
+          placeholder={label}
+          value={value}
+          editable={false}
+          onChange={setValue}
+        />
+      )}
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  label: {
-    marginBottom: 10,
-  },
-  pickerContainer: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 5,
-  },
-  picker: {
-    height: 55,
-    width: "100%",
-  },
-});
 
 export default OptionPicker;

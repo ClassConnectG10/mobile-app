@@ -1,5 +1,5 @@
 import { z } from "zod";
-import countries from "../utils/constants/countries";
+import { countries } from "../utils/constants/countries";
 
 export const loginSchema = z.object({
   email: z.string().email("Dirección de correo electrónico inválida"),
@@ -19,7 +19,7 @@ export const registerSchema = z
       .regex(/[0-9]/, "La contraseña debe contener al menos un número")
       .regex(
         /[@$!%*?&]/,
-        "La contraseña debe contener al menos un carácter especial",
+        "La contraseña debe contener al menos un carácter especial"
       ),
     confirmPassword: z
       .string()
