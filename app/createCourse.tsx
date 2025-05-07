@@ -1,8 +1,7 @@
-import { View, StyleSheet, ScrollView } from "react-native";
+import { View, ScrollView } from "react-native";
 import { Appbar, Button, Text, TextInput, useTheme } from "react-native-paper";
 import { useRouter } from "expo-router";
 import { useState } from "react";
-import DateTimePicker from "@react-native-community/datetimepicker";
 import OptionPicker from "@/components/OptionPicker";
 import {
   levels,
@@ -11,7 +10,7 @@ import {
 } from "@/utils/constants/courseDetails";
 import { useCourseDetails, CourseDetailsHook } from "@/hooks/useCourseDetails";
 import { globalStyles } from "@/styles/globalStyles";
-import DatePickerButton from "@/components/DatePickerButton";
+import { DatePickerButton } from "@/components/DatePickerButton";
 
 export default function CreateCoursePage() {
   const theme = useTheme();

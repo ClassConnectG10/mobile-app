@@ -5,24 +5,22 @@ import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import { registerUser } from "@/services/userManagement";
 import { globalStyles } from "@/styles/globalStyles";
 import { registerDetailsSchema } from "@/validations/users";
-import { useUserInformation } from "@/utils/storage/userInformationContext";
+import { useUserInformationContext } from "@/utils/storage/userInformationContext";
 import { getAuth } from "firebase/auth";
 import { useNavigation, CommonActions } from "@react-navigation/native";
-import countries from "@/utils/constants/countries";
+import { countries, defaultCountry } from "@/utils/constants/countries";
 import OptionPicker from "@/components/OptionPicker";
-
-const DEFAULT_SELECTED_COUNTRY: string = "Argentina";
 
 export default function RegisterDetailsPage() {
   const theme = useTheme();
   const navigation = useNavigation();
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [countryName, setCountryName] = useState(DEFAULT_SELECTED_COUNTRY);
+  const [countryName, setCountryName] = useState(defaultCountry);
   const [errorMessageVisible, setErrorMessageVisible] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [buttonDisabled, setButtonDisabled] = useState(false);
-  const { setUserInformation } = useUserInformation();
+  const { setUserInformation } = useUserInformationContext();
   const auth = getAuth();
 
   const onDismissErrorMessage = () => setErrorMessageVisible(false);

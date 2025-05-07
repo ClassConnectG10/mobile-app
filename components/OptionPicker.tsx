@@ -5,6 +5,7 @@ interface OptionPickerProps {
   label: string;
   value: string;
   items: string[];
+  enabled?: boolean;
   setValue: (value: string) => void;
 }
 
@@ -12,6 +13,7 @@ const OptionPicker: React.FC<OptionPickerProps> = ({
   label,
   value,
   items,
+  enabled = true,
   setValue,
 }) => {
   return (
@@ -21,6 +23,7 @@ const OptionPicker: React.FC<OptionPickerProps> = ({
         <Picker
           selectedValue={value}
           onValueChange={(v, _) => setValue(v)}
+          enabled={enabled}
           style={styles.picker}
         >
           {items.map((v, i) => (

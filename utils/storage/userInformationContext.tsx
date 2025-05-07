@@ -1,13 +1,13 @@
 import React, { createContext, useState, useContext, ReactNode } from "react";
 import UserInformation from "@/types/userInformation";
 
-interface UserInformationContextType {
+interface UserInformationContext {
   userInformation: UserInformation | null;
   setUserInformation: (info: UserInformation | null) => void;
   deleteUserInformation: () => void;
 }
 
-const UserInformationContext = createContext<UserInformationContextType | null>(
+const UserInformationContext = createContext<UserInformationContext | null>(
   null
 );
 
@@ -30,7 +30,7 @@ export const UserInformationProvider: React.FC<{ children: ReactNode }> = ({
   );
 };
 
-export const useUserInformation = (): UserInformationContextType => {
+export const useUserInformationContext = (): UserInformationContext => {
   const context = useContext(UserInformationContext);
   if (!context) {
     throw new Error(

@@ -5,12 +5,12 @@ import { useRouter } from "expo-router";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import UserInformation from "@/types/userInformation";
 import { loginUser } from "@/services/userManagement";
-import { useUserInformation } from "@/utils/storage/userInformationContext";
+import { useUserInformationContext } from "@/utils/storage/userInformationContext";
 
 export default function Index() {
   const theme = useTheme();
   const router = useRouter();
-  const { setUserInformation } = useUserInformation();
+  const { setUserInformation } = useUserInformationContext();
 
   useEffect(() => {
     const auth = getAuth();

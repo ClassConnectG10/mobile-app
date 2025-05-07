@@ -2,13 +2,17 @@ import { useState } from "react";
 import { Button } from "react-native-paper";
 import DateTimePicker from "@react-native-community/datetimepicker";
 
-type Props = {
+type DatePickerProps = {
   label: string;
   value: Date;
   onChange: (date: Date) => void;
 };
 
-export default function DatePickerButton({ label, value, onChange }: Props) {
+export const DatePickerButton: React.FC<DatePickerProps> = ({
+  label,
+  value,
+  onChange,
+}) => {
   const [visible, setVisible] = useState(false);
 
   return (
@@ -31,4 +35,4 @@ export default function DatePickerButton({ label, value, onChange }: Props) {
       )}
     </>
   );
-}
+};

@@ -1,4 +1,4 @@
-const countries = [
+export const countries = [
   "Argentina",
   "Brazil",
   "Chile",
@@ -9,4 +9,4 @@ const countries = [
   "Peru",
 ];
 
-export default countries;
+export const defaultCountry = countries[0];

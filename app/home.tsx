@@ -2,12 +2,13 @@ import { Avatar, Text, Button } from "react-native-paper";
 import { StyleSheet, View } from "react-native";
 import { router, Stack } from "expo-router";
 import { useState } from "react";
-import { useUserInformation } from "@/utils/storage/userInformationContext";
+import { useUserInformationContext } from "@/utils/storage/userInformationContext";
 import { getAuth, signOut } from "firebase/auth";
 
 export default function HomePage() {
   const [buttonDisabled, setButtonDisabled] = useState(false);
-  const { userInformation, deleteUserInformation } = useUserInformation();
+  const { userInformation, deleteUserInformation } =
+    useUserInformationContext();
   const auth = getAuth();
 
   const handleLogout = async () => {
@@ -58,6 +59,16 @@ export default function HomePage() {
         style={{ marginTop: 20 }}
       >
         Crear curso
+      </Button>
+      <Button
+        mode="contained"
+        onPress={() => {
+          router.push("/userProfile");
+        }}
+        disabled={buttonDisabled}
+        style={{ marginTop: 20 }}
+      >
+        Mis datos
       </Button>
       <Button
         mode="contained"

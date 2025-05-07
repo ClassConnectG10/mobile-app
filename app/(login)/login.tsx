@@ -8,7 +8,7 @@ import { loginUser } from "@/services/userManagement";
 import UserInformation from "@/types/userInformation";
 import { globalStyles } from "@/styles/globalStyles";
 import { loginSchema } from "@/validations/users";
-import { useUserInformation } from "@/utils/storage/userInformationContext";
+import { useUserInformationContext } from "@/utils/storage/userInformationContext";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { ZodError } from "zod";
 
@@ -20,7 +20,7 @@ export default function LoginPage() {
   const [errorMessageVisible, setErrorMessageVisible] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [buttonDisabled, setButtonDisabled] = useState(false);
-  const { setUserInformation } = useUserInformation();
+  const { setUserInformation } = useUserInformationContext();
 
   const onDismissErrorMessage = () => setErrorMessageVisible(false);
 
