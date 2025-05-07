@@ -7,7 +7,7 @@ const DefaultTheme = {
   ...MD3LightTheme,
   colors: {
     ...MD3LightTheme.colors,
-    primary: "#743EF4",
+    primary: "#743EF4C0",
     onPrimary: "#FFFFFF",
     primaryContainer: "#D1B3FF",
     onPrimaryContainer: "#3E1A8A",

@@ -1,6 +1,6 @@
 import { StyleSheet } from "react-native";
 
-export const credentialViewsStyles = StyleSheet.create({
+export const globalStyles = StyleSheet.create({
   mainContainer: {
     flex: 1,
     paddingTop: 40,
@@ -43,5 +43,14 @@ export const credentialViewsStyles = StyleSheet.create({
   },
   title: {
     textAlign: "center",
+  },
+  courseDetailsContainer: {
+    gap: 20,
+  },
+  numStudentsContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    alignSelf: "center",
+    gap: 10,
   },
 });

@@ -1,14 +1,15 @@
 import { Avatar, Button, TextInput, useTheme, Text } from "react-native-paper";
 import { ScrollView, View } from "react-native";
 import { useState } from "react";
-import CountryPicker from "../components/CountryPicker";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import { registerUser } from "@/services/userManagement";
-import { credentialViewsStyles } from "@/styles/credentialViewsStyles";
+import { globalStyles } from "@/styles/globalStyles";
 import { registerDetailsSchema } from "@/validations/users";
 import { useUserInformation } from "@/utils/storage/userInformationContext";
 import { getAuth } from "firebase/auth";
 import { useNavigation, CommonActions } from "@react-navigation/native";
+import countries from "@/utils/constants/countries";
+import OptionPicker from "@/components/OptionPicker";
 
 const DEFAULT_SELECTED_COUNTRY: string = "Argentina";
 
@@ -81,24 +82,21 @@ export default function RegisterDetailsPage() {
   return (
     <View
       style={[
-        credentialViewsStyles.mainContainer,
+        globalStyles.mainContainer,
         { backgroundColor: theme.colors.background },
       ]}
     >
       <ScrollView
-        style={credentialViewsStyles.container}
-        contentContainerStyle={credentialViewsStyles.contentContainer}
+        style={globalStyles.container}
+        contentContainerStyle={globalStyles.contentContainer}
       >
         <Text
           variant="titleLarge"
-          style={[
-            credentialViewsStyles.title,
-            { color: theme.colors.onBackground },
-          ]}
+          style={[globalStyles.title, { color: theme.colors.onBackground }]}
         >
           Completá tus datos personales
         </Text>
-        <View style={credentialViewsStyles.userIconContainer}>
+        <View style={globalStyles.userIconContainer}>
           <Avatar.Icon size={96} icon="account" />
         </View>
         <TextInput
@@ -112,7 +110,12 @@ export default function RegisterDetailsPage() {
           onChangeText={setLastName}
         ></TextInput>
 
-        <CountryPicker onCountrySelect={handleCountrySelect} />
+        <OptionPicker
+          label="País de residencia"
+          value={countryName}
+          setValue={setCountryName}
+          items={countries}
+        />
 
         <Button
           icon="badge-account"

@@ -6,7 +6,7 @@ import { signIn } from "@/services/auth/authUtils";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import { loginUser } from "@/services/userManagement";
 import UserInformation from "@/types/userInformation";
-import { credentialViewsStyles } from "@/styles/credentialViewsStyles";
+import { globalStyles } from "@/styles/globalStyles";
 import { loginSchema } from "@/validations/users";
 import { useUserInformation } from "@/utils/storage/userInformationContext";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
@@ -55,26 +55,26 @@ export default function LoginPage() {
   return (
     <View
       style={[
-        credentialViewsStyles.mainContainer,
+        globalStyles.mainContainer,
         { backgroundColor: theme.colors.background },
       ]}
     >
       <View
         style={[
-          credentialViewsStyles.logoContainer,
+          globalStyles.logoContainer,
           { backgroundColor: theme.colors.primaryContainer },
         ]}
       >
         <Image
-          style={credentialViewsStyles.logo}
+          style={globalStyles.logo}
           resizeMode="cover"
           source={require("@/assets/images/logo.png")}
         />
       </View>
 
       <ScrollView
-        style={credentialViewsStyles.container}
-        contentContainerStyle={credentialViewsStyles.contentContainer}
+        style={globalStyles.container}
+        contentContainerStyle={globalStyles.contentContainer}
       >
         <TextInput
           label="Correo electrónico"
@@ -104,15 +104,10 @@ export default function LoginPage() {
         <Button icon="microsoft" mode="outlined">
           Continuar con Microsoft
         </Button>
-        <Text style={credentialViewsStyles.linkText}>
+        <Text style={globalStyles.linkText}>
           ¿No tenés una cuenta?{" "}
           <Link href="/register">
-            <Text
-              style={[
-                credentialViewsStyles.link,
-                { color: theme.colors.primary },
-              ]}
-            >
+            <Text style={[globalStyles.link, { color: theme.colors.primary }]}>
               Registrate
             </Text>
           </Link>

@@ -51,6 +51,16 @@ export default function HomePage() {
       </View>
       <Button
         mode="contained"
+        onPress={() => {
+          router.push("/createCourse");
+        }}
+        disabled={buttonDisabled}
+        style={{ marginTop: 20 }}
+      >
+        Crear curso
+      </Button>
+      <Button
+        mode="contained"
         onPress={handleLogout}
         disabled={buttonDisabled}
         style={{ marginTop: 20 }}

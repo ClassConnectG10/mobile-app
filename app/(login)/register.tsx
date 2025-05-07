@@ -4,7 +4,7 @@ import { Link, useRouter } from "expo-router";
 import { useState } from "react";
 import { signUp } from "@/services/auth/authUtils";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
-import { credentialViewsStyles } from "@/styles/credentialViewsStyles";
+import { globalStyles } from "@/styles/globalStyles";
 import { registerSchema } from "@/validations/users";
 
 export default function RegisterPage() {
@@ -51,26 +51,26 @@ export default function RegisterPage() {
   return (
     <View
       style={[
-        credentialViewsStyles.mainContainer,
+        globalStyles.mainContainer,
         { backgroundColor: theme.colors.background },
       ]}
     >
       <View
         style={[
-          credentialViewsStyles.logoContainer,
+          globalStyles.logoContainer,
           { backgroundColor: theme.colors.primaryContainer },
         ]}
       >
         <Image
-          style={credentialViewsStyles.logo}
+          style={globalStyles.logo}
           resizeMode="cover"
           source={require("@/assets/images/logo.png")}
         />
       </View>
 
       <ScrollView
-        style={credentialViewsStyles.container}
-        contentContainerStyle={credentialViewsStyles.contentContainer}
+        style={globalStyles.container}
+        contentContainerStyle={globalStyles.contentContainer}
       >
         <TextInput
           label="Correo electrónico"
@@ -107,15 +107,10 @@ export default function RegisterPage() {
         <Button icon="microsoft" mode="outlined">
           Continuar con Microsoft
         </Button>
-        <Text style={credentialViewsStyles.linkText}>
+        <Text style={globalStyles.linkText}>
           ¿Ya tenés una cuenta?{" "}
           <Link href="/login">
-            <Text
-              style={[
-                credentialViewsStyles.link,
-                { color: theme.colors.primary },
-              ]}
-            >
+            <Text style={[globalStyles.link, { color: theme.colors.primary }]}>
               Iniciá sesión
             </Text>
           </Link>
