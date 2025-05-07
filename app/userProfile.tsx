@@ -97,15 +97,7 @@ export default function UserProfilePage() {
             enabled={isEditing}
           />
 
-          {!isEditing ? (
-            <Button
-              mode="contained"
-              onPress={() => setIsEditing(true)}
-              style={{ marginTop: 20 }}
-            >
-              Editar
-            </Button>
-          ) : (
+          {!isEditing && (
             <Button
               mode="contained"
               onPress={handleLogout}
