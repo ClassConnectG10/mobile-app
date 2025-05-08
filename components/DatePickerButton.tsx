@@ -1,6 +1,7 @@
-import { useState } from "react";
-import { Button } from "react-native-paper";
+import React, { useState } from "react";
+import { TextInput } from "react-native-paper";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import { Pressable } from "react-native";
 
 type DatePickerProps = {
   label: string;
@@ -17,9 +18,14 @@ export const DatePickerButton: React.FC<DatePickerProps> = ({
 
   return (
     <>
-      <Button mode="contained" onPress={() => setVisible(true)}>
-        {label}: {value.toLocaleDateString()}
-      </Button>
+      <Pressable onPress={() => setVisible(true)} style={{ flex: 1 }}>
+        <TextInput
+          label={label}
+          value={value.toLocaleDateString()}
+          onFocus={() => setVisible(true)}
+          editable={false}
+        />
+      </Pressable>
 
       {visible && (
         <DateTimePicker

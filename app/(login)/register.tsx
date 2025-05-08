@@ -6,6 +6,7 @@ import { signUp } from "@/services/auth/authUtils";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import { globalStyles } from "@/styles/globalStyles";
 import { registerSchema } from "@/validations/users";
+import { ZodError } from "zod";
 
 export default function RegisterPage() {
   const theme = useTheme();
@@ -37,7 +38,9 @@ export default function RegisterPage() {
       await signUp(email, password);
       router.push("/registerDetails");
     } catch (error) {
-      if (error instanceof Error) {
+      if (error instanceof ZodError) {
+        showErrorMessageSnackbar(error.errors[0].message);
+      } else if (error instanceof Error) {
         console.error(error);
         showErrorMessageSnackbar(error.message);
       } else {

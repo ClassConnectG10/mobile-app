@@ -1,13 +1,26 @@
 import { ScrollView, StyleSheet, View } from "react-native";
-import { Appbar, FAB } from "react-native-paper";
+import {
+  Appbar,
+  Button,
+  Divider,
+  FAB,
+  IconButton,
+  Modal,
+  TextInput,
+  useTheme,
+} from "react-native-paper";
 import { router } from "expo-router";
 import CourseCard from "@/components/CourseCard";
 import { getCoursesByUser } from "@/services/courses";
 import { useEffect, useState } from "react";
 import CourseInfo from "@/types/courseInfo";
+import { set } from "zod";
 
 export default function HomePage() {
+  const theme = useTheme();
+  const [courseCode, setCourseCode] = useState("");
   const [courses, setCourses] = useState<CourseInfo[]>([]);
+  const [newCourseModalVisible, setNewCourseModalVisible] = useState(false);
 
   useEffect(() => {
     const fetchCourses = async () => {
@@ -51,8 +64,59 @@ export default function HomePage() {
       <FAB
         icon="plus"
         style={styles.fab}
-        onPress={() => router.push("/createCourse")}
+        onPress={() => setNewCourseModalVisible(true)}
       />
+
+      {/* Modal for course join / creation */}
+
+      <Modal
+        visible={newCourseModalVisible}
+        onDismiss={() => {
+          setNewCourseModalVisible(false);
+        }}
+        contentContainerStyle={styles.modalContainer}
+        style={styles.modalContent}
+      >
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            // justifyContent: "space-between",
+            gap: 16,
+          }}
+        >
+          <TextInput
+            label="Código del curso"
+            value={courseCode}
+            mode="outlined"
+            placeholder="Ingrese el código del curso"
+            onChangeText={setCourseCode}
+          />
+          <IconButton icon="check" mode="contained" onPress={() => {}} />
+        </View>
+        <Divider />
+        <Button
+          mode="contained"
+          icon="magnify"
+          onPress={() => {
+            setNewCourseModalVisible(false);
+            router.push("/searchCourses");
+          }}
+        >
+          Buscar un curso existente
+        </Button>
+
+        <Button
+          mode="contained"
+          icon="plus"
+          onPress={() => {
+            setNewCourseModalVisible(false);
+            router.push("/createCourse");
+          }}
+        >
+          Crear un nuevo curso
+        </Button>
+      </Modal>
     </View>
   );
 }
@@ -76,5 +140,25 @@ const styles = StyleSheet.create({
     borderRadius: 32,
     justifyContent: "center",
     alignItems: "center",
+  },
+  modalContainer: {
+    backgroundColor: "white",
+    padding: 20,
+    margin: 20,
+    borderRadius: 8,
+    elevation: 5,
+    gap: 16,
+  },
+  modalContent: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalButton: {
+    marginTop: 20,
+    backgroundColor: "#6200ee",
+    borderRadius: 4,
+    padding: 10,
+    color: "white",
   },
 });
