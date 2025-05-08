@@ -5,20 +5,23 @@ import { useRouter } from "expo-router";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import UserInformation from "@/types/userInformation";
 import { loginUser } from "@/services/userManagement";
-import { useUserInformationContext } from "@/utils/storage/userInformationContext";
+import { useUserContext } from "@/utils/storage/userContext";
 
 export default function Index() {
   const theme = useTheme();
   const router = useRouter();
-  const { setUserInformation } = useUserInformationContext();
+  const { setUser } = useUserContext();
 
   useEffect(() => {
     const auth = getAuth();
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user) {
+    const unsubscribe = onAuthStateChanged(auth, async (authUser) => {
+      if (authUser) {
         try {
-          const userInfo: UserInformation = await loginUser(user.uid);
-          setUserInformation(userInfo);
+          const accessToken = await authUser.getIdToken();
+          const user = await loginUser(accessToken, authUser.uid);
+
+          setUser(user);
+
           router.replace("/home");
         } catch {
           console.log("No user session found");
@@ -29,7 +32,7 @@ export default function Index() {
     });
 
     return unsubscribe;
-  }, [router, setUserInformation]);
+  }, [router, setUser]);
 
   return (
     <View style={styles.background}>

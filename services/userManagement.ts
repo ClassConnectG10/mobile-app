@@ -1,43 +1,61 @@
 import UserInformation from "@/types/userInformation";
-import { createRegisterUserRequest, createLoginUserRequest } from "@/api/axios";
+import {
+  createRegisterUserRequest,
+  createLoginUserRequest,
+  createEditUserProfileRequest,
+} from "@/api/axios";
+import { userDetailsSchema, userSchema } from "@/validations/users";
+import { ZodError } from "zod";
+import User from "@/types/user";
+
+function handleError(error: any, action: string): Error {
+  if (error instanceof ZodError) {
+    return new Error(
+      `Error de validacion al ${action}: ${error.errors
+        .map((e) => e.message)
+        .join(", ")}`
+    );
+  }
+  return new Error(`Error al ${action}: ${error}`);
+}
 
 /**
  * Registers a new user in the system by sending their information to the server.
  *
+ * @param accessToken - The access token for authentication.
  * @param uid - The unique identifier for the user.
- * @param firstName - The first name of the user.
- * @param lastName - The last name of the user.
- * @param email - The email address of the user.
- * @param country - The country of the user.
+ * @param userInformation - An object containing the user's information, including
  * @returns A `UserInformation` object containing the registered user's details.
  * @throws An error if the registration process fails.
  */
 export async function registerUser(
+  accessToken: string,
   uid: string,
-  firstName: string,
-  lastName: string,
-  email: string,
-  country: string
+  userInformation: UserInformation
 ) {
   try {
-    const request = createRegisterUserRequest();
+    userDetailsSchema.parse(userInformation);
+    const request = createRegisterUserRequest(accessToken);
     const response = await request.post("", {
       uid: uid,
-      name: firstName,
-      surname: lastName,
-      email: email,
       role: "user",
-      country: country,
+      name: userInformation.firstName,
+      surname: userInformation.lastName,
+      email: userInformation.email,
+      country: userInformation.country,
     });
-    const userInfo = new UserInformation(
-      response.data.data.name,
-      response.data.data.surname,
-      response.data.data.email,
-      response.data.data.country
+    const user = new User(
+      response.data.data.id,
+      new UserInformation(
+        response.data.data.name,
+        response.data.data.surname,
+        response.data.data.email,
+        response.data.data.country
+      )
     );
-    return userInfo;
+    return user;
   } catch (error) {
-    throw new Error(`Error al registrar el usuario: ${error}`);
+    throw handleError(error, "registrar el usuario");
   }
 }
 
@@ -49,18 +67,59 @@ export async function registerUser(
  *          the user's name, surname, email, and country.
  * @throws An error if the login request fails.
  */
-export async function loginUser(uid: string) {
+export async function loginUser(
+  accessToken: string,
+  uid: string
+): Promise<User> {
   try {
-    const request = createLoginUserRequest();
+    const request = createLoginUserRequest(accessToken);
     const response = await request.get(`${uid}`);
+
     const userInfo = new UserInformation(
       response.data.data.name,
       response.data.data.surname,
       response.data.data.email,
       response.data.data.country
     );
-    return userInfo;
+
+    const user = {
+      id: response.data.data.id,
+      userInformation: userInfo,
+    };
+    return user;
   } catch (error) {
-    throw new Error(`Error al iniciar sesion: ${error}`);
+    throw handleError(error, "iniciar sesión");
+  }
+}
+
+/**
+ * Edits the profile of a user by sending their updated information to the server.
+ *
+ * @param accessToken - The access token for authentication.
+ * @param uid - The unique identifier for the user.
+ * @param user - An object containing the user's updated information.
+ * @returns A `UserInformation` object containing the updated user's details.
+ * @throws An error if the edit process fails.
+ */
+export async function editUserProfile(accessToken: string, user: User) {
+  try {
+    userSchema.parse(user);
+    const request = createEditUserProfileRequest(accessToken, user.id);
+    console.log(request.getUri());
+    const response = await request.patch("", {
+      name: user.userInformation.firstName,
+      surname: user.userInformation.lastName,
+      email: user.userInformation.email,
+      country: user.userInformation.country,
+    });
+    const updatedUserInfo = new UserInformation(
+      response.data.data.name,
+      response.data.data.surname,
+      response.data.data.email,
+      response.data.data.country
+    );
+    return updatedUserInfo;
+  } catch (error) {
+    throw handleError(error, "editar el perfil del usuario");
   }
 }

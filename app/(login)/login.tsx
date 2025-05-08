@@ -5,28 +5,21 @@ import { loginSchema } from "@/validations/users";
 import { loginUser } from "@/services/userManagement";
 import { signIn } from "@/services/auth/authUtils";
 import { useState } from "react";
-import { useUserInformationContext } from "@/utils/storage/userInformationContext";
+import { useUserContext } from "@/utils/storage/userContext";
 import { View, Image, ScrollView } from "react-native";
 import { ZodError } from "zod";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import UserInformation from "@/types/userInformation";
+import { getAuth } from "firebase/auth";
 
 export default function LoginPage() {
   const theme = useTheme();
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [errorMessageVisible, setErrorMessageVisible] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [buttonDisabled, setButtonDisabled] = useState(false);
-  const { setUserInformation } = useUserInformationContext();
-
-  const onDismissErrorMessage = () => setErrorMessageVisible(false);
-
-  const showErrorMessageSnackbar = (message: string) => {
-    setErrorMessage(message);
-    setErrorMessageVisible(true);
-  };
+  const { setUser } = useUserContext();
 
   const handleLogin = async () => {
     setButtonDisabled(true);
@@ -35,16 +28,23 @@ export default function LoginPage() {
       loginSchema.parse({ email, password });
 
       const uid = await signIn(email, password);
-      const userInfo: UserInformation = await loginUser(uid);
-      setUserInformation(userInfo);
+      const auth = getAuth();
+      const accessToken = await auth.currentUser?.getIdToken();
+
+      if (!accessToken) {
+        setErrorMessage("Error al iniciar sesión: token de acceso no válido");
+        return;
+      }
+
+      const userInfo = await loginUser(accessToken, uid);
+      setUser(userInfo);
+
       router.replace("/home");
     } catch (error) {
       if (error instanceof ZodError) {
-        showErrorMessageSnackbar(error.errors[0].message);
+        setErrorMessage(error.errors[0].message);
       } else if (error instanceof Error) {
-        showErrorMessageSnackbar(error.message);
-      } else {
-        showErrorMessageSnackbar("Error al iniciar sesión");
+        setErrorMessage(error.message);
       }
     } finally {
       setButtonDisabled(false);
@@ -113,9 +113,8 @@ export default function LoginPage() {
         </Text>
       </ScrollView>
       <ErrorMessageSnackbar
-        visible={errorMessageVisible}
         message={errorMessage}
-        onDismiss={onDismissErrorMessage}
+        onDismiss={() => setErrorMessage("")}
       />
     </View>
   );

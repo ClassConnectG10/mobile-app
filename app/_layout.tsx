@@ -1,7 +1,7 @@
 import { Stack } from "expo-router";
 import { StatusBar } from "react-native";
 import { MD3LightTheme, PaperProvider } from "react-native-paper";
-import { UserInformationProvider } from "@/utils/storage/userInformationContext";
+import { UserProvider } from "@/utils/storage/userContext";
 
 const DefaultTheme = {
   ...MD3LightTheme,
@@ -28,10 +28,10 @@ const DefaultTheme = {
 export default function RootLayout() {
   return (
     <PaperProvider theme={DefaultTheme}>
-      <UserInformationProvider>
+      <UserProvider>
         <StatusBar barStyle="dark-content" translucent={true} />
         <Stack screenOptions={{ headerShown: false }}></Stack>
-      </UserInformationProvider>
+      </UserProvider>
     </PaperProvider>
   );
 }

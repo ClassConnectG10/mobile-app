@@ -1,7 +1,7 @@
 import UserInformation from "@/types/userInformation";
 import { useState } from "react";
 
-export interface UserInformationHook {
+export interface UserHook {
   userInformation: UserInformation;
   setUserInformation: (userInformation: UserInformation) => void;
   setFirstName: (firstName: string) => void;
@@ -11,8 +11,8 @@ export interface UserInformationHook {
 }
 
 export function useUserInformation(
-  initialUserInformation: UserInformation,
-): UserInformationHook {
+  initialUserInformation: UserInformation
+): UserHook {
   const [userInformation, setUserInformation] = useState<UserInformation>({
     ...initialUserInformation,
   });

@@ -35,7 +35,7 @@ export const registerSchema = z
     }
   });
 
-export const registerDetailsSchema = z.object({
+export const userDetailsSchema = z.object({
   firstName: z
     .string()
     .nonempty("El nombre es obligatorio")
@@ -44,11 +44,16 @@ export const registerDetailsSchema = z.object({
     .string()
     .nonempty("El apellido es obligatorio")
     .min(2, "El apellido debe tener al menos 2 caracteres"),
-  countryName: z
+  country: z
     .string()
     .nonempty("El país es obligatorio")
     .min(2, "El país debe tener al menos 2 caracteres")
     .refine((val) => countries.includes(val), {
       message: "Nombre de país inválido",
     }),
+});
+
+export const userSchema = z.object({
+  id: z.number(),
+  userInformation: userDetailsSchema,
 });

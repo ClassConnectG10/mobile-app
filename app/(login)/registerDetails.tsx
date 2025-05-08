@@ -4,8 +4,8 @@ import { useState } from "react";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import { registerUser } from "@/services/userManagement";
 import { globalStyles } from "@/styles/globalStyles";
-import { registerDetailsSchema } from "@/validations/users";
-import { useUserInformationContext } from "@/utils/storage/userInformationContext";
+import { userDetailsSchema } from "@/validations/users";
+import { useUserContext } from "@/utils/storage/userContext";
 import { getAuth } from "firebase/auth";
 import { useNavigation, CommonActions } from "@react-navigation/native";
 import { countries, defaultCountry } from "@/utils/constants/countries";
@@ -17,60 +17,42 @@ export default function RegisterDetailsPage() {
   const navigation = useNavigation();
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [countryName, setCountryName] = useState(defaultCountry);
-  const [errorMessageVisible, setErrorMessageVisible] = useState(false);
+  const [country, setcountry] = useState(defaultCountry);
   const [errorMessage, setErrorMessage] = useState("");
   const [buttonDisabled, setButtonDisabled] = useState(false);
-  const { setUserInformation } = useUserInformationContext();
+  const { setUser } = useUserContext();
   const auth = getAuth();
-
-  const onDismissErrorMessage = () => setErrorMessageVisible(false);
-
-  const showErrorMessageSnackbar = (message: string) => {
-    setErrorMessage(message);
-    setErrorMessageVisible(true);
-  };
 
   const handleConfirmUserData = async () => {
     setButtonDisabled(true);
 
     try {
-      registerDetailsSchema.parse({
-        firstName,
-        lastName,
-        countryName,
-      });
       const user = auth.currentUser;
+      const accessToken = await user?.getIdToken();
       const email = user?.email;
       const uid = user?.uid;
-      if (!email || !uid) {
-        showErrorMessageSnackbar(
-          "Error en el registro de credenciales de usuario",
+      if (!email || !uid || !accessToken) {
+        setErrorMessage(
+          "Error al obtener el token de acceso o el uid del usuario"
         );
         return;
       }
-      const userInfo = await registerUser(
-        uid,
+      const userInfo = {
         firstName,
         lastName,
         email,
-        countryName,
-      );
-      setUserInformation(userInfo);
+        country,
+      };
+      const newUserInfo = await registerUser(accessToken, uid, userInfo);
+      setUser(newUserInfo);
       navigation.dispatch(
         CommonActions.reset({
           index: 0,
           routes: [{ name: "home" }],
-        }),
+        })
       );
     } catch (error) {
-      if (error instanceof ZodError) {
-        showErrorMessageSnackbar(error.errors[0].message);
-      } else if (error instanceof Error) {
-        showErrorMessageSnackbar(error.message);
-      } else {
-        showErrorMessageSnackbar("Error al registrar el usuario");
-      }
+      setErrorMessage((error as Error).message);
     } finally {
       setButtonDisabled(false);
     }
@@ -109,8 +91,8 @@ export default function RegisterDetailsPage() {
 
         <OptionPicker
           label="País de residencia"
-          value={countryName}
-          setValue={setCountryName}
+          value={country}
+          setValue={setcountry}
           items={countries}
         />
 
@@ -124,9 +106,8 @@ export default function RegisterDetailsPage() {
         </Button>
       </ScrollView>
       <ErrorMessageSnackbar
-        visible={errorMessageVisible}
         message={errorMessage}
-        onDismiss={onDismissErrorMessage}
+        onDismiss={() => setErrorMessage("")}
       />
     </View>
   );

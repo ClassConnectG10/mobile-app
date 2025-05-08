@@ -14,16 +14,8 @@ export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [errorMessageVisible, setErrorMessageVisible] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [buttonDisabled, setButtonDisabled] = useState(false);
-
-  const onDismissErrorMessage = () => setErrorMessageVisible(false);
-
-  const showErrorMessageSnackbar = (message: string) => {
-    setErrorMessage(message);
-    setErrorMessageVisible(true);
-  };
 
   const handleRegister = async () => {
     setButtonDisabled(true);
@@ -39,12 +31,12 @@ export default function RegisterPage() {
       router.push("/registerDetails");
     } catch (error) {
       if (error instanceof ZodError) {
-        showErrorMessageSnackbar(error.errors[0].message);
+        setErrorMessage(error.errors[0].message);
       } else if (error instanceof Error) {
         console.error(error);
-        showErrorMessageSnackbar(error.message);
+        setErrorMessage(error.message);
       } else {
-        showErrorMessageSnackbar("Error al registrar el usuario");
+        setErrorMessage("Error al registrar el usuario");
       }
     } finally {
       setButtonDisabled(false);
@@ -120,9 +112,8 @@ export default function RegisterPage() {
         </Text>
       </ScrollView>
       <ErrorMessageSnackbar
-        visible={errorMessageVisible}
         message={errorMessage}
-        onDismiss={onDismissErrorMessage}
+        onDismiss={() => setErrorMessage("")}
       />
     </View>
   );

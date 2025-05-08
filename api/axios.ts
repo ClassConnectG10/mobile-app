@@ -1,23 +1,43 @@
-import axios from "axios";
+import axios, { AxiosInstance } from "axios";
 
 const BASE_URL = process.env.EXPO_PUBLIC_MIDDLEEND_BASE_URL;
 
-const createRegisterUserRequest = () => {
+interface AxiosRequestConfig {
+  uri?: string;
+  headers?: Record<string, string>;
+  params?: Record<string, string>;
+  token?: string;
+}
+
+function createRequest(axiosRequestConfig: AxiosRequestConfig): AxiosInstance {
   return axios.create({
-    baseURL: `${BASE_URL}/users`,
+    baseURL: `${BASE_URL}/${axiosRequestConfig.uri}`,
     headers: {
       "Content-Type": "application/json",
+      Authorization: `Bearer ${axiosRequestConfig.token}`,
+      ...axiosRequestConfig.headers,
+    },
+    params: {
+      ...axiosRequestConfig.params,
     },
   });
+}
+
+export const createRegisterUserRequest = (accessToken: string) => {
+  return createRequest({ uri: "users/register/", token: accessToken });
 };
 
-const createLoginUserRequest = () => {
-  return axios.create({
-    baseURL: `${BASE_URL}/users/login/`,
-    headers: {
-      "Content-Type": "application/json",
-    },
+export const createLoginUserRequest = (accessToken: string) => {
+  return createRequest({ uri: "users/login/", token: accessToken });
+};
+
+export const createEditUserProfileRequest = (
+  accessToken: string,
+  userId: number
+) => {
+  return createRequest({
+    uri: `users/${userId}`,
+    token: accessToken,
+    headers: { "X-Caller-Id": userId.toString() },
   });
 };
-
-export { createRegisterUserRequest, createLoginUserRequest };

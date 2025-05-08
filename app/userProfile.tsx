@@ -3,13 +3,15 @@ import { Avatar, Appbar, Button } from "react-native-paper";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { globalStyles } from "@/styles/globalStyles";
-import { useUserInformationContext } from "@/utils/storage/userInformationContext";
+import { useUserContext } from "@/utils/storage/userContext";
 import OptionPicker from "@/components/OptionPicker";
 import { countries } from "@/utils/constants/countries";
 import { useUserInformation } from "@/hooks/useUserInformation";
 import UserInformation from "@/types/userInformation";
 import { ToggleableTextInput } from "@/components/ToggleableTextInput";
 import { getAuth, signOut } from "firebase/auth";
+import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
+import { editUserProfile } from "@/services/userManagement";
 
 export default function UserProfilePage() {
   const router = useRouter();
@@ -17,33 +19,69 @@ export default function UserProfilePage() {
 
   const [isEditing, setIsEditing] = useState(false);
   const [buttonDisabled, setButtonDisabled] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
-  const userInformationContextHook = useUserInformationContext();
-  const userInformationContext =
-    userInformationContextHook.userInformation as UserInformation;
+  const userContextHook = useUserContext();
+  if (!userContextHook.user) {
+    router.replace("/login");
+    return;
+  }
 
-  const userInformationHook = useUserInformation({ ...userInformationContext });
-  const userInformation = userInformationHook.userInformation;
+  const userContext = userContextHook.user;
+
+  const userInformationHook = useUserInformation({
+    ...userContext.userInformation,
+  });
+  const userInformation =
+    userInformationHook.userInformation as UserInformation;
 
   const handleCancelEdit = () => {
-    userInformationHook.setUserInformation({ ...userInformationContext });
+    userInformationHook.setUserInformation({ ...userContext.userInformation });
     setIsEditing(false);
   };
 
-  const handleSave = () => {
-    // TODO: llamar a la API
-    userInformationContextHook.setUserInformation({ ...userInformation });
-    setIsEditing(false);
+  const handleSave = async () => {
+    try {
+      setButtonDisabled(true);
+
+      const auth = getAuth();
+      const accessToken = await auth.currentUser?.getIdToken();
+
+      if (!accessToken) {
+        setErrorMessage("Error al obtener el token de acceso");
+        return;
+      }
+
+      const newUser = {
+        id: userContext.id,
+        userInformation: {
+          ...userInformation,
+        },
+      };
+
+      await editUserProfile(accessToken, newUser);
+      userContextHook.setUser(newUser);
+
+      setIsEditing(false);
+    } catch (error) {
+      if (error instanceof Error) {
+        setErrorMessage(error.message);
+      }
+    } finally {
+      setButtonDisabled(false);
+    }
   };
 
   const handleLogout = async () => {
     try {
       setButtonDisabled(true);
-      userInformationContextHook.deleteUserInformation();
+
+      userContextHook.deleteUser();
       await signOut(auth);
+
       router.replace("/login");
     } catch {
-      console.error("Error al cerrar sesión");
+      setErrorMessage("Error al cerrar sesión");
     }
   };
 
@@ -108,6 +146,10 @@ export default function UserProfilePage() {
             </Button>
           )}
         </ScrollView>
+        <ErrorMessageSnackbar
+          message={errorMessage}
+          onDismiss={() => setErrorMessage("")}
+        />
       </View>
     </>
   );
