@@ -1,8 +1,8 @@
 class CourseDetails {
   constructor(
-    public name: string,
+    public title: string,
     public description: string,
-    public numberOfStudents: number,
+    public maxNumberOfStudents: number,
     public startDate: Date,
     public endDate: Date,
     public level: string,

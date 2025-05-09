@@ -27,9 +27,11 @@ import { DatePickerButton } from "@/components/DatePickerButton";
 import { useState } from "react";
 import Course from "@/types/course";
 import CourseDetails from "@/types/courseDetails";
-import { getCoursesByUser } from "@/services/coursesWithDetails";
+import { getSearchedCourses } from "@/services/coursesWithDetails";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import CourseCard from "@/components/CourseCard";
+import { getAuth } from "firebase/auth";
+import { useUserContext } from "@/utils/storage/userContext";
 
 export default function SearchCoursesPage() {
   const router = useRouter();
@@ -39,9 +41,32 @@ export default function SearchCoursesPage() {
   const [joinCourseModalVisible, setJoinCourseModalVisible] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
 
+  const userContextHook = useUserContext();
+  if (!userContextHook.user) {
+    router.replace("/login");
+    return;
+  }
+
+  const userContext = userContextHook.user;
+
   const fetchCourses = async () => {
     try {
-      const coursesData = await getCoursesByUser();
+      const auth = getAuth();
+      const accessToken = await auth.currentUser?.getIdToken();
+      const userId = userContext.id;
+      if (!accessToken || !userId) {
+        setErrorMessage(
+          "No se pudo obtener el token de acceso o el ID de usuario."
+        );
+        return;
+      }
+      const onlyOwnCourses = false;
+      const coursesData = await getSearchedCourses(
+        accessToken,
+        userId,
+        courseSearchQuery,
+        onlyOwnCourses
+      );
       setCourses(coursesData);
     } catch (error) {
       setErrorMessage(`Error al buscar cursos: ${error}`);
@@ -73,7 +98,7 @@ export default function SearchCoursesPage() {
             renderItem={({ item }) => (
               <Pressable onPress={() => handleSelectCourse(item)}>
                 <CourseCard
-                  name={item.courseDetails.name}
+                  name={item.courseDetails.title}
                   description={item.courseDetails.description}
                   category={item.courseDetails.category}
                   code={item.courseId.toString()}
@@ -94,7 +119,7 @@ export default function SearchCoursesPage() {
           {selectedCourse && (
             <View style={{ alignItems: "center" }}>
               <Text variant="titleLarge">
-                {selectedCourse.courseDetails.name} (ID{" "}
+                {selectedCourse.courseDetails.title} (ID{" "}
                 {selectedCourse.courseId})
               </Text>
               <Text variant="titleSmall" style={{ marginBottom: 16 }}>
@@ -102,7 +127,7 @@ export default function SearchCoursesPage() {
               </Text>
               <Text>
                 Cantidad máxima de estudiantes:{" "}
-                {selectedCourse.courseDetails.numberOfStudents}
+                {selectedCourse.courseDetails.maxNumberOfStudents}
               </Text>
               <Text>
                 Fecha de inicio:{" "}

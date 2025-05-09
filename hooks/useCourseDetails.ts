@@ -37,13 +37,16 @@ export function useCourseDetails(): CourseDetailsHook {
   );
 
   const setName = (name: string) => {
-    setCourseDetails((prev) => ({ ...prev, name }));
+    setCourseDetails((prev) => ({ ...prev, title: name }));
   };
   const setDescription = (description: string) => {
     setCourseDetails((prev) => ({ ...prev, description }));
   };
   const setNumberOfStudents = (numberOfStudents: number) => {
-    setCourseDetails((prev) => ({ ...prev, numberOfStudents }));
+    setCourseDetails((prev) => ({
+      ...prev,
+      maxNumberOfStudents: numberOfStudents,
+    }));
   };
   const setStartDate = (startDate: Date) => {
     setCourseDetails((prev) => ({ ...prev, startDate }));

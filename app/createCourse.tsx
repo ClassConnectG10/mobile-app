@@ -25,13 +25,17 @@ export default function CreateCoursePage() {
   const courseDetails = courseDetailsHook.courseDetails;
 
   const decreaseNumStudents = () => {
-    if (courseDetails.numberOfStudents > 1) {
-      courseDetailsHook.setNumberOfStudents(courseDetails.numberOfStudents - 1);
+    if (courseDetails.maxNumberOfStudents > 1) {
+      courseDetailsHook.setNumberOfStudents(
+        courseDetails.maxNumberOfStudents - 1
+      );
     }
   };
 
   const increaseNumStudents = () => {
-    courseDetailsHook.setNumberOfStudents(courseDetails.numberOfStudents + 1);
+    courseDetailsHook.setNumberOfStudents(
+      courseDetails.maxNumberOfStudents + 1
+    );
   };
 
   return (
@@ -58,7 +62,9 @@ export default function CreateCoursePage() {
               onPress={() => decreaseNumStudents()}
             />
 
-            <Text variant="titleLarge">{courseDetails.numberOfStudents}</Text>
+            <Text variant="titleLarge">
+              {courseDetails.maxNumberOfStudents}
+            </Text>
             <IconButton
               icon="plus"
               mode="contained"

@@ -41,3 +41,20 @@ export const createEditUserProfileRequest = (
     headers: { "X-Caller-Id": userId.toString() },
   });
 };
+
+export const createGetSearchedCoursesRequest = (
+  accessToken: string,
+  userId: number,
+  searchQuery: string,
+  onlyOwnCourses: boolean
+) => {
+  return createRequest({
+    uri: `courses`,
+    token: accessToken,
+    headers: { "X-Caller-Id": userId.toString() },
+    params: {
+      search: searchQuery,
+      own: onlyOwnCourses.toString(),
+    },
+  });
+};

@@ -32,8 +32,7 @@ export default function UserProfilePage() {
   const userInformationHook = useUserInformation({
     ...userContext.userInformation,
   });
-  const userInformation =
-    userInformationHook.userInformation as UserInformation;
+  const userInformation = userInformationHook.userInformation;
 
   const handleCancelEdit = () => {
     userInformationHook.setUserInformation({ ...userContext.userInformation });
