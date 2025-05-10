@@ -13,7 +13,7 @@ export async function getSearchedCourses(
   searchQuery: string,
   onlyOwnCourses: boolean
 ): Promise<Course[]> {
-  const request = createGetSearchedCoursesRequest(
+  /* const request = createGetSearchedCoursesRequest(
     accessToken,
     userId,
     searchQuery,
@@ -36,8 +36,8 @@ export async function getSearchedCourses(
         courseData.category
       )
     );
-  });
-  /* const courses: Course[] = [
+  }); */
+  const courses: Course[] = [
     new Course(
       1,
       10,
@@ -150,7 +150,7 @@ export async function getSearchedCourses(
         categories[15] // Tecnología
       )
     ),
-  ]; */
+  ];
 
   return courses;
 }

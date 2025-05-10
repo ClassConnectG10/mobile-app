@@ -22,11 +22,10 @@ const OptionPicker: React.FC<OptionPickerProps> = ({
       {enabled ? (
         <Dropdown
           label={label}
+          placeholder="Select an option"
           value={value}
           onSelect={(selectedValue) => {
-            if (selectedValue !== undefined) {
-              setValue(selectedValue);
-            }
+            setValue(selectedValue ?? "");
           }}
           options={items.map((v) => ({ label: v, value: v }))}
         />
