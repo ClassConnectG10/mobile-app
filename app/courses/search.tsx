@@ -20,7 +20,7 @@ import { globalStyles } from "@/styles/globalStyles";
 import { DatePickerButton } from "@/components/DatePickerButton";
 import { useState } from "react";
 import Course from "@/types/course";
-import { getSearchedCourses } from "@/services/courseManagement";
+import { searchCourses } from "@/services/courseManagement";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import CourseCard from "@/components/CourseCard";
 import { SearchOption } from "@/types/searchOption";
@@ -43,7 +43,7 @@ export default function SearchCoursesPage() {
 
   const fetchCourses = async () => {
     try {
-      const coursesData = await getSearchedCourses(
+      const coursesData = await searchCourses(
         courseSearchQuery,
         SearchOption.NOT_RELATED
       );
@@ -54,12 +54,9 @@ export default function SearchCoursesPage() {
   };
 
   const handleSelectCourse = (course: Course) => {
-    if (ownCourses === "own") {
-      return;
-    }
     router.push({
       pathname: "/courses/inscriptionDetails/[courseId]",
-      params: { courseId: course.courseId.toString() },
+      params: { courseId: course.courseId },
     });
   };
 

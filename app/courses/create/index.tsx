@@ -21,6 +21,7 @@ import { createCourse } from "@/services/courseManagement";
 import { useRequiredCoursesContext } from "@/utils/storage/requiredCoursesContext";
 import CourseCard from "@/components/CourseCard";
 import { ToggleableNumberInput } from "@/components/ToggleableNumberInput";
+import { useCourseContext } from "@/utils/storage/courseContext";
 
 export default function CreateCoursePage() {
   const theme = useTheme();
@@ -28,20 +29,30 @@ export default function CreateCoursePage() {
   const courseDetailsHook = useCourseDetails();
   const courseDetails = courseDetailsHook.courseDetails;
 
+  const courseContext = useCourseContext();
+
   const requiredCoursesContext = useRequiredCoursesContext();
   const { requiredCourses } = requiredCoursesContext;
 
   const handleCreateCourse = async () => {
     try {
-      await createCourse(courseDetails);
-      router.push("/home"); // TODO redireccionar a la página del curso creado
+      const createdCourse = await createCourse(courseDetails);
+
+      courseContext.setCourse(createdCourse);
+      router.push({
+        pathname: "/courses/[courseId]",
+        params: { courseId: createdCourse.courseId },
+      });
     } catch (error) {
       console.error("Error al crear el curso:", error);
     }
   };
 
-  const handleRequiredCoursePress = () => {
-    router.push("/home"); // TODO redireccionar a la página del curso requerido
+  const handleRequiredCoursePress = (courseId: string) => {
+    router.push({
+      pathname: "/courses/[courseId]",
+      params: { courseId },
+    });
   };
 
   return (
@@ -126,7 +137,7 @@ export default function CreateCoursePage() {
                 <CourseCard
                   name={course.courseDetails.title}
                   category={course.courseDetails.category}
-                  onPress={handleRequiredCoursePress}
+                  onPress={() => handleRequiredCoursePress(course.courseId)}
                 />
                 <IconButton
                   icon="delete"

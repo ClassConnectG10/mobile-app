@@ -16,7 +16,7 @@ import CourseCard from "@/components/CourseCard";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import { useEffect, useState } from "react";
 import Course from "@/types/course";
-import { getSearchedCourses } from "@/services/courseManagement";
+import { searchCourses } from "@/services/courseManagement";
 import { useUserContext } from "@/utils/storage/userContext";
 import axios from "axios";
 import { SearchOption } from "@/types/searchOption";
@@ -47,10 +47,7 @@ export default function HomePage() {
 
   const fetchCourses = async () => {
     try {
-      const coursesData = await getSearchedCourses(
-        courseSearchQuery,
-        searchOption
-      );
+      const coursesData = await searchCourses(courseSearchQuery, searchOption);
       setCourses(coursesData);
     } catch (error) {
       console.error("Error fetching courses:", error);
@@ -122,13 +119,18 @@ export default function HomePage() {
         <FlatList
           style={styles.scrollContainer}
           data={courses}
-          keyExtractor={(item) => item.courseId.toString()}
+          keyExtractor={(item) => item.courseId}
           renderItem={({ item }) => (
             <CourseCard
               name={item.courseDetails.title}
               description={item.courseDetails.description}
               category={item.courseDetails.category}
-              onPress={() => {}}
+              onPress={() => {
+                router.push({
+                  pathname: "/courses/[courseId]",
+                  params: { courseId: item.courseId },
+                });
+              }}
             />
           )}
           ItemSeparatorComponent={() => <View style={{ height: 16 }} />}

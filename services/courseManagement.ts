@@ -1,6 +1,6 @@
 import {
   createCreateCourseRequest,
-  createGetCourseRequest,
+  createGetCourseRequest as createCourseRequest,
   createGetSearchedCoursesRequest,
 } from "@/api/axios";
 import Course from "@/types/course";
@@ -13,7 +13,9 @@ function formatDate(date: Date): string {
   return date.toISOString().split("T")[0];
 }
 
-export async function createCourse(courseDetails: CourseDetails) {
+export async function createCourse(
+  courseDetails: CourseDetails
+): Promise<Course> {
   try {
     courseDetailsSchema.parse(courseDetails);
 
@@ -27,12 +29,27 @@ export async function createCourse(courseDetails: CourseDetails) {
       modalidad: courseDetails.modality,
       category: courseDetails.category,
     };
-    console.log("body: ", body);
 
     const request = await createCreateCourseRequest();
     const response = await request.post("", body);
 
-    console.log("response: ", response);
+    const courseData = response.data.data;
+    const course = new Course(
+      courseData.id,
+      courseData.numberOfStudents,
+      new CourseDetails(
+        courseData.title,
+        courseData.description,
+        courseData.capacity,
+        new Date(courseData.start_date),
+        new Date(courseData.end_date),
+        courseData.level,
+        courseData.modalidad,
+        courseData.category
+      )
+    );
+
+    return course;
   } catch (error) {
     throw handleError(error, "crear el curso");
   }
@@ -40,8 +57,7 @@ export async function createCourse(courseDetails: CourseDetails) {
 
 export async function getCourse(courseId: string): Promise<Course> {
   try {
-    throw new Error("No se puede obtener el curso");
-    const request = await createGetCourseRequest(courseId);
+    const request = await createCourseRequest(courseId);
     const response = await request.get("");
     const courseData = response.data.data;
     console.log("courseData: ", courseData);
@@ -65,7 +81,7 @@ export async function getCourse(courseId: string): Promise<Course> {
   }
 }
 
-export async function getSearchedCourses(
+export async function searchCourses(
   searchQuery: string,
   searchOption: SearchOption
 ): Promise<Course[]> {
@@ -93,4 +109,51 @@ export async function getSearchedCourses(
   });
 
   return courses;
+}
+
+export async function editCourse(
+  course: Course,
+  newCourseDetails: CourseDetails
+): Promise<Course> {
+  try {
+    courseDetailsSchema.parse(newCourseDetails);
+
+    if (course.numberOfStudens > newCourseDetails.maxNumberOfStudents) {
+      throw new Error(
+        "El nuevo número máximo de estudiantes no puede ser menor que el número actual de estudiantes"
+      );
+    }
+
+    const body = {
+      title: newCourseDetails.title,
+      description: newCourseDetails.description,
+      capacity: newCourseDetails.maxNumberOfStudents,
+      start_date: formatDate(newCourseDetails.startDate),
+      end_date: formatDate(newCourseDetails.endDate),
+      level: newCourseDetails.level,
+      modalidad: newCourseDetails.modality,
+      category: newCourseDetails.category,
+    };
+
+    const request = await createCourseRequest(course.courseId);
+    const response = await request.patch("", body);
+    const courseData = response.data.data;
+    const updatedCourse = new Course(
+      courseData.id,
+      courseData.numberOfStudents,
+      new CourseDetails(
+        courseData.title,
+        courseData.description,
+        courseData.capacity,
+        new Date(courseData.start_date),
+        new Date(courseData.end_date),
+        courseData.level,
+        courseData.modalidad,
+        courseData.category
+      )
+    );
+    return updatedCourse;
+  } catch (error) {
+    throw handleError(error, "editar el curso");
+  }
 }

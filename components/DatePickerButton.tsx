@@ -6,23 +6,31 @@ import { Pressable } from "react-native";
 type DatePickerProps = {
   label: string;
   value: Date | null;
+  editable?: boolean;
   onChange: (date: Date) => void;
 };
 
 export const DatePickerButton: React.FC<DatePickerProps> = ({
   label,
   value,
+  editable = true,
   onChange,
 }) => {
   const [visible, setVisible] = useState(false);
 
   return (
     <>
-      <Pressable onPress={() => setVisible(true)} style={{ flex: 1 }}>
+      <Pressable
+        onPress={() => {
+          if (editable) {
+            setVisible(true);
+          }
+        }}
+        style={{ flex: 1 }}
+      >
         <TextInput
           label={label}
           value={value ? value.toLocaleDateString() : ""}
-          onFocus={() => setVisible(true)}
           editable={false}
         />
       </Pressable>

@@ -7,7 +7,7 @@ interface CourseCardProps {
   name: string;
   description?: string;
   category: string;
-  onPress: () => void;
+  onPress?: () => void;
 }
 
 const CourseCard: React.FC<CourseCardProps> = ({

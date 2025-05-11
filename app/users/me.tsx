@@ -5,7 +5,7 @@ import { getAuth, signOut } from "firebase/auth";
 import { globalStyles } from "@/styles/globalStyles";
 import { ToggleableTextInput } from "@/components/ToggleableTextInput";
 import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useUserContext } from "@/utils/storage/userContext";
 import { useUserInformation } from "@/hooks/useUserInformation";
 import { View, ScrollView } from "react-native";
@@ -31,9 +31,11 @@ export default function UserProfilePage() {
   const userContext = userContextHook.user;
   const userInformation = userInformationHook.userInformation;
 
-  userInformationHook.setUserInformation({
-    ...userContext.userInformation,
-  });
+  useEffect(() => {
+    userInformationHook.setUserInformation({
+      ...userContext.userInformation,
+    });
+  }, [userContext.userInformation]);
 
   const handleCancelEdit = () => {
     userInformationHook.setUserInformation({ ...userContext.userInformation });
@@ -124,7 +126,7 @@ export default function UserProfilePage() {
             value={userInformation.country}
             setValue={userInformationHook.setCountry}
             items={countries}
-            enabled={isEditing}
+            editable={isEditing}
           />
 
           {!isEditing && (
