@@ -9,7 +9,7 @@ import {
   IconButton,
   useTheme,
 } from "react-native-paper";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import OptionPicker from "@/components/OptionPicker";
 import {
   levels,
@@ -32,6 +32,7 @@ export default function SearchCoursesPage() {
   const [errorMessage, setErrorMessage] = useState("");
   const [searchFiltersModalVisible, setSearchFiltersModalVisible] =
     useState(false);
+  const { ownCourses } = useLocalSearchParams();
 
   const [filterStartDate, setFilterStartDate] = useState<Date | null>(null);
   const [filterEndDate, setFilterEndDate] = useState<Date | null>(null);
@@ -41,7 +42,11 @@ export default function SearchCoursesPage() {
 
   const fetchCourses = async () => {
     try {
-      const coursesData = await getSearchedCourses(courseSearchQuery, false);
+      const searchOwnCourses = ownCourses === "own";
+      const coursesData = await getSearchedCourses(
+        courseSearchQuery,
+        searchOwnCourses
+      );
       setCourses(coursesData);
     } catch (error) {
       setErrorMessage(`Error al buscar cursos: ${error}`);
@@ -49,6 +54,9 @@ export default function SearchCoursesPage() {
   };
 
   const handleSelectCourse = (course: Course) => {
+    if (ownCourses === "own") {
+      return;
+    }
     router.push({
       pathname: "/courses/inscriptionDetails/[courseId]",
       params: { courseId: course.courseId.toString() },

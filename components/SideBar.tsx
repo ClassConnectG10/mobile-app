@@ -12,30 +12,42 @@ const SideBar: React.FC<SideBarProps> = ({ visible }) => {
   const router = useRouter();
 
   return (
-    <DrawerContentScrollView
-      alwaysBounceVertical={false}
-      style={{ flex: 1, backgroundColor: "#fff" }}
-    >
+    <>
       {visible && (
-        <Drawer.Section showDivider={true}>
-          <Drawer.Item
-            label="Mis cursos inscriptos"
-            icon="book-open-page-variant"
-            onPress={() => router.push("/courses/enrolled")}
-          />
-          <Drawer.Item
-            label="Mis cursos impartidos"
-            icon="book-open-page-variant"
-            onPress={() => router.push("/courses/taught")}
-          />
-          <Drawer.Item
-            label="Crear curso"
-            icon="plus"
-            onPress={() => router.push("/courses/create")}
-          />
-        </Drawer.Section>
+        <DrawerContentScrollView
+          alwaysBounceVertical={false}
+          style={{ flex: 1, backgroundColor: "#fff" }}
+        >
+          <Drawer.Section showDivider={true}>
+            <Drawer.Item
+              label="Mis cursos inscriptos"
+              icon="book-open-page-variant"
+              onPress={() =>
+                router.push({
+                  pathname: "/courses/search",
+                  params: { ownCourses: "own" },
+                })
+              }
+            />
+            <Drawer.Item
+              label="Mis cursos impartidos"
+              icon="book-open-page-variant"
+              onPress={() =>
+                router.push({
+                  pathname: "/courses/search",
+                  params: { ownCourses: "own" },
+                })
+              }
+            />
+            <Drawer.Item
+              label="Crear curso"
+              icon="plus"
+              onPress={() => router.push("/courses/create")}
+            />
+          </Drawer.Section>
+        </DrawerContentScrollView>
       )}
-    </DrawerContentScrollView>
+    </>
   );
 };
 

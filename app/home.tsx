@@ -1,4 +1,5 @@
-import { FlatList, ScrollView, StyleSheet, View } from "react-native";
+import React from "react";
+import { FlatList, StyleSheet, View } from "react-native";
 import {
   Appbar,
   Button,
@@ -11,16 +12,20 @@ import {
   useTheme,
 } from "react-native-paper";
 import { router } from "expo-router";
+import { createDrawerNavigator } from "@react-navigation/drawer";
+import { NavigationContainer } from "@react-navigation/native";
 import CourseCard from "@/components/CourseCard";
+import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import { useEffect, useState } from "react";
 import Course from "@/types/course";
 import { getSearchedCourses } from "@/services/courseManagement";
-import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
-import axios from "axios";
 import { useUserContext } from "@/utils/storage/userContext";
+import axios from "axios";
 import SideBar from "@/components/SideBar";
 
-export default function HomePage() {
+const RNDrawer = createDrawerNavigator();
+
+function HomeContent() {
   const theme = useTheme();
   const [courseCode, setCourseCode] = useState("");
   const [courses, setCourses] = useState<Course[]>([]);
@@ -33,10 +38,10 @@ export default function HomePage() {
   const userContextHook = useUserContext();
   if (!userContextHook.user) {
     router.replace("/login");
-    return;
+    return null;
   }
 
-  axios.defaults.headers.common["X-Caller-ID"] =
+  axios.defaults.headers.common["X-Caller-Id"] =
     userContextHook.user.id.toString();
 
   useEffect(() => {
@@ -72,7 +77,6 @@ export default function HomePage() {
       <SideBar visible={sideBarVisible} />
 
       {/* Main scrollable content */}
-
       <FlatList
         style={styles.scrollContainer}
         data={courses}
@@ -153,6 +157,35 @@ export default function HomePage() {
   );
 }
 
+export default function HomePage() {
+  return (
+    // <RNDrawer.Navigator
+    //   initialRouteName="HomeContent"
+    //   screenOptions={{
+    //     drawerStyle: {
+    //       backgroundColor: "#f4f4f4",
+    //       width: 240,
+    //     },
+    //   }}
+    //   drawerContent={() => (
+    //     <>
+    //       <Drawer.Section title="Some title">
+    //         <Drawer.Item label="First Item" />
+    //         <Drawer.Item label="Second Item" />
+    //       </Drawer.Section>
+    //     </>
+    //   )}
+    // >
+    //   <RNDrawer.Screen
+    //     name="HomeContent"
+    //     component={HomeContent}
+    //     options={{ title: "Inicio" }}
+    //   />
+    // </RNDrawer.Navigator>
+    <HomeContent />
+  );
+}
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -185,12 +218,5 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-  },
-  modalButton: {
-    marginTop: 20,
-    backgroundColor: "#6200ee",
-    borderRadius: 4,
-    padding: 10,
-    color: "white",
   },
 });
