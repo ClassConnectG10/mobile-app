@@ -8,6 +8,7 @@ import {
   IconButton,
   Modal,
   Searchbar,
+  SegmentedButtons,
   TextInput,
 } from "react-native-paper";
 import { router } from "expo-router";
@@ -18,52 +19,63 @@ import Course from "@/types/course";
 import { getSearchedCourses } from "@/services/courseManagement";
 import { useUserContext } from "@/utils/storage/userContext";
 import axios from "axios";
-import SideBar from "@/components/SideBar";
+import { SearchOption } from "@/types/searchOption";
 
-
-function HomeContent() {
+export default function HomePage() {
   const [courseCode, setCourseCode] = useState("");
   const [courses, setCourses] = useState<Course[]>([]);
   const [newCourseModalVisible, setNewCourseModalVisible] = useState(false);
   const [courseSearchQuery, setCourseSearchQuery] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
-
-  const [sideBarVisible, setSideBarVisible] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [searchOption, setSearchOption] = useState<SearchOption>(
+    SearchOption.RELATED
+  );
 
   const userContextHook = useUserContext();
 
-  useEffect(() => {
-    const fetchCourses = async () => {
-      try {
-        const coursesData = await getSearchedCourses(courseSearchQuery, true);
-        setCourses(coursesData);
-      } catch (error) {
-        console.error("Error fetching courses:", error);
-      }
-    };
+  const handleSearchOptionChange = async (value: SearchOption) => {
+    setIsLoading(true);
+    if (searchOption === value) {
+      setSearchOption(SearchOption.RELATED);
+    } else {
+      setSearchOption(value);
+    }
 
+    // await fetchCourses();
+  };
+
+  const fetchCourses = async () => {
+    try {
+      const coursesData = await getSearchedCourses(
+        courseSearchQuery,
+        searchOption
+      );
+      setCourses(coursesData);
+    } catch (error) {
+      console.error("Error fetching courses:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchCourses();
-  }, [courseSearchQuery]);
+  }, [searchOption]);
 
   if (!userContextHook.user) {
     router.replace("/login");
     return null;
   }
 
-
   axios.defaults.headers.common["X-Caller-Id"] =
     userContextHook.user.id.toString();
 
-
-
   return (
-    <View style={styles.container}>
+    <>
       {/* Top bar */}
       <Appbar.Header>
-        <Appbar.Action
-          icon="menu"
-          onPress={() => setSideBarVisible(!sideBarVisible)}
-        />
+        {/* <Appbar.Action icon="menu" /> */}
         <Appbar.Content title="Class Connect" />
         <Appbar.Action
           icon="account"
@@ -71,34 +83,57 @@ function HomeContent() {
         />
       </Appbar.Header>
 
-      {/* Drawer menu */}
+      {/* Segmented control */}
 
-      <SideBar visible={sideBarVisible} />
+      <View style={{ padding: 16, gap: 16, flex: 1 }}>
+        <SegmentedButtons
+          value={searchOption}
+          onValueChange={(value) => {
+            handleSearchOptionChange(
+              (value as SearchOption) || SearchOption.RELATED
+            );
+          }}
+          buttons={[
+            {
+              value: "enrolled",
+              label: "Cursos inscriptos",
+              icon: "book-open-variant",
+              disabled: isLoading,
+            },
+            {
+              value: "taught",
+              label: "Cursos creados",
+              icon: "human-male-board",
+              disabled: isLoading,
+            },
+          ]}
+        />
 
-      {/* Searchbar */}
+        {/* Searchbar */}
 
-      <Searchbar
-        placeholder="Buscar cursos"
-        onChangeText={setCourseSearchQuery}
-        value={courseSearchQuery}
+        <Searchbar
+          placeholder="Buscar cursos"
+          onChangeText={setCourseSearchQuery}
+          onIconPress={fetchCourses}
+          value={courseSearchQuery}
+        />
 
-      />
-
-      {/* Main scrollable content */}
-      <FlatList
-        style={styles.scrollContainer}
-        data={courses}
-        keyExtractor={(item) => item.courseId.toString()}
-        renderItem={({ item }) => (
-          <CourseCard
-            name={item.courseDetails.title}
-            description={item.courseDetails.description}
-            category={item.courseDetails.category}
-            onPress={() => { }}
-          />
-        )}
-        ItemSeparatorComponent={() => <View style={{ height: 16 }} />}
-      />
+        {/* Main scrollable content */}
+        <FlatList
+          style={styles.scrollContainer}
+          data={courses}
+          keyExtractor={(item) => item.courseId.toString()}
+          renderItem={({ item }) => (
+            <CourseCard
+              name={item.courseDetails.title}
+              description={item.courseDetails.description}
+              category={item.courseDetails.category}
+              onPress={() => {}}
+            />
+          )}
+          ItemSeparatorComponent={() => <View style={{ height: 16 }} />}
+        />
+      </View>
 
       {/* Floating action button */}
       <FAB
@@ -131,7 +166,7 @@ function HomeContent() {
             placeholder="Ingrese el código del curso"
             onChangeText={setCourseCode}
           />
-          <IconButton icon="check" mode="contained" onPress={() => { }} />
+          <IconButton icon="check" mode="contained" onPress={() => {}} />
         </View>
         <Divider />
         <Button
@@ -161,36 +196,7 @@ function HomeContent() {
         message={errorMessage}
         onDismiss={() => setErrorMessage("")}
       />
-    </View>
-  );
-}
-
-export default function HomePage() {
-  return (
-    // <RNDrawer.Navigator
-    //   initialRouteName="HomeContent"
-    //   screenOptions={{
-    //     drawerStyle: {
-    //       backgroundColor: "#f4f4f4",
-    //       width: 240,
-    //     },
-    //   }}
-    //   drawerContent={() => (
-    //     <>
-    //       <Drawer.Section title="Some title">
-    //         <Drawer.Item label="First Item" />
-    //         <Drawer.Item label="Second Item" />
-    //       </Drawer.Section>
-    //     </>
-    //   )}
-    // >
-    //   <RNDrawer.Screen
-    //     name="HomeContent"
-    //     component={HomeContent}
-    //     options={{ title: "Inicio" }}
-    //   />
-    // </RNDrawer.Navigator>
-    <HomeContent />
+    </>
   );
 }
 
@@ -200,7 +206,7 @@ const styles = StyleSheet.create({
     position: "relative",
   },
   scrollContainer: {
-    padding: 16,
+    // padding: 16,
     paddingBottom: 100,
     gap: 16,
   },

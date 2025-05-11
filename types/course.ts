@@ -2,7 +2,7 @@ import CourseDetails from "./courseDetails";
 
 class Course {
   constructor(
-    public courseId: number,
+    public courseId: string,
     public numberOfStudens: number,
     public courseDetails: CourseDetails
   ) {}

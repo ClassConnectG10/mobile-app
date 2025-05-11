@@ -1,5 +1,6 @@
 import axios, { AxiosInstance } from "axios";
 import { getAuth } from "firebase/auth";
+import { SearchOption } from "@/types/searchOption";
 
 const BASE_URL = process.env.EXPO_PUBLIC_MIDDLEEND_BASE_URL;
 
@@ -84,18 +85,18 @@ export const createCreateCourseRequest = () => {
 
 export const createGetSearchedCoursesRequest = (
   searchQuery: string,
-  onlyOwnCourses: boolean
+  searchOption: SearchOption
 ) => {
   return createRequest({
     uri: `courses`,
     params: {
       search: searchQuery,
-      own: onlyOwnCourses.toString(),
+      searchOption: searchOption,
     },
   });
 };
 
-export const createGetCourseRequest = (courseId: number) => {
+export const createGetCourseRequest = (courseId: string) => {
   return createRequest({
     uri: `courses/${courseId}`,
   });

@@ -24,6 +24,7 @@ import { getSearchedCourses } from "@/services/courseManagement";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import CourseCard from "@/components/CourseCard";
 import { useRequiredCoursesContext } from "@/utils/storage/requiredCoursesContext";
+import { SearchOption } from "@/types/searchOption";
 
 export default function SearchCoursesPage() {
   const router = useRouter();
@@ -45,7 +46,10 @@ export default function SearchCoursesPage() {
 
   const fetchCourses = async () => {
     try {
-      const coursesData = await getSearchedCourses(courseSearchQuery, false);
+      const coursesData = await getSearchedCourses(
+        courseSearchQuery,
+        SearchOption.ALL
+      );
       setCourses(coursesData);
     } catch (error) {
       setErrorMessage(`Error al buscar cursos: ${error}`);

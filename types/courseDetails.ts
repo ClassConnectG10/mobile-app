@@ -8,7 +8,7 @@ class CourseDetails {
     public level: string,
     public modality: string,
     public category: string,
-    public dependencies: number[] = []
+    public dependencies: string[] = []
   ) {}
 }
 

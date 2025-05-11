@@ -24,7 +24,7 @@ export default function CourseIncriptionDetails() {
 
   async function fetchCourse() {
     try {
-      const course = await getCourse(Number(courseId));
+      const course = await getCourse(courseId as string);
       setCourse(course);
       setDependencies([]);
 
@@ -42,12 +42,12 @@ export default function CourseIncriptionDetails() {
 
   useEffect(() => {
     fetchCourse();
-  });
+  }, [courseId]);
 
   const [course, setCourse] = useState<Course | null>(null);
 
   return (
-    <>
+    <View>
       <Appbar.Header>
         <Appbar.BackAction onPress={() => router.back()} />
         <Appbar.Content title="Detalles de inscripción" />
@@ -151,6 +151,6 @@ export default function CourseIncriptionDetails() {
         message={errorMessage}
         onDismiss={() => setErrorMessage("")}
       />
-    </>
+    </View>
   );
 }

@@ -23,6 +23,7 @@ import Course from "@/types/course";
 import { getSearchedCourses } from "@/services/courseManagement";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import CourseCard from "@/components/CourseCard";
+import { SearchOption } from "@/types/searchOption";
 
 export default function SearchCoursesPage() {
   const router = useRouter();
@@ -42,10 +43,9 @@ export default function SearchCoursesPage() {
 
   const fetchCourses = async () => {
     try {
-      const searchOwnCourses = ownCourses === "own";
       const coursesData = await getSearchedCourses(
         courseSearchQuery,
-        searchOwnCourses
+        SearchOption.NOT_RELATED
       );
       setCourses(coursesData);
     } catch (error) {

@@ -24,12 +24,7 @@ export const categories = [
   "Tecnología", // 15
 ] as const;
 
-export const modalities = [
-  "Presencial",
-  "Virtual",
-  "Híbrido",
-  "Asincrónico",
-] as const;
+export const modalities = ["PRESENCIAL", "VIRTUAL", "HIBRIDO"] as const;
 
 export const defaultLevel = levels[0];
 export const defaultCategory = categories[0];

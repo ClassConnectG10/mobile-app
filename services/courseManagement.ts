@@ -7,26 +7,30 @@ import Course from "@/types/course";
 import CourseDetails from "@/types/courseDetails";
 import { handleError } from "./errorHandling";
 import { courseDetailsSchema } from "@/validations/courses";
+import { SearchOption } from "@/types/searchOption";
+
+function formatDate(date: Date): string {
+  return date.toISOString().split("T")[0];
+}
 
 export async function createCourse(courseDetails: CourseDetails) {
   try {
-    console.log("courseDetails: ", courseDetails);
     courseDetailsSchema.parse(courseDetails);
-    const request = await createCreateCourseRequest();
-    const response = await request.post("", {
+
+    const body = {
       title: courseDetails.title,
       description: courseDetails.description,
       capacity: courseDetails.maxNumberOfStudents,
-      start_date: courseDetails.startDate,
-      end_date: courseDetails.endDate,
+      start_date: formatDate(courseDetails.startDate),
+      end_date: formatDate(courseDetails.endDate),
       level: courseDetails.level,
-      modality: courseDetails.modality,
+      modalidad: courseDetails.modality,
       category: courseDetails.category,
-      eligibility_criteria: {
-        minimum_level: 0,
-        minimum_score: 0,
-      },
-    });
+    };
+    console.log("body: ", body);
+
+    const request = await createCreateCourseRequest();
+    const response = await request.post("", body);
 
     console.log("response: ", response);
   } catch (error) {
@@ -34,11 +38,13 @@ export async function createCourse(courseDetails: CourseDetails) {
   }
 }
 
-export async function getCourse(courseId: number): Promise<Course> {
+export async function getCourse(courseId: string): Promise<Course> {
   try {
+    throw new Error("No se puede obtener el curso");
     const request = await createGetCourseRequest(courseId);
     const response = await request.get("");
-    const courseData = response.data;
+    const courseData = response.data.data;
+    console.log("courseData: ", courseData);
     const course = new Course(
       courseData.id,
       courseData.numberOfStudents,
@@ -49,7 +55,7 @@ export async function getCourse(courseId: number): Promise<Course> {
         new Date(courseData.start_date),
         new Date(courseData.end_date),
         courseData.level,
-        courseData.modality,
+        courseData.modalidad,
         courseData.category
       )
     );
@@ -61,11 +67,11 @@ export async function getCourse(courseId: number): Promise<Course> {
 
 export async function getSearchedCourses(
   searchQuery: string,
-  onlyOwnCourses: boolean
+  searchOption: SearchOption
 ): Promise<Course[]> {
   const request = await createGetSearchedCoursesRequest(
     searchQuery,
-    onlyOwnCourses
+    searchOption
   );
   const response = await request.get("");
   const coursesData = response.data.data;
