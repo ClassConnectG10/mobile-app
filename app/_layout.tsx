@@ -2,6 +2,7 @@ import { Stack } from "expo-router";
 import { StatusBar } from "react-native";
 import { MD3LightTheme, PaperProvider } from "react-native-paper";
 import { UserProvider } from "@/utils/storage/userContext";
+import { RequiredCoursesProvider } from "@/utils/storage/requiredCoursesContext";
 
 const DefaultTheme = {
   ...MD3LightTheme,
@@ -29,8 +30,10 @@ export default function RootLayout() {
   return (
     <PaperProvider theme={DefaultTheme}>
       <UserProvider>
+        {/* <RequiredCoursesProvider> */}
         <StatusBar barStyle="dark-content" translucent={true} />
         <Stack screenOptions={{ headerShown: false }}></Stack>
+        {/* </RequiredCoursesProvider> */}
       </UserProvider>
     </PaperProvider>
   );

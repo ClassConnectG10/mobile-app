@@ -3,6 +3,7 @@ import {
   Appbar,
   Button,
   Divider,
+  Drawer,
   FAB,
   IconButton,
   Modal,
@@ -17,6 +18,7 @@ import { getSearchedCourses } from "@/services/courseManagement";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import axios from "axios";
 import { useUserContext } from "@/utils/storage/userContext";
+import SideBar from "@/components/SideBar";
 
 export default function HomePage() {
   const theme = useTheme();
@@ -25,6 +27,9 @@ export default function HomePage() {
   const [newCourseModalVisible, setNewCourseModalVisible] = useState(false);
   const [courseSearchQuery, setCourseSearchQuery] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+
+  const [sideBarVisible, setSideBarVisible] = useState(false);
+
   const userContextHook = useUserContext();
   if (!userContextHook.user) {
     router.replace("/login");
@@ -51,7 +56,10 @@ export default function HomePage() {
     <View style={styles.container}>
       {/* Top bar */}
       <Appbar.Header>
-        <Appbar.Action icon="menu" onPress={() => {}} />
+        <Appbar.Action
+          icon="menu"
+          onPress={() => setSideBarVisible(!sideBarVisible)}
+        />
         <Appbar.Content title="Class Connect" />
         <Appbar.Action
           icon="account"
@@ -59,24 +67,26 @@ export default function HomePage() {
         />
       </Appbar.Header>
 
+      {/* Drawer menu */}
+
+      <SideBar visible={sideBarVisible} />
+
       {/* Main scrollable content */}
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
-        {courses.map((course, index) => (
-          <FlatList
-            data={courses}
-            keyExtractor={(item) => item.courseId.toString()}
-            renderItem={({ item }) => (
-              <CourseCard
-                name={item.courseDetails.title}
-                description={item.courseDetails.description}
-                category={item.courseDetails.category}
-                onPress={() => {}}
-              />
-            )}
-            ItemSeparatorComponent={() => <View style={{ height: 16 }} />}
+
+      <FlatList
+        style={styles.scrollContainer}
+        data={courses}
+        keyExtractor={(item) => item.courseId.toString()}
+        renderItem={({ item }) => (
+          <CourseCard
+            name={item.courseDetails.title}
+            description={item.courseDetails.description}
+            category={item.courseDetails.category}
+            onPress={() => {}}
           />
-        ))}
-      </ScrollView>
+        )}
+        ItemSeparatorComponent={() => <View style={{ height: 16 }} />}
+      />
 
       {/* Floating action button */}
       <FAB

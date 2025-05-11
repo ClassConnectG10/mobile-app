@@ -18,12 +18,17 @@ import { useCourseDetails } from "@/hooks/useCourseDetails";
 import { globalStyles } from "@/styles/globalStyles";
 import { DatePickerButton } from "@/components/DatePickerButton";
 import { createCourse } from "@/services/courseManagement";
+import { useRequiredCoursesContext } from "@/utils/storage/requiredCoursesContext";
+import CourseCard from "@/components/CourseCard";
 
 export default function CreateCoursePage() {
   const theme = useTheme();
   const router = useRouter();
   const courseDetailsHook = useCourseDetails();
   const courseDetails = courseDetailsHook.courseDetails;
+
+  const requiredCoursesContext = useRequiredCoursesContext();
+  const { requiredCourses } = requiredCoursesContext;
 
   const decreaseNumStudents = () => {
     if (courseDetails.maxNumberOfStudents > 1) {
@@ -46,6 +51,10 @@ export default function CreateCoursePage() {
     } catch (error) {
       console.error("Error al crear el curso:", error);
     }
+  };
+
+  const handleRequiredCoursePress = () => {
+    router.push("/home"); // TODO redireccionar a la página del curso requerido
   };
 
   return (
@@ -126,6 +135,40 @@ export default function CreateCoursePage() {
             items={modalities}
             setValue={courseDetailsHook.setModality}
           />
+          <View style={{ gap: 10 }}>
+            <Text variant="titleMedium">Cursos requeridos</Text>
+            {requiredCourses.map((course) => (
+              <View
+                key={course.courseId}
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  gap: 10,
+                }}
+              >
+                <CourseCard
+                  name={course.courseDetails.title}
+                  category={course.courseDetails.category}
+                  onPress={handleRequiredCoursePress}
+                />
+                <IconButton
+                  icon="delete"
+                  mode="contained"
+                  onPress={() => {
+                    requiredCoursesContext.deleteRequiredCourse(course);
+                  }}
+                />
+              </View>
+            ))}
+            <Button
+              onPress={() => router.push("/courses/create/searchRequired")}
+              mode="outlined"
+              icon="plus"
+            >
+              Agregar curso requerido
+            </Button>
+          </View>
           <Button onPress={handleCreateCourse} mode="contained">
             Crear curso
           </Button>
