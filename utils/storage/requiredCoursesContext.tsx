@@ -8,9 +8,15 @@ interface requiredCoursesContext {
   deleteRequiredCourse: (course: Course) => void;
 }
 
-const requiredCoursesContext = createContext<requiredCoursesContext | null>(
-  null
-);
+const defaultContext: requiredCoursesContext = {
+  requiredCourses: [],
+  addRequiredCourse: () => { },
+  setRequiredCourses: () => { },
+  deleteRequiredCourse: () => { },
+};
+
+const RequiredCoursesContext = createContext<requiredCoursesContext>(defaultContext);
+
 export const RequiredCoursesProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
@@ -35,7 +41,7 @@ export const RequiredCoursesProvider: React.FC<{
   };
 
   return (
-    <requiredCoursesContext.Provider
+    <RequiredCoursesContext.Provider
       value={{
         requiredCourses,
         addRequiredCourse,
@@ -44,16 +50,10 @@ export const RequiredCoursesProvider: React.FC<{
       }}
     >
       {children}
-    </requiredCoursesContext.Provider>
+    </RequiredCoursesContext.Provider>
   );
 };
 
 export const useRequiredCoursesContext = (): requiredCoursesContext => {
-  const context = useContext(requiredCoursesContext);
-  if (!context) {
-    throw new Error(
-      "useRequiredCoursesContext must be used within a RequiredCoursesProvider"
-    );
-  }
-  return context;
+  return useContext(RequiredCoursesContext);
 };

@@ -9,8 +9,6 @@ import { useUserContext } from "@/utils/storage/userContext";
 import { View, Image, ScrollView } from "react-native";
 import { ZodError } from "zod";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
-import UserInformation from "@/types/userInformation";
-import { getAuth } from "firebase/auth";
 
 export default function LoginPage() {
   const theme = useTheme();

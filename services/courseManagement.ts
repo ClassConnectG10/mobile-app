@@ -27,6 +27,8 @@ export async function createCourse(courseDetails: CourseDetails) {
         minimum_score: 0,
       },
     });
+
+    console.log("response: ", response);
   } catch (error) {
     throw handleError(error, "crear el curso");
   }

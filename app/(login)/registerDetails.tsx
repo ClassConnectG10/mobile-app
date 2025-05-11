@@ -4,13 +4,11 @@ import { useState } from "react";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import { registerUser } from "@/services/userManagement";
 import { globalStyles } from "@/styles/globalStyles";
-import { userDetailsSchema } from "@/validations/users";
 import { useUserContext } from "@/utils/storage/userContext";
 import { getAuth } from "firebase/auth";
 import { useNavigation, CommonActions } from "@react-navigation/native";
 import { countries, defaultCountry } from "@/utils/constants/countries";
 import OptionPicker from "@/components/OptionPicker";
-import { ZodError } from "zod";
 
 export default function RegisterDetailsPage() {
   const theme = useTheme();

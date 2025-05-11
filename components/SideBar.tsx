@@ -1,6 +1,4 @@
 import { useRouter } from "expo-router";
-import { useState } from "react";
-import { ScrollView } from "react-native";
 import { Drawer } from "react-native-paper";
 import { DrawerContentScrollView } from "@react-navigation/drawer";
 

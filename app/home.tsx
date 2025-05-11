@@ -4,16 +4,13 @@ import {
   Appbar,
   Button,
   Divider,
-  Drawer,
   FAB,
   IconButton,
   Modal,
+  Searchbar,
   TextInput,
-  useTheme,
 } from "react-native-paper";
 import { router } from "expo-router";
-import { createDrawerNavigator } from "@react-navigation/drawer";
-import { NavigationContainer } from "@react-navigation/native";
 import CourseCard from "@/components/CourseCard";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import { useEffect, useState } from "react";
@@ -23,10 +20,8 @@ import { useUserContext } from "@/utils/storage/userContext";
 import axios from "axios";
 import SideBar from "@/components/SideBar";
 
-const RNDrawer = createDrawerNavigator();
 
 function HomeContent() {
-  const theme = useTheme();
   const [courseCode, setCourseCode] = useState("");
   const [courses, setCourses] = useState<Course[]>([]);
   const [newCourseModalVisible, setNewCourseModalVisible] = useState(false);
@@ -36,13 +31,6 @@ function HomeContent() {
   const [sideBarVisible, setSideBarVisible] = useState(false);
 
   const userContextHook = useUserContext();
-  if (!userContextHook.user) {
-    router.replace("/login");
-    return null;
-  }
-
-  axios.defaults.headers.common["X-Caller-Id"] =
-    userContextHook.user.id.toString();
 
   useEffect(() => {
     const fetchCourses = async () => {
@@ -55,7 +43,18 @@ function HomeContent() {
     };
 
     fetchCourses();
-  }, []);
+  }, [courseSearchQuery]);
+
+  if (!userContextHook.user) {
+    router.replace("/login");
+    return null;
+  }
+
+
+  axios.defaults.headers.common["X-Caller-Id"] =
+    userContextHook.user.id.toString();
+
+
 
   return (
     <View style={styles.container}>
@@ -76,6 +75,15 @@ function HomeContent() {
 
       <SideBar visible={sideBarVisible} />
 
+      {/* Searchbar */}
+
+      <Searchbar
+        placeholder="Buscar cursos"
+        onChangeText={setCourseSearchQuery}
+        value={courseSearchQuery}
+
+      />
+
       {/* Main scrollable content */}
       <FlatList
         style={styles.scrollContainer}
@@ -86,7 +94,7 @@ function HomeContent() {
             name={item.courseDetails.title}
             description={item.courseDetails.description}
             category={item.courseDetails.category}
-            onPress={() => {}}
+            onPress={() => { }}
           />
         )}
         ItemSeparatorComponent={() => <View style={{ height: 16 }} />}
@@ -123,7 +131,7 @@ function HomeContent() {
             placeholder="Ingrese el código del curso"
             onChangeText={setCourseCode}
           />
-          <IconButton icon="check" mode="contained" onPress={() => {}} />
+          <IconButton icon="check" mode="contained" onPress={() => { }} />
         </View>
         <Divider />
         <Button

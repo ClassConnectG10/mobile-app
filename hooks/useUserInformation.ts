@@ -11,11 +11,16 @@ export interface UserHook {
 }
 
 export function useUserInformation(
-  initialUserInformation: UserInformation
 ): UserHook {
-  const [userInformation, setUserInformation] = useState<UserInformation>({
-    ...initialUserInformation,
-  });
+  
+  const defaultUserInformation: UserInformation = {
+    firstName: "",
+    lastName: "",
+    email: "",
+    country: "",
+  };
+  
+  const [userInformation, setUserInformation] = useState<UserInformation>(defaultUserInformation);
 
   const setFirstName = (firstName: string) => {
     setUserInformation((prev) => ({ ...prev, firstName }));

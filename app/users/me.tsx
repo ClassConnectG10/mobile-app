@@ -21,16 +21,19 @@ export default function UserProfilePage() {
   const [errorMessage, setErrorMessage] = useState("");
 
   const userContextHook = useUserContext();
+  const userInformationHook = useUserInformation();
+
   if (!userContextHook.user) {
     router.replace("/login");
     return;
   }
 
   const userContext = userContextHook.user;
-  const userInformationHook = useUserInformation({
+  const userInformation = userInformationHook.userInformation;
+
+  userInformationHook.setUserInformation({
     ...userContext.userInformation,
   });
-  const userInformation = userInformationHook.userInformation;
 
   const handleCancelEdit = () => {
     userInformationHook.setUserInformation({ ...userContext.userInformation });

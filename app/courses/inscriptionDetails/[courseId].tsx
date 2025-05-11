@@ -42,7 +42,7 @@ export default function CourseIncriptionDetails() {
 
   useEffect(() => {
     fetchCourse();
-  }, []);
+  });
 
   const [course, setCourse] = useState<Course | null>(null);
 
