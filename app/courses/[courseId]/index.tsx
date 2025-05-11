@@ -42,7 +42,7 @@ export default function CoursePage() {
   };
 
   useEffect(() => {
-    if (!courseContext.course) {
+    if (!courseContext.course || courseContext.course.courseId !== courseId) {
       fetchCourse();
     } else {
       setIsLoading(false);

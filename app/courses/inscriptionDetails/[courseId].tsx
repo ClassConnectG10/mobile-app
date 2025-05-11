@@ -15,12 +15,15 @@ import { getCourse } from "@/services/courseManagement";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import { TextField } from "@/components/TextField";
 import CourseCard from "@/components/CourseCard";
+import { useCourseContext } from "@/utils/storage/courseContext";
 export default function CourseIncriptionDetails() {
   const router = useRouter();
   const theme = useTheme();
   const { courseId } = useLocalSearchParams();
   const [errorMessage, setErrorMessage] = useState("");
   const [dependencies, setDependencies] = useState<Course[]>([]);
+
+  const courseContext = useCourseContext();
 
   async function fetchCourse() {
     try {
@@ -41,7 +44,9 @@ export default function CourseIncriptionDetails() {
   }
 
   useEffect(() => {
-    fetchCourse();
+    if (!courseContext.course || courseContext.course.courseId !== courseId) {
+      fetchCourse();
+    }
   }, [courseId]);
 
   const [course, setCourse] = useState<Course | null>(null);

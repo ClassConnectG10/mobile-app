@@ -96,7 +96,7 @@ export const createGetSearchedCoursesRequest = (
   });
 };
 
-export const createGetCourseRequest = (courseId: string) => {
+export const createCourseRequest = (courseId: string) => {
   return createRequest({
     uri: `courses/${courseId}`,
   });

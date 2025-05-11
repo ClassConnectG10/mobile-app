@@ -6,6 +6,7 @@ import {
   Text,
   TextInput,
   useTheme,
+  Dialog,
 } from "react-native-paper";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import OptionPicker from "@/components/OptionPicker";
@@ -22,7 +23,11 @@ import CourseCard from "@/components/CourseCard";
 import { useCourseContext } from "@/utils/storage/courseContext";
 import { useEffect, useState } from "react";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
-import { editCourse, getCourse } from "@/services/courseManagement";
+import {
+  deleteCourse,
+  editCourse,
+  getCourse,
+} from "@/services/courseManagement";
 import { ToggleableNumberInput } from "@/components/ToggleableNumberInput";
 import { ToggleableTextInput } from "@/components/ToggleableTextInput";
 
@@ -36,6 +41,7 @@ export default function CreateCoursePage() {
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [showConfirmationDelete, setShowConfirmationDelete] = useState(false);
 
   const courseContext = useCourseContext();
   const courseDetailsHook = useCourseDetails();
@@ -73,6 +79,22 @@ export default function CreateCoursePage() {
     }
   };
 
+  const handleDeleteCourse = async () => {
+    setIsLoading(true);
+    if (!courseContext.course) return;
+
+    try {
+      await deleteCourse(courseContext.course.courseId);
+      courseContext.setCourse(null);
+      router.push("/home");
+    } catch (error) {
+      setErrorMessage((error as Error).message);
+    } finally {
+      setIsLoading(false);
+      setShowConfirmationDelete(false);
+    }
+  };
+
   async function fetchCourse() {
     try {
       setIsLoading(true);
@@ -90,7 +112,7 @@ export default function CreateCoursePage() {
   }
 
   useEffect(() => {
-    if (!courseContext.course) {
+    if (!courseContext.course || courseContext.course.courseId !== courseId) {
       fetchCourse();
     } else {
       courseDetailsHook.setCourseDetails({
@@ -231,7 +253,37 @@ export default function CreateCoursePage() {
               )}
             </View>
           )}
+
+          {isEditing && (
+            <Button
+              onPress={() => setShowConfirmationDelete(true)}
+              mode="contained"
+              icon="delete"
+            >
+              Eliminar curso
+            </Button>
+          )}
         </ScrollView>
+
+        {/* Confirmation Dialog */}
+
+        <Dialog
+          visible={showConfirmationDelete}
+          onDismiss={() => setShowConfirmationDelete(false)}
+        >
+          <Dialog.Title>Atención</Dialog.Title>
+          <Dialog.Content>
+            <Text variant="bodyMedium">
+              El curso '{courseDetails.title}' será eliminado.
+            </Text>
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button onPress={() => setShowConfirmationDelete(false)}>
+              Cancelar
+            </Button>
+            <Button onPress={handleDeleteCourse}>Eliminar</Button>
+          </Dialog.Actions>
+        </Dialog>
         <ErrorMessageSnackbar
           message={errorMessage}
           onDismiss={() => setErrorMessage("")}

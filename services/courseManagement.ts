@@ -1,6 +1,6 @@
 import {
   createCreateCourseRequest,
-  createGetCourseRequest as createCourseRequest,
+  createCourseRequest as createCourseRequest,
   createGetSearchedCoursesRequest,
 } from "@/api/axios";
 import Course from "@/types/course";
@@ -155,5 +155,14 @@ export async function editCourse(
     return updatedCourse;
   } catch (error) {
     throw handleError(error, "editar el curso");
+  }
+}
+
+export async function deleteCourse(courseId: string): Promise<void> {
+  try {
+    const request = await createCourseRequest(courseId);
+    await request.delete("");
+  } catch (error) {
+    throw handleError(error, "eliminar el curso");
   }
 }
