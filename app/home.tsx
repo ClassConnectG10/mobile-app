@@ -1,4 +1,4 @@
-import { ScrollView, StyleSheet, View } from "react-native";
+import { FlatList, ScrollView, StyleSheet, View } from "react-native";
 import {
   Appbar,
   Button,
@@ -11,21 +11,33 @@ import {
 } from "react-native-paper";
 import { router } from "expo-router";
 import CourseCard from "@/components/CourseCard";
-import { getCoursesByUser } from "@/services/courses";
 import { useEffect, useState } from "react";
-import CourseInfo from "@/types/courseInfo";
-import { set } from "zod";
+import Course from "@/types/course";
+import { getSearchedCourses } from "@/services/courseManagement";
+import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
+import axios from "axios";
+import { useUserContext } from "@/utils/storage/userContext";
 
 export default function HomePage() {
   const theme = useTheme();
   const [courseCode, setCourseCode] = useState("");
-  const [courses, setCourses] = useState<CourseInfo[]>([]);
+  const [courses, setCourses] = useState<Course[]>([]);
   const [newCourseModalVisible, setNewCourseModalVisible] = useState(false);
+  const [courseSearchQuery, setCourseSearchQuery] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const userContextHook = useUserContext();
+  if (!userContextHook.user) {
+    router.replace("/login");
+    return;
+  }
+
+  axios.defaults.headers.common["X-Caller-ID"] =
+    userContextHook.user.id.toString();
 
   useEffect(() => {
     const fetchCourses = async () => {
       try {
-        const coursesData = await getCoursesByUser();
+        const coursesData = await getSearchedCourses(courseSearchQuery, true);
         setCourses(coursesData);
       } catch (error) {
         console.error("Error fetching courses:", error);
@@ -43,19 +55,25 @@ export default function HomePage() {
         <Appbar.Content title="Class Connect" />
         <Appbar.Action
           icon="account"
-          onPress={() => router.push("/userProfile")}
+          onPress={() => router.push("/users/me")}
         />
       </Appbar.Header>
 
       {/* Main scrollable content */}
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         {courses.map((course, index) => (
-          <CourseCard
-            key={index}
-            name={course.name}
-            description={course.description}
-            code={course.code}
-            category={course.category}
+          <FlatList
+            data={courses}
+            keyExtractor={(item) => item.courseId.toString()}
+            renderItem={({ item }) => (
+              <CourseCard
+                name={item.courseDetails.title}
+                description={item.courseDetails.description}
+                category={item.courseDetails.category}
+                onPress={() => {}}
+              />
+            )}
+            ItemSeparatorComponent={() => <View style={{ height: 16 }} />}
           />
         ))}
       </ScrollView>
@@ -81,7 +99,6 @@ export default function HomePage() {
           style={{
             flexDirection: "row",
             alignItems: "center",
-            // justifyContent: "space-between",
             gap: 16,
           }}
         >
@@ -100,7 +117,7 @@ export default function HomePage() {
           icon="magnify"
           onPress={() => {
             setNewCourseModalVisible(false);
-            router.push("/searchCourses");
+            router.push("/courses/search");
           }}
         >
           Buscar un curso existente
@@ -111,12 +128,17 @@ export default function HomePage() {
           icon="plus"
           onPress={() => {
             setNewCourseModalVisible(false);
-            router.push("/createCourse");
+            router.push("/courses/create");
           }}
         >
           Crear un nuevo curso
         </Button>
       </Modal>
+
+      <ErrorMessageSnackbar
+        message={errorMessage}
+        onDismiss={() => setErrorMessage("")}
+      />
     </View>
   );
 }

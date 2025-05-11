@@ -1,17 +1,16 @@
-import { View, ScrollView } from "react-native";
 import { Avatar, Appbar, Button } from "react-native-paper";
+import { countries } from "@/utils/constants/countries";
+import { editUserProfile } from "@/services/userManagement";
+import { getAuth, signOut } from "firebase/auth";
+import { globalStyles } from "@/styles/globalStyles";
+import { ToggleableTextInput } from "@/components/ToggleableTextInput";
 import { useRouter } from "expo-router";
 import { useState } from "react";
-import { globalStyles } from "@/styles/globalStyles";
 import { useUserContext } from "@/utils/storage/userContext";
-import OptionPicker from "@/components/OptionPicker";
-import { countries } from "@/utils/constants/countries";
 import { useUserInformation } from "@/hooks/useUserInformation";
-import UserInformation from "@/types/userInformation";
-import { ToggleableTextInput } from "@/components/ToggleableTextInput";
-import { getAuth, signOut } from "firebase/auth";
+import { View, ScrollView } from "react-native";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
-import { editUserProfile } from "@/services/userManagement";
+import OptionPicker from "@/components/OptionPicker";
 
 export default function UserProfilePage() {
   const router = useRouter();
@@ -28,7 +27,6 @@ export default function UserProfilePage() {
   }
 
   const userContext = userContextHook.user;
-
   const userInformationHook = useUserInformation({
     ...userContext.userInformation,
   });
@@ -43,14 +41,6 @@ export default function UserProfilePage() {
     try {
       setButtonDisabled(true);
 
-      const auth = getAuth();
-      const accessToken = await auth.currentUser?.getIdToken();
-
-      if (!accessToken) {
-        setErrorMessage("Error al obtener el token de acceso");
-        return;
-      }
-
       const newUser = {
         id: userContext.id,
         userInformation: {
@@ -58,7 +48,7 @@ export default function UserProfilePage() {
         },
       };
 
-      await editUserProfile(accessToken, newUser);
+      await editUserProfile(newUser);
       userContextHook.setUser(newUser);
 
       setIsEditing(false);

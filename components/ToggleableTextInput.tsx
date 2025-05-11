@@ -27,6 +27,7 @@ export const ToggleableTextInput: React.FC<ToggleableTextInputProps> = ({
           <TextInput.Icon icon="close" onPress={() => onChange("")} />
         ) : undefined
       }
+      multiline={true}
     ></TextInput>
   );
 };

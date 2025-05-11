@@ -15,7 +15,7 @@ const DefaultTheme = {
     onSecondary: "#FFFFFF",
     secondaryContainer: "#D1C4E9",
     onSecondaryContainer: "#311B92",
-    background: "#F3E5F5",
+    background: "#ECECEC",
     onBackground: "#1A1A1A",
     surface: "#FFFFFF",
     onSurface: "#1A1A1A",

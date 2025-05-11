@@ -17,6 +17,7 @@ import {
 import { useCourseDetails } from "@/hooks/useCourseDetails";
 import { globalStyles } from "@/styles/globalStyles";
 import { DatePickerButton } from "@/components/DatePickerButton";
+import { createCourse } from "@/services/courseManagement";
 
 export default function CreateCoursePage() {
   const theme = useTheme();
@@ -38,6 +39,15 @@ export default function CreateCoursePage() {
     );
   };
 
+  const handleCreateCourse = async () => {
+    try {
+      await createCourse(courseDetails);
+      router.push("/home"); // TODO redireccionar a la página del curso creado
+    } catch (error) {
+      console.error("Error al crear el curso:", error);
+    }
+  };
+
   return (
     <>
       <Appbar.Header>
@@ -51,8 +61,14 @@ export default function CreateCoursePage() {
         ]}
       >
         <ScrollView contentContainerStyle={globalStyles.courseDetailsContainer}>
-          <TextInput placeholder="Nombre del curso" />
-          <TextInput placeholder="Descripción del curso" />
+          <TextInput
+            placeholder="Nombre del curso"
+            onChangeText={courseDetailsHook.setName}
+          />
+          <TextInput
+            placeholder="Descripción del curso"
+            onChangeText={courseDetailsHook.setDescription}
+          />
 
           <Text>Cantidad máxima de alumnos</Text>
           <View style={globalStyles.numStudentsContainer}>
@@ -110,7 +126,9 @@ export default function CreateCoursePage() {
             items={modalities}
             setValue={courseDetailsHook.setModality}
           />
-          <Button mode="contained">Crear curso</Button>
+          <Button onPress={handleCreateCourse} mode="contained">
+            Crear curso
+          </Button>
         </ScrollView>
       </View>
     </>

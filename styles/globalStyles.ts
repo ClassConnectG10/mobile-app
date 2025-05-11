@@ -3,7 +3,7 @@ import { StyleSheet } from "react-native";
 export const globalStyles = StyleSheet.create({
   mainContainer: {
     flex: 1,
-    paddingTop: 40,
+    paddingTop: 20,
     paddingHorizontal: 20,
   },
   container: {

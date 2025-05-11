@@ -28,15 +28,8 @@ export default function LoginPage() {
       loginSchema.parse({ email, password });
 
       const uid = await signIn(email, password);
-      const auth = getAuth();
-      const accessToken = await auth.currentUser?.getIdToken();
+      const userInfo = await loginUser(uid);
 
-      if (!accessToken) {
-        setErrorMessage("Error al iniciar sesión: token de acceso no válido");
-        return;
-      }
-
-      const userInfo = await loginUser(accessToken, uid);
       setUser(userInfo);
 
       router.replace("/home");

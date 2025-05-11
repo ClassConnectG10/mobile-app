@@ -1,4 +1,9 @@
-export const levels = ["Primaria", "Secundaria", "Universitario", "Postgrado"];
+export const levels = [
+  "Primaria",
+  "Secundaria",
+  "Universitario",
+  "Postgrado",
+] as const;
 
 export const categories = [
   "Arte", // 0
@@ -17,9 +22,14 @@ export const categories = [
   "Química", // 13
   "Robótica", // 14
   "Tecnología", // 15
-];
+] as const;
 
-export const modalities = ["Presencial", "Virtual", "Híbrido", "Asincrónico"];
+export const modalities = [
+  "Presencial",
+  "Virtual",
+  "Híbrido",
+  "Asincrónico",
+] as const;
 
 export const defaultLevel = levels[0];
 export const defaultCategory = categories[0];

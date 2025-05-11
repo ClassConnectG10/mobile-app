@@ -5,7 +5,7 @@ import { ToggleableTextInput } from "./ToggleableTextInput";
 interface OptionPickerProps {
   label: string;
   value: string;
-  items: string[];
+  items: readonly string[];
   enabled?: boolean;
   setValue: (value: string) => void;
 }

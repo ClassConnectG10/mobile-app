@@ -43,7 +43,7 @@ export default function RegisterDetailsPage() {
         email,
         country,
       };
-      const newUserInfo = await registerUser(accessToken, uid, userInfo);
+      const newUserInfo = await registerUser(uid, userInfo);
       setUser(newUserInfo);
       navigation.dispatch(
         CommonActions.reset({

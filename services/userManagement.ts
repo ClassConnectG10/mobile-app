@@ -5,19 +5,8 @@ import {
   createEditUserProfileRequest,
 } from "@/api/axios";
 import { userDetailsSchema, userSchema } from "@/validations/users";
-import { ZodError } from "zod";
 import User from "@/types/user";
-
-function handleError(error: any, action: string): Error {
-  if (error instanceof ZodError) {
-    return new Error(
-      `Error de validacion al ${action}: ${error.errors
-        .map((e) => e.message)
-        .join(", ")}`
-    );
-  }
-  return new Error(`Error al ${action}: ${error}`);
-}
+import { handleError } from "./errorHandling";
 
 /**
  * Registers a new user in the system by sending their information to the server.
@@ -29,13 +18,12 @@ function handleError(error: any, action: string): Error {
  * @throws An error if the registration process fails.
  */
 export async function registerUser(
-  accessToken: string,
   uid: string,
   userInformation: UserInformation
 ) {
   try {
     userDetailsSchema.parse(userInformation);
-    const request = createRegisterUserRequest(accessToken);
+    const request = await createRegisterUserRequest();
     const response = await request.post("", {
       uid: uid,
       role: "user",
@@ -67,13 +55,10 @@ export async function registerUser(
  *          the user's name, surname, email, and country.
  * @throws An error if the login request fails.
  */
-export async function loginUser(
-  accessToken: string,
-  uid: string
-): Promise<User> {
+export async function loginUser(uid: string): Promise<User> {
   try {
-    const request = createLoginUserRequest(accessToken);
-    const response = await request.get(`${uid}`);
+    const request = await createLoginUserRequest(uid);
+    const response = await request.get("");
 
     const userInfo = new UserInformation(
       response.data.data.name,
@@ -101,11 +86,10 @@ export async function loginUser(
  * @returns A `UserInformation` object containing the updated user's details.
  * @throws An error if the edit process fails.
  */
-export async function editUserProfile(accessToken: string, user: User) {
+export async function editUserProfile(user: User) {
   try {
     userSchema.parse(user);
-    const request = createEditUserProfileRequest(accessToken, user.id);
-    console.log(request.getUri());
+    const request = await createEditUserProfileRequest(user.id);
     const response = await request.patch("", {
       name: user.userInformation.firstName,
       surname: user.userInformation.lastName,

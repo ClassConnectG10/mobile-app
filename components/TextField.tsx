@@ -1,0 +1,21 @@
+import { TextInput } from "react-native-paper";
+
+const NUMBER_OF_LINES = 1000000;
+
+interface TextFieldProps {
+  label: string;
+  value: any;
+}
+
+export const TextField: React.FC<TextFieldProps> = ({ label, value }) => {
+  return (
+    <TextInput
+      label={label}
+      placeholder={""}
+      editable={false}
+      value={String(value)}
+      multiline={true}
+      numberOfLines={NUMBER_OF_LINES}
+    ></TextInput>
+  );
+};

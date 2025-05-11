@@ -1,15 +1,8 @@
-import {
-  View,
-  ScrollView,
-  FlatList,
-  StyleSheet,
-  Pressable,
-} from "react-native";
+import { View, FlatList, StyleSheet } from "react-native";
 import {
   Appbar,
   Button,
   Text,
-  TextInput,
   Searchbar,
   Modal,
   Divider,
@@ -23,17 +16,13 @@ import {
   modalities,
   categories,
 } from "@/utils/constants/courseDetails";
-import { useCourseDetails } from "@/hooks/useCourseDetails";
 import { globalStyles } from "@/styles/globalStyles";
 import { DatePickerButton } from "@/components/DatePickerButton";
 import { useState } from "react";
 import Course from "@/types/course";
-import CourseDetails from "@/types/courseDetails";
-import { getSearchedCourses } from "@/services/coursesWithDetails";
+import { getSearchedCourses } from "@/services/courseManagement";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import CourseCard from "@/components/CourseCard";
-import { getAuth } from "firebase/auth";
-import { useUserContext } from "@/utils/storage/userContext";
 
 export default function SearchCoursesPage() {
   const router = useRouter();
@@ -43,8 +32,6 @@ export default function SearchCoursesPage() {
   const [errorMessage, setErrorMessage] = useState("");
   const [searchFiltersModalVisible, setSearchFiltersModalVisible] =
     useState(false);
-  const [joinCourseModalVisible, setJoinCourseModalVisible] = useState(false);
-  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
 
   const [filterStartDate, setFilterStartDate] = useState<Date | null>(null);
   const [filterEndDate, setFilterEndDate] = useState<Date | null>(null);
@@ -52,32 +39,9 @@ export default function SearchCoursesPage() {
   const [filterModality, setFilterModality] = useState<string>("");
   const [filterCategory, setFilterCategory] = useState<string>("");
 
-  const userContextHook = useUserContext();
-  if (!userContextHook.user) {
-    router.replace("/login");
-    return;
-  }
-
-  const userContext = userContextHook.user;
-
   const fetchCourses = async () => {
     try {
-      const auth = getAuth();
-      const accessToken = await auth.currentUser?.getIdToken();
-      const userId = userContext.id;
-      if (!accessToken || !userId) {
-        setErrorMessage(
-          "No se pudo obtener el token de acceso o el ID de usuario."
-        );
-        return;
-      }
-      const onlyOwnCourses = false;
-      const coursesData = await getSearchedCourses(
-        accessToken,
-        userId,
-        courseSearchQuery,
-        onlyOwnCourses
-      );
+      const coursesData = await getSearchedCourses(courseSearchQuery, false);
       setCourses(coursesData);
     } catch (error) {
       setErrorMessage(`Error al buscar cursos: ${error}`);
@@ -85,8 +49,10 @@ export default function SearchCoursesPage() {
   };
 
   const handleSelectCourse = (course: Course) => {
-    setSelectedCourse(course);
-    setJoinCourseModalVisible(true);
+    router.push({
+      pathname: "/courses/inscriptionDetails/[courseId]",
+      params: { courseId: course.courseId.toString() },
+    });
   };
 
   const handleApplyFilters = async () => {
@@ -128,14 +94,12 @@ export default function SearchCoursesPage() {
             data={courses}
             keyExtractor={(item) => item.courseId.toString()}
             renderItem={({ item }) => (
-              <Pressable onPress={() => handleSelectCourse(item)}>
-                <CourseCard
-                  name={item.courseDetails.title}
-                  description={item.courseDetails.description}
-                  category={item.courseDetails.category}
-                  code={item.courseId.toString()}
-                />
-              </Pressable>
+              <CourseCard
+                name={item.courseDetails.title}
+                description={item.courseDetails.description}
+                category={item.courseDetails.category}
+                onPress={() => handleSelectCourse(item)}
+              />
             )}
             ItemSeparatorComponent={() => <View style={{ height: 16 }} />}
           />
@@ -157,7 +121,6 @@ export default function SearchCoursesPage() {
               value={filterStartDate}
               onChange={setFilterStartDate}
             />
-            {/* reset date */}
             <IconButton
               icon="reload"
               mode="contained"
@@ -223,53 +186,6 @@ export default function SearchCoursesPage() {
               Guardar filtros
             </Button>
           </View>
-        </Modal>
-
-        <Modal
-          visible={joinCourseModalVisible}
-          onDismiss={() => {
-            setJoinCourseModalVisible(false);
-          }}
-          contentContainerStyle={styles.modalContainer}
-          style={styles.modalContent}
-        >
-          {selectedCourse && (
-            <View style={{ alignItems: "center" }}>
-              <Text variant="titleLarge">
-                {selectedCourse.courseDetails.title} (ID{" "}
-                {selectedCourse.courseId})
-              </Text>
-              <Text variant="titleSmall" style={{ marginBottom: 16 }}>
-                {selectedCourse.courseDetails.description}
-              </Text>
-              <Text>
-                Cantidad máxima de estudiantes:{" "}
-                {selectedCourse.courseDetails.maxNumberOfStudents}
-              </Text>
-              <Text>
-                Fecha de inicio:{" "}
-                {selectedCourse.courseDetails.startDate.toLocaleDateString()}
-              </Text>
-              <Text>
-                Fecha de fin:{" "}
-                {selectedCourse.courseDetails.endDate.toLocaleDateString()}
-              </Text>
-              <Text>Nivel: {selectedCourse.courseDetails.level}</Text>
-              <Text>Modalidad: {selectedCourse.courseDetails.modality}</Text>
-              <Text>Categoría: {selectedCourse.courseDetails.category}</Text>
-            </View>
-          )}
-          <Divider />
-          <Button
-            mode="contained"
-            icon="notebook-multiple"
-            onPress={() => {
-              setJoinCourseModalVisible(false);
-              // router.push("/createCourse");
-            }}
-          >
-            Unirse al curso
-          </Button>
         </Modal>
 
         <ErrorMessageSnackbar
