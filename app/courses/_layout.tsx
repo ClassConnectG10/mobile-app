@@ -1,10 +1,10 @@
-import { RequiredCoursesProvider } from "@/utils/storage/requiredCoursesContext";
 import { Stack } from "expo-router";
+import { CourseProvider } from "@/utils/storage/courseContext";
 
 export default function CoursesLayout() {
   return (
-    <RequiredCoursesProvider>
+    <CourseProvider>
       <Stack screenOptions={{ headerShown: false }} />
-    </RequiredCoursesProvider>
+    </CourseProvider>
   );
 }

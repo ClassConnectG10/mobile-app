@@ -20,6 +20,7 @@ import { DatePickerButton } from "@/components/DatePickerButton";
 import { createCourse } from "@/services/courseManagement";
 import { useRequiredCoursesContext } from "@/utils/storage/requiredCoursesContext";
 import CourseCard from "@/components/CourseCard";
+import { ToggleableNumberInput } from "@/components/ToggleableNumberInput";
 
 export default function CreateCoursePage() {
   const theme = useTheme();
@@ -29,20 +30,6 @@ export default function CreateCoursePage() {
 
   const requiredCoursesContext = useRequiredCoursesContext();
   const { requiredCourses } = requiredCoursesContext;
-
-  const decreaseNumStudents = () => {
-    if (courseDetails.maxNumberOfStudents > 1) {
-      courseDetailsHook.setNumberOfStudents(
-        courseDetails.maxNumberOfStudents - 1
-      );
-    }
-  };
-
-  const increaseNumStudents = () => {
-    courseDetailsHook.setNumberOfStudents(
-      courseDetails.maxNumberOfStudents + 1
-    );
-  };
 
   const handleCreateCourse = async () => {
     try {
@@ -79,23 +66,12 @@ export default function CreateCoursePage() {
             onChangeText={courseDetailsHook.setDescription}
           />
 
-          <Text>Cantidad máxima de alumnos</Text>
-          <View style={globalStyles.numStudentsContainer}>
-            <IconButton
-              icon="minus"
-              mode="contained"
-              onPress={() => decreaseNumStudents()}
-            />
-
-            <Text variant="titleLarge">
-              {courseDetails.maxNumberOfStudents}
-            </Text>
-            <IconButton
-              icon="plus"
-              mode="contained"
-              onPress={() => increaseNumStudents()}
-            />
-          </View>
+          <ToggleableNumberInput
+            label="Cantidad máxima de alumnos"
+            value={courseDetails.maxNumberOfStudents}
+            onChange={courseDetailsHook.setNumberOfStudents}
+            editable={true}
+          />
 
           <View
             style={{

@@ -8,6 +8,7 @@ import {
 
 export interface CourseDetailsHook {
   courseDetails: CourseDetails;
+  setCourseDetails: (courseDetails: CourseDetails) => void;
   setName: (name: string) => void;
   setDescription: (description: string) => void;
   setNumberOfStudents: (numberOfStudents: number) => void;
@@ -67,6 +68,7 @@ export function useCourseDetails(): CourseDetailsHook {
 
   return {
     courseDetails,
+    setCourseDetails,
     setName,
     setNumberOfStudents,
     setDescription,
