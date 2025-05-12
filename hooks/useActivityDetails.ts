@@ -1,0 +1,46 @@
+import { ActivityDetails } from "@/types/activity";
+import { useState } from "react";
+
+export interface ActivityDetailsHook {
+  activityDetails: ActivityDetails;
+  setActivityDetails: (activityDetails: ActivityDetails) => void;
+  setTitle: (title: string) => void;
+  setDescription: (description: string) => void;
+  setInstruction: (instruction: string) => void;
+  setDueDate: (dueDate: Date) => void;
+}
+
+export function useActivityDetails(): ActivityDetailsHook {
+  const now = new Date();
+  const nowPlusOneYear = new Date();
+  nowPlusOneYear.setFullYear(now.getFullYear() + 1);
+
+  const [activityDetails, setActivityDetails] = useState(
+    new ActivityDetails("", "", "", new Date())
+  );
+
+  const setTitle = (title: string) => {
+    setActivityDetails((prev) => ({ ...prev, title }));
+  };
+
+  const setDescription = (description: string) => {
+    setActivityDetails((prev) => ({ ...prev, description }));
+  };
+
+  const setInstruction = (instruction: string) => {
+    setActivityDetails((prev) => ({ ...prev, instruction }));
+  };
+
+  const setDueDate = (dueDate: Date) => {
+    setActivityDetails((prev) => ({ ...prev, dueDate }));
+  };
+
+  return {
+    activityDetails,
+    setActivityDetails,
+    setTitle,
+    setDescription,
+    setInstruction,
+    setDueDate,
+  };
+}

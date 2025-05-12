@@ -123,7 +123,7 @@ export default function CreateCoursePage() {
 
   const handleRequiredCoursePress = (requiredCourseId: string) => {
     router.push({
-      pathname: "/courses/[courseId]",
+      pathname: "/courses/[courseId]/inscription",
       params: { courseId: requiredCourseId },
     });
   };
@@ -244,7 +244,7 @@ export default function CreateCoursePage() {
 
               {isEditing && (
                 <Button
-                  onPress={() => router.push("/courses/create/searchRequired")}
+                  onPress={() => router.push("/courses/searchRequired")}
                   mode="outlined"
                   icon="plus"
                 >

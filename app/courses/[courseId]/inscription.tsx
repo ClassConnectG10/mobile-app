@@ -11,7 +11,7 @@ import {
   Text,
   Icon,
 } from "react-native-paper";
-import { getCourse } from "@/services/courseManagement";
+import { enrollCourse, getCourse } from "@/services/courseManagement";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import { TextField } from "@/components/TextField";
 import CourseCard from "@/components/CourseCard";
@@ -19,7 +19,9 @@ import { useCourseContext } from "@/utils/storage/courseContext";
 export default function CourseIncriptionDetails() {
   const router = useRouter();
   const theme = useTheme();
-  const { courseId } = useLocalSearchParams();
+  const { courseId: courseIdParam } = useLocalSearchParams();
+  const courseId = courseIdParam as string;
+
   const [errorMessage, setErrorMessage] = useState("");
   const [dependencies, setDependencies] = useState<Course[]>([]);
 
@@ -42,6 +44,18 @@ export default function CourseIncriptionDetails() {
       setCourse(null);
     }
   }
+
+  const handleEnrollCourse = async () => {
+    try {
+      await enrollCourse(courseId as string);
+      router.replace({
+        pathname: "/courses/[courseId]",
+        params: { courseId: courseId },
+      });
+    } catch (error) {
+      setErrorMessage((error as Error).message);
+    }
+  };
 
   useEffect(() => {
     if (!courseContext.course || courseContext.course.courseId !== courseId) {
@@ -123,7 +137,7 @@ export default function CourseIncriptionDetails() {
                       category={dependency.courseDetails.category}
                       onPress={() => {
                         router.push({
-                          pathname: "/courses/inscriptionDetails/[courseId]",
+                          pathname: "/courses/[courseId]",
                           params: { courseId: dependency.courseId },
                         });
                       }}
@@ -144,7 +158,7 @@ export default function CourseIncriptionDetails() {
             mode="contained"
             icon="notebook-multiple"
             onPress={() => {
-              router.push("/courses/create");
+              handleEnrollCourse();
             }}
           >
             Inscribirse al curso

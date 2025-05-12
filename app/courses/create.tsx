@@ -39,7 +39,7 @@ export default function CreateCoursePage() {
       const createdCourse = await createCourse(courseDetails);
 
       courseContext.setCourse(createdCourse);
-      router.push({
+      router.replace({
         pathname: "/courses/[courseId]",
         params: { courseId: createdCourse.courseId },
       });
@@ -149,7 +149,7 @@ export default function CreateCoursePage() {
               </View>
             ))}
             <Button
-              onPress={() => router.push("/courses/create/searchRequired")}
+              onPress={() => router.push("/courses/searchRequired")}
               mode="outlined"
               icon="plus"
             >

@@ -2,12 +2,15 @@ import {
   createCreateCourseRequest,
   createCourseRequest as createCourseRequest,
   createGetSearchedCoursesRequest,
+  createEnrollCourseRequest,
+  createModuleRequest,
 } from "@/api/axios";
 import Course from "@/types/course";
 import CourseDetails from "@/types/courseDetails";
 import { handleError } from "./errorHandling";
 import { courseDetailsSchema } from "@/validations/courses";
 import { SearchOption } from "@/types/searchOption";
+import { SearchFilters } from "@/types/searchFilters";
 
 function formatDate(date: Date): string {
   return date.toISOString().split("T")[0];
@@ -36,6 +39,7 @@ export async function createCourse(
     const courseData = response.data.data;
     const course = new Course(
       courseData.id,
+      courseData.ownerId,
       courseData.numberOfStudents,
       new CourseDetails(
         courseData.title,
@@ -49,6 +53,12 @@ export async function createCourse(
       )
     );
 
+    const moduleRequest = await createModuleRequest(course.courseId);
+    const modulo = await moduleRequest.post("", {
+      title: "Módulo 1",
+      description: "Descripción del módulo 1",
+    });
+    console.log("Módulo creado: ", modulo.data.data);
     return course;
   } catch (error) {
     throw handleError(error, "crear el curso");
@@ -63,6 +73,7 @@ export async function getCourse(courseId: string): Promise<Course> {
     console.log("courseData: ", courseData);
     const course = new Course(
       courseData.id,
+      courseData.ownerId,
       courseData.numberOfStudents,
       new CourseDetails(
         courseData.title,
@@ -82,11 +93,11 @@ export async function getCourse(courseId: string): Promise<Course> {
 }
 
 export async function searchCourses(
-  searchQuery: string,
+  searchFilters: SearchFilters,
   searchOption: SearchOption
 ): Promise<Course[]> {
   const request = await createGetSearchedCoursesRequest(
-    searchQuery,
+    searchFilters,
     searchOption
   );
   const response = await request.get("");
@@ -94,6 +105,7 @@ export async function searchCourses(
   const courses: Course[] = coursesData.map((courseData: any) => {
     return new Course(
       courseData.id,
+      courseData.ownerId,
       courseData.numberOfStudents,
       new CourseDetails(
         courseData.title,
@@ -109,6 +121,15 @@ export async function searchCourses(
   });
 
   return courses;
+}
+
+export async function enrollCourse(courseId: string) {
+  try {
+    const request = await createEnrollCourseRequest(courseId);
+    await request.post("");
+  } catch (error) {
+    throw handleError(error, "inscribirse en el curso");
+  }
 }
 
 export async function editCourse(
@@ -140,6 +161,7 @@ export async function editCourse(
     const courseData = response.data.data;
     const updatedCourse = new Course(
       courseData.id,
+      courseData.ownerId,
       courseData.numberOfStudents,
       new CourseDetails(
         courseData.title,

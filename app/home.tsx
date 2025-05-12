@@ -20,12 +20,13 @@ import { searchCourses } from "@/services/courseManagement";
 import { useUserContext } from "@/utils/storage/userContext";
 import axios from "axios";
 import { SearchOption } from "@/types/searchOption";
+import { SearchFilters } from "@/types/searchFilters";
 
 export default function HomePage() {
   const [courseCode, setCourseCode] = useState("");
   const [courses, setCourses] = useState<Course[]>([]);
   const [newCourseModalVisible, setNewCourseModalVisible] = useState(false);
-  const [courseSearchQuery, setCourseSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [searchOption, setSearchOption] = useState<SearchOption>(
@@ -33,6 +34,16 @@ export default function HomePage() {
   );
 
   const userContextHook = useUserContext();
+
+  useEffect(() => {
+    if (!userContextHook.user) {
+      router.replace("/login");
+    }
+  }, []);
+
+  if (!userContextHook.user) {
+    return null; // Evita renderizar el contenido mientras rediriges
+  }
 
   const handleSearchOptionChange = async (value: SearchOption) => {
     setIsLoading(true);
@@ -47,7 +58,16 @@ export default function HomePage() {
 
   const fetchCourses = async () => {
     try {
-      const coursesData = await searchCourses(courseSearchQuery, searchOption);
+      const searchFilters: SearchFilters = {
+        searchQuery,
+        startDate: null,
+        endDate: null,
+        level: "",
+        modality: "",
+        category: "",
+      };
+
+      const coursesData = await searchCourses(searchFilters, searchOption);
       setCourses(coursesData);
     } catch (error) {
       console.error("Error fetching courses:", error);
@@ -59,11 +79,6 @@ export default function HomePage() {
   useEffect(() => {
     fetchCourses();
   }, [searchOption]);
-
-  if (!userContextHook.user) {
-    router.replace("/login");
-    return null;
-  }
 
   axios.defaults.headers.common["X-Caller-Id"] =
     userContextHook.user.id.toString();
@@ -110,9 +125,9 @@ export default function HomePage() {
 
         <Searchbar
           placeholder="Buscar cursos"
-          onChangeText={setCourseSearchQuery}
+          onChangeText={setSearchQuery}
           onIconPress={fetchCourses}
-          value={courseSearchQuery}
+          value={searchQuery}
         />
 
         {/* Main scrollable content */}
@@ -154,7 +169,7 @@ export default function HomePage() {
         contentContainerStyle={styles.modalContainer}
         style={styles.modalContent}
       >
-        <View
+        {/* <View
           style={{
             flexDirection: "row",
             alignItems: "center",
@@ -170,7 +185,7 @@ export default function HomePage() {
           />
           <IconButton icon="check" mode="contained" onPress={() => {}} />
         </View>
-        <Divider />
+        <Divider /> */}
         <Button
           mode="contained"
           icon="magnify"

@@ -70,7 +70,7 @@ export default function UserProfilePage() {
     try {
       setButtonDisabled(true);
 
-      userContextHook.deleteUser();
+      // userContextHook.deleteUser();
       await signOut(auth);
 
       router.replace("/login");
