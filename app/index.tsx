@@ -21,6 +21,8 @@ export default function Index() {
           router.replace("/home");
         } catch {
           console.log("No user session found");
+          await auth.signOut();
+          router.replace("/login");
         }
       } else {
         router.replace("/login");

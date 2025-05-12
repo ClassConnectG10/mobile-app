@@ -23,11 +23,6 @@ export default function UserProfilePage() {
   const userContextHook = useUserContext();
   const userInformationHook = useUserInformation();
 
-  if (!userContextHook.user) {
-    router.replace("/login");
-    return;
-  }
-
   const userContext = userContextHook.user;
   const userInformation = userInformationHook.userInformation;
 

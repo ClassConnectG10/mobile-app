@@ -63,7 +63,7 @@ export default function CoursePage() {
       setIsLoading(true);
       const course = await getCourse(courseId);
       setCourse(course);
-      const isCourseOwner = course.ownerId != userContext.user?.id;
+      const isCourseOwner = course.ownerId !== userContext.user?.id;
       setIsOwner(isCourseOwner); // TODO: fix this
 
       if (isCourseOwner) {
@@ -113,7 +113,7 @@ export default function CoursePage() {
 
   useEffect(() => {
     fetchCourse();
-  }, [courseId]);
+  });
 
   return (
     <>

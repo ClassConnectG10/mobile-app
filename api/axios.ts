@@ -42,6 +42,8 @@ async function createRequest(
 ): Promise<AxiosInstance> {
   const token = await getAccessToken();
 
+  console.log("Token:", token);
+
   return axios.create({
     baseURL: `${BASE_URL}/${axiosRequestConfig.uri}`,
     headers: {

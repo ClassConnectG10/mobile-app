@@ -1,6 +1,5 @@
 import { View } from "react-native";
 import { Dropdown } from "react-native-paper-dropdown";
-import { ToggleableTextInput } from "./ToggleableTextInput";
 import { TextInput } from "react-native-paper";
 
 interface OptionPickerProps {

@@ -4,7 +4,6 @@ import {
   Button,
   IconButton,
   Text,
-  TextInput,
   useTheme,
   Dialog,
 } from "react-native-paper";
@@ -39,7 +38,7 @@ export default function CreateCoursePage() {
   const courseId = courseIdParam as string;
 
   const [isEditing, setIsEditing] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [, setIsLoading] = useState(false); // TODO: Use loading state
   const [errorMessage, setErrorMessage] = useState("");
   const [showConfirmationDelete, setShowConfirmationDelete] = useState(false);
 
@@ -119,7 +118,7 @@ export default function CreateCoursePage() {
         ...courseContext.course.courseDetails,
       });
     }
-  }, [courseId]);
+  });
 
   const handleRequiredCoursePress = (requiredCourseId: string) => {
     router.push({

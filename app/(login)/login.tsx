@@ -4,7 +4,7 @@ import { Link, useRouter } from "expo-router";
 import { loginSchema } from "@/validations/users";
 import { loginUser } from "@/services/userManagement";
 import { signIn } from "@/services/auth/authUtils";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useUserContext } from "@/utils/storage/userContext";
 import { View, Image, ScrollView } from "react-native";
 import { ZodError } from "zod";

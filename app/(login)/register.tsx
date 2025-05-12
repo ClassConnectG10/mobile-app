@@ -27,8 +27,8 @@ export default function RegisterPage() {
         confirmPassword,
       });
 
-      await signUp(email, password);
-      router.push("/registerDetails");
+      const response = await signUp(email, password);
+      router.replace("/registerDetails");
     } catch (error) {
       if (error instanceof ZodError) {
         setErrorMessage(error.errors[0].message);

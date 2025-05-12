@@ -61,7 +61,7 @@ export default function CourseIncriptionDetails() {
     if (!courseContext.course || courseContext.course.courseId !== courseId) {
       fetchCourse();
     }
-  }, [courseId]);
+  });
 
   const [course, setCourse] = useState<Course | null>(null);
 
