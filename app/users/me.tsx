@@ -27,10 +27,12 @@ export default function UserProfilePage() {
   const userInformation = userInformationHook.userInformation;
 
   useEffect(() => {
-    userInformationHook.setUserInformation({
-      ...userContext.userInformation,
-    });
-  }, [userContext.userInformation]);
+    if (userContext) {
+      userInformationHook.setUserInformation({
+        ...userContext.userInformation,
+      });
+    }
+  }, []);
 
   const handleCancelEdit = () => {
     userInformationHook.setUserInformation({ ...userContext.userInformation });
@@ -65,8 +67,8 @@ export default function UserProfilePage() {
     try {
       setButtonDisabled(true);
 
-      // userContextHook.deleteUser();
       await signOut(auth);
+      // userContextHook.deleteUser();
 
       router.replace("/login");
     } catch {
