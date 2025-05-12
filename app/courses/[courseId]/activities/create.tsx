@@ -4,14 +4,12 @@ import { useActivityDetails } from "@/hooks/useActivityDetails";
 import { createActivity } from "@/services/activityManagement";
 import { globalStyles } from "@/styles/globalStyles";
 import { ActivityType } from "@/types/activity";
-import courseDetails from "@/types/courseDetails";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
 import { View, ScrollView } from "react-native";
 import {
   Appbar,
   Button,
-  IconButton,
   TextInput,
   useTheme,
 } from "react-native-paper";

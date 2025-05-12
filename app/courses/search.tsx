@@ -9,7 +9,7 @@ import {
   IconButton,
   useTheme,
 } from "react-native-paper";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import OptionPicker from "@/components/OptionPicker";
 import {
   levels,

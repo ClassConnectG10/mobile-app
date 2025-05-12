@@ -41,6 +41,8 @@ async function createRequest(
   axiosRequestConfig: AxiosRequestConfig
 ): Promise<AxiosInstance> {
   const token = await getAccessToken();
+  
+  console.log("Token:", token);
 
   return axios.create({
     baseURL: `${BASE_URL}/${axiosRequestConfig.uri}`,
@@ -69,7 +71,7 @@ async function createRequest(
 // }
 
 export const createRegisterUserRequest = () => {
-  return createRequest({ uri: "users/register/" });
+  return createRequest({ uri: "users/register" });
 };
 
 export const createLoginUserRequest = (uid: string) => {

@@ -6,13 +6,12 @@ import { registerUser } from "@/services/userManagement";
 import { globalStyles } from "@/styles/globalStyles";
 import { useUserContext } from "@/utils/storage/userContext";
 import { getAuth } from "firebase/auth";
-import { useNavigation, CommonActions } from "@react-navigation/native";
 import { countries, defaultCountry } from "@/utils/constants/countries";
 import OptionPicker from "@/components/OptionPicker";
+import { router } from "expo-router";
 
 export default function RegisterDetailsPage() {
   const theme = useTheme();
-  const navigation = useNavigation();
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [country, setcountry] = useState(defaultCountry);
@@ -43,14 +42,10 @@ export default function RegisterDetailsPage() {
       };
       const newUserInfo = await registerUser(uid, userInfo);
       setUser(newUserInfo);
-      navigation.dispatch(
-        CommonActions.reset({
-          index: 0,
-          routes: [{ name: "home" }],
-        })
-      );
+      router.replace("/home");
     } catch (error) {
       setErrorMessage((error as Error).message);
+      console.log("Error al registrar el usuario:", error);
     } finally {
       setButtonDisabled(false);
     }

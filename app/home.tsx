@@ -3,13 +3,10 @@ import { FlatList, StyleSheet, View } from "react-native";
 import {
   Appbar,
   Button,
-  Divider,
   FAB,
-  IconButton,
   Modal,
   Searchbar,
   SegmentedButtons,
-  TextInput,
 } from "react-native-paper";
 import { router } from "expo-router";
 import CourseCard from "@/components/CourseCard";
@@ -23,7 +20,6 @@ import { SearchOption } from "@/types/searchOption";
 import { SearchFilters } from "@/types/searchFilters";
 
 export default function HomePage() {
-  const [courseCode, setCourseCode] = useState("");
   const [courses, setCourses] = useState<Course[]>([]);
   const [newCourseModalVisible, setNewCourseModalVisible] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -35,29 +31,9 @@ export default function HomePage() {
 
   const userContextHook = useUserContext();
 
-  useEffect(() => {
-    if (!userContextHook.user) {
-      router.replace("/login");
-    }
-  }, []);
-
-  if (!userContextHook.user) {
-    return null; // Evita renderizar el contenido mientras rediriges
-  }
-
-  const handleSearchOptionChange = async (value: SearchOption) => {
-    setIsLoading(true);
-    if (searchOption === value) {
-      setSearchOption(SearchOption.RELATED);
-    } else {
-      setSearchOption(value);
-    }
-
-    // await fetchCourses();
-  };
-
-  const fetchCourses = async () => {
+  const fetchCourses = async (searchQuery: string, searchOption: SearchOption) => {
     try {
+      setIsLoading(true);
       const searchFilters: SearchFilters = {
         searchQuery,
         startDate: null,
@@ -77,8 +53,23 @@ export default function HomePage() {
   };
 
   useEffect(() => {
-    fetchCourses();
-  }, [searchOption]);
+    if (!userContextHook.user) {
+      router.replace("/login");
+    }
+  }); //TODO: Check if this is the right way to do it
+
+
+  const handleSearchOptionChange = async (value: SearchOption) => {
+    if (searchOption === value) {
+      setSearchOption(SearchOption.RELATED);
+    } else {
+      setSearchOption(value);
+    }
+  };
+
+  useEffect(() => {
+    fetchCourses(searchQuery, searchOption);
+  }, [searchQuery, searchOption]);
 
   axios.defaults.headers.common["X-Caller-Id"] =
     userContextHook.user.id.toString();
@@ -126,7 +117,9 @@ export default function HomePage() {
         <Searchbar
           placeholder="Buscar cursos"
           onChangeText={setSearchQuery}
-          onIconPress={fetchCourses}
+          onIconPress={() => {
+            fetchCourses(searchQuery, searchOption);
+          }}
           value={searchQuery}
         />
 
