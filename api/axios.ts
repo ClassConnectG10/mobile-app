@@ -69,7 +69,7 @@ async function createRequest(
 // }
 
 export const createRegisterUserRequest = () => {
-  return createRequest({ uri: "users/register/" });
+  return createRequest({ uri: "users" });
 };
 
 export const createLoginUserRequest = (uid: string) => {
