@@ -9,12 +9,15 @@ import { getAuth } from "firebase/auth";
 import { useNavigation, CommonActions } from "@react-navigation/native";
 import { countries, defaultCountry } from "@/utils/constants/countries";
 import OptionPicker from "@/components/OptionPicker";
+import { useLocalSearchParams } from "expo-router";
 
 export default function RegisterDetailsPage() {
   const theme = useTheme();
   const navigation = useNavigation();
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
+  const { firstName: initialFirstName, lastName: initialLastName } =
+    useLocalSearchParams();
+  const [firstName, setFirstName] = useState(initialFirstName as string);
+  const [lastName, setLastName] = useState(initialLastName as string);
   const [country, setcountry] = useState(defaultCountry);
   const [errorMessage, setErrorMessage] = useState("");
   const [buttonDisabled, setButtonDisabled] = useState(false);

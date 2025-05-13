@@ -11,6 +11,10 @@ import { useUserInformation } from "@/hooks/useUserInformation";
 import { View, ScrollView } from "react-native";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import OptionPicker from "@/components/OptionPicker";
+import {
+  GoogleSignin,
+  statusCodes,
+} from "@react-native-google-signin/google-signin";
 
 export default function UserProfilePage() {
   const router = useRouter();
@@ -65,13 +69,18 @@ export default function UserProfilePage() {
   const handleLogout = async () => {
     try {
       setButtonDisabled(true);
+      const user = auth.currentUser;
+      const providerId = user?.providerData[0].providerId;
+      if (providerId === "google.com") {
+        await GoogleSignin.signOut();
+      }
 
       await signOut(auth);
       // userContextHook.deleteUser();
 
       router.replace("/login");
-    } catch {
-      setErrorMessage("Error al cerrar sesión");
+    } catch (error) {
+      setErrorMessage(`Error al cerrar sesión: ${error}`);
     }
   };
 
