@@ -81,14 +81,39 @@ export const DatePickerButton: React.FC<DatePickerProps> = ({
 
   return (
     <>
-      <View
-        style={{
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: 8,
-        }}
-      >
+      {canReset ? (
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 8,
+          }}
+        >
+          <Pressable
+            style={{ flex: 1 }}
+            onPress={() =>
+              editable && setShowPicker(type === "time" ? "time" : "date")
+            }
+          >
+            <TextInput
+              label={label}
+              value={formatValue()}
+              editable={false}
+              pointerEvents="none"
+            />
+          </Pressable>
+
+          <IconButton
+            icon="close"
+            size={20}
+            mode="contained"
+            onPress={() => {
+              onChange(null);
+            }}
+          />
+        </View>
+      ) : (
         <Pressable
           style={{ flex: 1 }}
           onPress={() =>
@@ -102,18 +127,7 @@ export const DatePickerButton: React.FC<DatePickerProps> = ({
             pointerEvents="none"
           />
         </Pressable>
-
-        {canReset && (
-          <IconButton
-            icon="close"
-            size={20}
-            mode="contained"
-            onPress={() => {
-              onChange(null);
-            }}
-          />
-        )}
-      </View>
+      )}
 
       {showPicker === "date" && (
         <DateTimePicker

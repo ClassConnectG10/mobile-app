@@ -39,6 +39,7 @@ app-example
 
 # firebase
 .env
+google-services.json
 
 # build
 android/
