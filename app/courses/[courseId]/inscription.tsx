@@ -1,4 +1,4 @@
-import Course from "@/types/course";
+import { Course } from "@/types/course";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import { ScrollView, View } from "react-native";
@@ -16,6 +16,9 @@ import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import { TextField } from "@/components/TextField";
 import CourseCard from "@/components/CourseCard";
 import { useCourseContext } from "@/utils/storage/courseContext";
+import UserCard from "@/components/UserCard";
+import { getUser } from "@/services/userManagement";
+import { useUserContext } from "@/utils/storage/userContext";
 export default function CourseIncriptionDetails() {
   const router = useRouter();
   const theme = useTheme();
@@ -24,24 +27,42 @@ export default function CourseIncriptionDetails() {
 
   const [errorMessage, setErrorMessage] = useState("");
   const [dependencies, setDependencies] = useState<Course[]>([]);
+  const [courseOwner, setCourseOwner] = useState(null);
+  const [isOwner, setIsOwner] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [course, setCourse] = useState<Course | null>(null);
 
-  const courseContext = useCourseContext();
+  const userContext = useUserContext();
 
   async function fetchCourse() {
     try {
       const course = await getCourse(courseId as string);
       setCourse(course);
-      setDependencies([]);
 
-      course.courseDetails.dependencies.forEach(async (dependency) => {
-        const dependencyCourse = await getCourse(dependency);
-        if (dependencyCourse) {
-          setDependencies((prev) => [...prev, dependencyCourse]);
-        }
-      });
+      const courseDependencies = await Promise.all(
+        course.courseDetails.dependencies.map((dependency) =>
+          getCourse(dependency)
+        )
+      );
+
+      setDependencies(courseDependencies);
     } catch (error) {
       setErrorMessage((error as Error).message);
       setCourse(null);
+    }
+  }
+
+  async function fetchCourseOwner() {
+    try {
+      setIsLoading(true);
+      if (!course) return;
+      const courseOwner = await getUser(course.ownerId);
+      setIsOwner(courseOwner.id == userContext.user?.id);
+      setCourseOwner(courseOwner);
+    } catch (error) {
+      setErrorMessage((error as Error).message);
+    } finally {
+      setIsLoading(false);
     }
   }
 
@@ -57,13 +78,30 @@ export default function CourseIncriptionDetails() {
     }
   };
 
-  useEffect(() => {
-    if (!courseContext.course || courseContext.course.courseId !== courseId) {
-      fetchCourse();
+  const handleOwnerPress = () => {
+    if (courseOwner) {
+      if (isOwner) {
+        router.push({
+          pathname: "/users/me",
+        });
+      } else {
+        router.push({
+          pathname: "/users/[userId]",
+          params: { userId: courseOwner.id },
+        });
+      }
     }
-  });
+  };
 
-  const [course, setCourse] = useState<Course | null>(null);
+  useEffect(() => {
+    fetchCourse();
+  }, []);
+
+  useEffect(() => {
+    if (course) {
+      fetchCourseOwner();
+    }
+  }, [course]);
 
   return (
     <View>
@@ -79,6 +117,12 @@ export default function CourseIncriptionDetails() {
         />
       ) : (
         <ScrollView contentContainerStyle={{ padding: 16, gap: 10 }}>
+          {courseOwner && (
+            <View style={{ gap: 8 }}>
+              <Text variant="titleMedium">Propietario del curso</Text>
+              <UserCard user={courseOwner} onPress={handleOwnerPress} />
+            </View>
+          )}
           <TextField
             label="Nombre del curso"
             value={course.courseDetails.title}

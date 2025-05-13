@@ -44,8 +44,8 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onPress }) => {
       const statusColor = isOverdue
         ? customColors.error
         : isWarning
-          ? customColors.warning
-          : theme.colors.onSurface;
+        ? customColors.warning
+        : theme.colors.onSurface;
 
       statusText = (
         <Text style={[styles.dueDate, { color: statusColor }]}>
@@ -83,7 +83,7 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onPress }) => {
   return (
     <Card
       onPress={onPress}
-      style={[styles.card, { backgroundColor: theme.colors.background }]}
+      style={[styles.card, { backgroundColor: theme.colors.onPrimary }]}
     >
       <View style={styles.row}>
         {typeIcon}

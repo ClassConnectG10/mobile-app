@@ -1,4 +1,4 @@
-import { SearchFilters } from "@/types/searchFilters";
+import { SearchFilters } from "@/types/course";
 import { useState } from "react";
 
 export interface SearchFiltersHook {

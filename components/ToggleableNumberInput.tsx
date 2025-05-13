@@ -27,13 +27,20 @@ export const ToggleableNumberInput: React.FC<ToggleableNumberInputsProps> = ({
   return editable ? (
     <>
       <Text variant="titleMedium">{label}</Text>
-      <View style={{ flexDirection: "row", alignItems: "center" }}>
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          flex: 1,
+          gap: 10,
+          justifyContent: "center",
+        }}
+      >
         <IconButton
           icon="minus"
           mode="contained"
           onPress={() => decreaseNumStudents()}
         />
-
         <Text variant="titleLarge">{value}</Text>
         <IconButton
           icon="plus"

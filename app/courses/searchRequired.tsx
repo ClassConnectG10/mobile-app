@@ -18,18 +18,19 @@ import {
 } from "@/utils/constants/courseDetails";
 import { globalStyles } from "@/styles/globalStyles";
 import { DatePickerButton } from "@/components/DatePickerButton";
-import { useState } from "react";
-import Course from "@/types/course";
+import { useEffect, useState } from "react";
+import { Course, SearchOption } from "@/types/course";
 import { searchCourses } from "@/services/courseManagement";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import CourseCard from "@/components/CourseCard";
 import { useRequiredCoursesContext } from "@/utils/storage/requiredCoursesContext";
-import { SearchOption } from "@/types/searchOption";
 import { useSearchFilters } from "@/hooks/useSearchFilters";
+import { useCourseContext } from "@/utils/storage/courseContext";
 
 export default function SearchCoursesPage() {
   const router = useRouter();
   const theme = useTheme();
+  const courseContext = useCourseContext();
   const [courses, setCourses] = useState<Course[]>([]);
   const [errorMessage, setErrorMessage] = useState("");
   const [searchFiltersModalVisible, setSearchFiltersModalVisible] =
@@ -44,7 +45,15 @@ export default function SearchCoursesPage() {
   const fetchCourses = async () => {
     try {
       const coursesData = await searchCourses(searchFilters, SearchOption.ALL);
-      setCourses(coursesData);
+
+      if (courseContext.course) {
+        const filteredCourses = coursesData.filter(
+          (course) => course.courseId !== courseContext.course?.courseId
+        );
+        setCourses(filteredCourses);
+      } else {
+        setCourses(coursesData);
+      }
     } catch (error) {
       setErrorMessage(`Error al buscar cursos: ${error}`);
     }
@@ -59,6 +68,10 @@ export default function SearchCoursesPage() {
     setSearchFiltersModalVisible(false);
     fetchCourses();
   };
+
+  useEffect(() => {
+    fetchCourses();
+  }, []);
 
   return (
     <>

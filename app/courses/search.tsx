@@ -19,12 +19,12 @@ import {
 import { globalStyles } from "@/styles/globalStyles";
 import { DatePickerButton } from "@/components/DatePickerButton";
 import { useState } from "react";
-import Course from "@/types/course";
+import { Course, SearchFilters, SearchOption } from "@/types/course";
 import { searchCourses } from "@/services/courseManagement";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import CourseCard from "@/components/CourseCard";
-import { SearchOption } from "@/types/searchOption";
 import { useSearchFilters } from "@/hooks/useSearchFilters";
+import { CourseFilterModal } from "@/components/CourseFilterModal";
 
 export default function SearchCoursesPage() {
   const router = useRouter();
@@ -33,12 +33,16 @@ export default function SearchCoursesPage() {
   const [errorMessage, setErrorMessage] = useState("");
   const [searchFiltersModalVisible, setSearchFiltersModalVisible] =
     useState(false);
-
-  const searchFiltersHook = useSearchFilters();
-  const searchFilters = searchFiltersHook.searchFilters;
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchFilters, setSearchFilters] = useState(
+    new SearchFilters("", null, null, "", "", "")
+  );
 
   const fetchCourses = async () => {
     try {
+      console.log("JJJJJJJJ");
+      console.log("searchFilters", searchFilters);
+      searchFilters.searchQuery = searchQuery;
       const coursesData = await searchCourses(
         searchFilters,
         SearchOption.NOT_RELATED
@@ -56,9 +60,9 @@ export default function SearchCoursesPage() {
     });
   };
 
-  const handleApplyFilters = async () => {
+  const handleApplyFilters = async (searchFilters: SearchFilters) => {
     setSearchFiltersModalVisible(false);
-    fetchCourses();
+    setSearchFilters(searchFilters);
   };
 
   return (
@@ -77,8 +81,8 @@ export default function SearchCoursesPage() {
       <View style={[globalStyles.mainContainer, styles.mainContainer]}>
         <Searchbar
           placeholder="Buscar cursos"
-          onChangeText={searchFiltersHook.setSearchQuery}
-          value={searchFilters.searchQuery}
+          onChangeText={setSearchQuery}
+          value={searchQuery}
           onIconPress={fetchCourses}
         />
 
@@ -98,88 +102,13 @@ export default function SearchCoursesPage() {
           />
         </View>
 
-        <Modal
+        <CourseFilterModal
           visible={searchFiltersModalVisible}
           onDismiss={() => {
             setSearchFiltersModalVisible(false);
           }}
-          contentContainerStyle={styles.modalContainer}
-          style={styles.modalContent}
-        >
-          <Text variant="titleLarge">Filtros de búsqueda</Text>
-
-          <View style={{ flexDirection: "row", gap: 10, alignItems: "center" }}>
-            <DatePickerButton
-              label="Fecha de inicio"
-              value={searchFilters.startDate}
-              onChange={searchFiltersHook.setStartDate}
-            />
-            <IconButton
-              icon="reload"
-              mode="contained"
-              iconColor={theme.colors.primary}
-              size={20}
-              onPress={() => {
-                searchFiltersHook.setStartDate(null);
-              }}
-            />
-          </View>
-
-          <View style={{ flexDirection: "row", gap: 10, alignItems: "center" }}>
-            <DatePickerButton
-              label="Fecha de finalización"
-              value={searchFilters.endDate}
-              onChange={searchFiltersHook.setEndDate}
-            />
-            <IconButton
-              icon="reload"
-              mode="contained"
-              iconColor={theme.colors.primary}
-              size={20}
-              onPress={() => {
-                searchFiltersHook.setEndDate(null);
-              }}
-            />
-          </View>
-
-          <OptionPicker
-            label="Nivel"
-            value={searchFilters.level}
-            items={levels}
-            setValue={searchFiltersHook.setLevel}
-          />
-          <OptionPicker
-            label="Categoría"
-            value={searchFilters.category}
-            items={categories}
-            setValue={searchFiltersHook.setCategory}
-          />
-
-          <OptionPicker
-            label="Modalidad"
-            value={searchFilters.modality}
-            items={modalities}
-            setValue={searchFiltersHook.setModality}
-          />
-
-          <Divider />
-          <View style={{ flexDirection: "row", gap: 20 }}>
-            <Button
-              mode="contained"
-              icon="filter-remove"
-              onPress={searchFiltersHook.resetSearchFilters}
-            >
-              Borrar filtros
-            </Button>
-            <Button
-              mode="contained"
-              icon="filter-check"
-              onPress={handleApplyFilters}
-            >
-              Guardar filtros
-            </Button>
-          </View>
-        </Modal>
+          onApplyFilters={handleApplyFilters}
+        />
 
         <ErrorMessageSnackbar
           message={errorMessage}

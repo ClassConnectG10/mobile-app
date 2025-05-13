@@ -36,8 +36,10 @@ export default function CreateCoursePage() {
 
   const handleCreateCourse = async () => {
     try {
+      courseDetails.dependencies = requiredCourses.map(
+        (course) => course.courseId
+      );
       const createdCourse = await createCourse(courseDetails);
-
       courseContext.setCourse(createdCourse);
       router.replace({
         pathname: "/courses/[courseId]",

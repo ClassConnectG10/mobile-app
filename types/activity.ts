@@ -15,6 +15,18 @@ export enum ActivityStatus {
   COMPLETED = "COMPLETED",
 }
 
+export enum StudentActivityFilter {
+  ALL = "ALL",
+  PENDING = "PENDING",
+  SUBMITTED = "SUBMITTED",
+}
+
+export enum TeacherActivityFilter {
+  ALL = "ALL",
+  PUBLISHED = "PUBLISHED",
+  UNPUBLISHED = "UNPUBLISHED",
+}
+
 export class TeacherActivity {
   constructor(public activity: Activity, public visible: boolean) {}
 }
@@ -37,5 +49,16 @@ export class ActivityDetails {
     public description: string,
     public instruction: string,
     public dueDate: Date
+  ) {}
+}
+
+export class ActivitySubmission {
+  constructor(
+    public resourceId: string,
+    public type: ActivityType,
+    public studentId: string,
+    public response: string,
+    public status: ActivityStatus,
+    public submissionDate: Date | null
   ) {}
 }

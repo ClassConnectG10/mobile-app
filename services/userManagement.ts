@@ -1,12 +1,12 @@
-import UserInformation from "@/types/userInformation";
+import { userDetailsSchema, userSchema } from "@/validations/users";
+import { User, UserInformation } from "@/types/user";
+import { handleError } from "./errorHandling";
 import {
   createRegisterUserRequest,
   createLoginUserRequest,
   createEditUserProfileRequest,
-} from "@/api/axios";
-import { userDetailsSchema, userSchema } from "@/validations/users";
-import User from "@/types/user";
-import { handleError } from "./errorHandling";
+  createUserRequest,
+} from "@/api/user";
 
 /**
  * Registers a new user in the system by sending their information to the server.
@@ -32,6 +32,7 @@ export async function registerUser(
       email: userInformation.email,
       country: userInformation.country,
     });
+    console.log("Response data:", response.data);
     const user = new User(
       response.data.data.id,
       new UserInformation(
@@ -58,7 +59,10 @@ export async function registerUser(
 export async function loginUser(uid: string): Promise<User> {
   try {
     const request = await createLoginUserRequest(uid);
+    console.log("Request data uid:", uid);
     const response = await request.get("");
+
+    console.log("Response data:", response.data);
 
     const userInfo = new UserInformation(
       response.data.data.name,
@@ -105,5 +109,27 @@ export async function editUserProfile(user: User) {
     return updatedUserInfo;
   } catch (error) {
     throw handleError(error, "editar el perfil del usuario");
+  }
+}
+
+export async function getUser(userId: number): Promise<User> {
+  try {
+    const request = await createUserRequest(userId);
+    const response = await request.get("");
+    const userInfo = new UserInformation(
+      response.data.data.name,
+      response.data.data.surname,
+      response.data.data.email,
+      response.data.data.country
+    );
+
+    const user = {
+      id: response.data.data.id,
+      userInformation: userInfo,
+    };
+
+    return user;
+  } catch (error) {
+    throw handleError(error, "obtener el usuario");
   }
 }

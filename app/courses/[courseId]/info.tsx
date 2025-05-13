@@ -29,6 +29,10 @@ import {
 } from "@/services/courseManagement";
 import { ToggleableNumberInput } from "@/components/ToggleableNumberInput";
 import { ToggleableTextInput } from "@/components/ToggleableTextInput";
+import { getUser } from "@/services/userManagement";
+import { useUserContext } from "@/utils/storage/userContext";
+import UserCard from "@/components/UserCard";
+import { TextField } from "@/components/TextField";
 
 export default function CreateCoursePage() {
   const theme = useTheme();
@@ -38,21 +42,34 @@ export default function CreateCoursePage() {
   const courseId = courseIdParam as string;
 
   const [isEditing, setIsEditing] = useState(false);
-  const [, setIsLoading] = useState(false); // TODO: Use loading state
+  const [isLoading, setIsLoading] = useState(false); // TODO: Use loading state
   const [errorMessage, setErrorMessage] = useState("");
   const [showConfirmationDelete, setShowConfirmationDelete] = useState(false);
+  const [isOwner, setIsOwner] = useState(false);
+  const [courseOwner, setCourseOwner] = useState(null);
 
   const courseContext = useCourseContext();
+  const userContext = useUserContext();
+
   const courseDetailsHook = useCourseDetails();
   const requiredCoursesContext = useRequiredCoursesContext();
+
   const courseDetails = courseDetailsHook.courseDetails;
   const { requiredCourses } = requiredCoursesContext;
 
-  const handleDiscardChanges = () => {
+  const handleDiscardChanges = async () => {
     if (!courseContext.course) return;
     courseDetailsHook.setCourseDetails({
       ...courseContext.course.courseDetails,
     });
+
+    const requiredCourses = await Promise.all(
+      courseContext.course.courseDetails.dependencies.map(
+        async (courseId) => await getCourse(courseId)
+      )
+    );
+
+    requiredCoursesContext.setRequiredCourses(requiredCourses);
     setIsEditing(false);
   };
 
@@ -61,6 +78,9 @@ export default function CreateCoursePage() {
     if (!courseContext.course) return;
 
     try {
+      courseDetails.dependencies = requiredCourses.map(
+        (course) => course.courseId
+      );
       const updatedCourse = await editCourse(
         courseContext.course,
         courseDetails
@@ -102,6 +122,14 @@ export default function CreateCoursePage() {
       courseDetailsHook.setCourseDetails({
         ...course.courseDetails,
       });
+
+      const requiredCourses = await Promise.all(
+        course.courseDetails.dependencies.map(
+          async (courseId) => await getCourse(courseId)
+        )
+      );
+
+      requiredCoursesContext.setRequiredCourses(requiredCourses);
     } catch (error) {
       setErrorMessage((error as Error).message);
       courseContext.setCourse(null);
@@ -110,21 +138,45 @@ export default function CreateCoursePage() {
     }
   }
 
-  useEffect(() => {
-    if (!courseContext.course || courseContext.course.courseId !== courseId) {
-      fetchCourse();
-    } else {
-      courseDetailsHook.setCourseDetails({
-        ...courseContext.course.courseDetails,
-      });
+  async function fetchCourseOwner() {
+    try {
+      setIsLoading(true);
+      const courseOwner = await getUser(courseContext.course.ownerId);
+      setIsOwner(courseOwner.id == userContext.user?.id);
+      setCourseOwner(courseOwner);
+    } catch (error) {
+      setErrorMessage((error as Error).message);
+    } finally {
+      setIsLoading(false);
     }
-  });
+  }
+
+  useEffect(() => {
+    fetchCourse();
+  }, []);
+
+  useEffect(() => {
+    if (courseContext.course) {
+      fetchCourseOwner();
+    }
+  }, [courseContext.course]);
 
   const handleRequiredCoursePress = (requiredCourseId: string) => {
     router.push({
       pathname: "/courses/[courseId]/inscription",
       params: { courseId: requiredCourseId },
     });
+  };
+
+  const handleOwnerPress = () => {
+    if (isOwner) {
+      router.push("/users/me");
+    } else {
+      router.push({
+        pathname: "/users/[userId]",
+        params: { userId: courseContext.course.ownerId },
+      });
+    }
   };
 
   return (
@@ -136,12 +188,12 @@ export default function CreateCoursePage() {
           }
         />
         <Appbar.Content title="Detalles del curso" />
-        <Appbar.Action
-          icon={isEditing ? "check" : "pencil"}
-          onPress={
-            isEditing ? handleEditCourse : () => setIsEditing(!isEditing)
-          }
-        />
+        {isOwner && (
+          <Appbar.Action
+            icon={isEditing ? "check" : "pencil"}
+            onPress={isEditing ? handleEditCourse : () => setIsEditing(true)}
+          />
+        )}
       </Appbar.Header>
       <View
         style={[
@@ -150,6 +202,13 @@ export default function CreateCoursePage() {
         ]}
       >
         <ScrollView contentContainerStyle={globalStyles.courseDetailsContainer}>
+          {courseOwner && (
+            <View style={{ gap: 8 }}>
+              <Text variant="titleMedium">Propietario del curso</Text>
+              <UserCard user={courseOwner} onPress={handleOwnerPress} />
+            </View>
+          )}
+
           <ToggleableTextInput
             label="Nombre del curso"
             placeholder="Nombre del curso"
@@ -164,12 +223,27 @@ export default function CreateCoursePage() {
             onChange={courseDetailsHook.setDescription}
             editable={isEditing}
           />
-          <ToggleableNumberInput
-            label="Cantidad máxima de alumnos"
-            value={courseDetails.maxNumberOfStudents}
-            onChange={courseDetailsHook.setNumberOfStudents}
-            editable={isEditing}
-          />
+          {isEditing ? (
+            <ToggleableNumberInput
+              label="Cantidad máxima de alumnos"
+              value={courseDetails.maxNumberOfStudents}
+              onChange={courseDetailsHook.setNumberOfStudents}
+              editable={isEditing}
+            />
+          ) : (
+            courseContext.course && (
+              <View style={{ gap: 10 }}>
+                {/* <TextField
+                  label="Cantidad de alumnos"
+                  value={courseContext.course.numberOfStudens.toString()}
+                /> */}
+                <TextField
+                  label="Cantidad de alumnos inscritos"
+                  value={courseDetails.maxNumberOfStudents.toString()}
+                />
+              </View>
+            )
+          )}
           <View
             style={{
               flexDirection: "row",

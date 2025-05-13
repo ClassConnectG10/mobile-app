@@ -1,28 +1,31 @@
 import {
-  creatCourseActivitiesRequest,
-  creatCourseExamRequest,
-  creatCourseTaskRequest,
-  createStudentActivityRequest,
-} from "@/api/axios";
-import {
   TeacherActivity,
   Activity,
   ActivityDetails,
   StudentActivity,
   ActivitiesOption,
   ActivityType,
+  ActivitySubmission,
 } from "@/types/activity";
 import { handleError } from "./errorHandling";
+import { AxiosInstance } from "axios";
+import {
+  createActivityRequest,
+  createActivitySubmissionsRequest,
+  createActivitySubmissionRequest,
+  createExamRequest,
+  createTaskRequest,
+  createActivitiesRequest,
+  createModuleRequest,
+  createGetModuleRequest,
+} from "@/api/activities";
 
 export async function getCourseTeacherActivities(
   courseId: string,
   activitiesOption: ActivitiesOption
 ): Promise<TeacherActivity[]> {
   try {
-    const request = await creatCourseActivitiesRequest(
-      courseId,
-      activitiesOption
-    );
+    const request = await createActivitiesRequest(courseId, activitiesOption);
     const response = await request.get("");
 
     const activitiesData = response.data.data;
@@ -55,10 +58,7 @@ export async function getCourseStudentActivities(
   activitiesOption: ActivitiesOption
 ): Promise<StudentActivity[]> {
   try {
-    const request = await creatCourseActivitiesRequest(
-      courseId,
-      activitiesOption
-    );
+    const request = await createActivitiesRequest(courseId, activitiesOption);
     const response = await request.get("");
 
     const activitiesData = response.data.data;
@@ -87,7 +87,7 @@ export async function getCourseStudentActivities(
 
 export async function getStudentActivity(courseId: string, activityId: string) {
   try {
-    const request = await createStudentActivityRequest(courseId, activityId);
+    const request = await createActivityRequest(courseId, activityId);
     const response = await request.get("");
     const activityData = response.data.data;
     const activity = new StudentActivity(
@@ -109,19 +109,91 @@ export async function getStudentActivity(courseId: string, activityId: string) {
   }
 }
 
+export async function getTeacherActivity(courseId: string, activityId: string) {
+  try {
+    const request = await createActivityRequest(courseId, activityId);
+    const response = await request.get("");
+    const activityData = response.data.data;
+    const activity: TeacherActivity = new TeacherActivity(
+      new Activity(
+        activityData.resource_id,
+        activityData.type,
+        new ActivityDetails(
+          activityData.title,
+          activityData.description,
+          activityData.instruction,
+          new Date(activityData.due_date)
+        )
+      ),
+      activityData.visible
+    );
+
+    return activity;
+  } catch (error) {
+    throw handleError(error, "obtener la actividad del profesor");
+  }
+}
+
+export async function getActivitySubmissions(
+  courseId: string,
+  activityId: string
+): Promise<ActivitySubmission[]> {
+  try {
+    const request = await createActivitySubmissionsRequest(
+      courseId,
+      activityId
+    );
+    const response = await request.get("");
+    const submissionsData = response.data.data;
+    const submissions: [] = submissionsData.map(
+      (activityData: any) =>
+        new ActivitySubmission(
+          activityData.resource_id,
+          activityData.activity_type,
+          activityData.student_id,
+          activityData.response,
+          activityData.status,
+          new Date(activityData.submission_date)
+        )
+    );
+    return submissions;
+  } catch (error) {
+    throw handleError(error, "obtener las entregas de la actividad");
+  }
+}
+
+export async function getActivitySubmission(
+  courseId: string,
+  activityId: string,
+  studentId: string
+): Promise<any> {
+  try {
+    const request = await createActivitySubmissionRequest(
+      courseId,
+      activityId,
+      studentId
+    );
+    const response = await request.get("");
+    const submissionData = response.data.data;
+    return submissionData;
+  } catch (error) {
+    throw handleError(error, "obtener la entrega de la actividad");
+  }
+}
+
 export async function createActivity(
   courseId: string,
+  moduleId: string,
   activityType: ActivityType,
   activityDetails: ActivityDetails
 ): Promise<TeacherActivity> {
   try {
-    console.log("courseId: ", courseId);
-    var request;
+    var request: AxiosInstance;
 
     if (activityType === ActivityType.TASK) {
-      request = await creatCourseTaskRequest(courseId);
+      request = await createTaskRequest(courseId);
     } else {
-      request = await creatCourseExamRequest(courseId);
+      request = await createExamRequest(courseId);
     }
 
     const body = {
@@ -130,7 +202,7 @@ export async function createActivity(
       description: activityDetails.description,
       instruction: activityDetails.instruction,
       due_date: activityDetails.dueDate.toISOString(),
-      module: 6,
+      module: moduleId,
       visible: false,
     };
 
@@ -154,5 +226,25 @@ export async function createActivity(
     return newActivity;
   } catch (error) {
     throw handleError(error, "crear la actividad");
+  }
+}
+
+export async function getCourseModuleId(courseId: string) {
+  try {
+    const request = await createGetModuleRequest(courseId);
+    const response = await request.get("");
+    const moduleData = response.data.data;
+
+    if (moduleData.length === 0) {
+      const moduleRequest = await createModuleRequest(courseId);
+      const modulo = await moduleRequest.post("", {
+        title: "Módulo por defecto",
+        description: "Esto es un modulo por defecto",
+      });
+      return modulo.data.data.module_id;
+    }
+    return moduleData[0].module_id;
+  } catch (error) {
+    throw handleError(error, "obtener el módulo del curso");
   }
 }

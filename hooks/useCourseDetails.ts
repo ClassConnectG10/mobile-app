@@ -1,4 +1,4 @@
-import CourseDetails from "@/types/courseDetails";
+import { CourseDetails } from "@/types/course";
 import { useState } from "react";
 import {
   defaultCategory,
@@ -17,6 +17,7 @@ export interface CourseDetailsHook {
   setLevel: (level: string) => void;
   setModality: (modality: string) => void;
   setCategory: (category: string) => void;
+  setDependencies: (dependencies: string[]) => void;
 }
 
 export function useCourseDetails(): CourseDetailsHook {
@@ -66,6 +67,10 @@ export function useCourseDetails(): CourseDetailsHook {
     setCourseDetails((prev) => ({ ...prev, category }));
   };
 
+  const setDependencies = (dependencies: string[]) => {
+    setCourseDetails((prev) => ({ ...prev, dependencies }));
+  };
+
   return {
     courseDetails,
     setCourseDetails,
@@ -77,5 +82,6 @@ export function useCourseDetails(): CourseDetailsHook {
     setLevel,
     setModality,
     setCategory,
+    setDependencies,
   };
 }

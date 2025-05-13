@@ -1,7 +1,7 @@
 import { getCourse } from "@/services/courseManagement";
 import { useCourseContext } from "@/utils/storage/courseContext";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Appbar,
@@ -19,15 +19,19 @@ import ActivityCard from "@/components/ActivityCard";
 
 import {
   ActivitiesOption,
+  ActivityStatus,
   ActivityType,
   StudentActivity,
+  StudentActivityFilter,
   TeacherActivity,
+  TeacherActivityFilter,
 } from "@/types/activity";
 import { useUserContext } from "@/utils/storage/userContext";
 import {
   getCourseStudentActivities,
   getCourseTeacherActivities,
 } from "@/services/activityManagement";
+import { useFocusEffect } from "@react-navigation/native";
 
 export default function CoursePage() {
   const router = useRouter();
@@ -44,6 +48,14 @@ export default function CoursePage() {
 
   const [activitiesOption, setActivitiesOption] = useState(
     ActivitiesOption.ALL
+  );
+
+  const [publishedActivitiesOption, setPublishedActivitiesOption] = useState(
+    TeacherActivityFilter.ALL
+  );
+
+  const [submitteedActivitiesOption, setSubmitteedActivitiesOption] = useState(
+    StudentActivityFilter.ALL
   );
 
   const [isOwner, setIsOwner] = useState(false);
@@ -63,27 +75,62 @@ export default function CoursePage() {
       setIsLoading(true);
       const course = await getCourse(courseId);
       setCourse(course);
-      const isCourseOwner = course.ownerId !== userContext.user?.id;
-      setIsOwner(isCourseOwner); // TODO: fix this
+      setIsOwner(course.ownerId == userContext.user?.id);
+    } catch (error) {
+      setErrorMessage((error as Error).message);
+      setCourse(null);
+    } finally {
+      setIsLoading(false);
+    }
+  }
 
-      if (isCourseOwner) {
+  async function fetchActivities() {
+    try {
+      if (isOwner) {
         const activities = await getCourseTeacherActivities(
           courseId,
           activitiesOption
         );
-        console.log(activities);
 
-        setTeacherActivities(activities);
+        if (publishedActivitiesOption === TeacherActivityFilter.PUBLISHED) {
+          setTeacherActivities(
+            activities.filter((activity) => activity.visible)
+          );
+        } else if (
+          publishedActivitiesOption === TeacherActivityFilter.UNPUBLISHED
+        ) {
+          setTeacherActivities(
+            activities.filter((activity) => !activity.visible)
+          );
+        } else {
+          setTeacherActivities(activities);
+        }
       } else {
         const activities = await getCourseStudentActivities(
           courseId,
           activitiesOption
         );
-        setStudentActivities(activities);
+
+        if (submitteedActivitiesOption === StudentActivityFilter.SUBMITTED) {
+          setStudentActivities(
+            activities.filter(
+              (activity) => activity.status === ActivityStatus.COMPLETED
+            )
+          );
+        } else if (
+          submitteedActivitiesOption === StudentActivityFilter.PENDING
+        ) {
+          setStudentActivities(
+            activities.filter(
+              (activity) => activity.status !== ActivityStatus.COMPLETED
+            )
+          );
+        } else {
+          setStudentActivities(activities);
+        }
       }
     } catch (error) {
       setErrorMessage((error as Error).message);
-      setCourse(null);
     } finally {
       setIsLoading(false);
     }
@@ -97,6 +144,26 @@ export default function CoursePage() {
     }
   };
 
+  const handleSubmitteedActivitiesOptionChange = (
+    value: StudentActivityFilter
+  ) => {
+    if (submitteedActivitiesOption === value) {
+      setSubmitteedActivitiesOption(StudentActivityFilter.ALL);
+    } else {
+      setSubmitteedActivitiesOption(value);
+    }
+  };
+
+  const handlePublishedActivitiesOptionChange = (
+    value: TeacherActivityFilter
+  ) => {
+    if (publishedActivitiesOption === value) {
+      setPublishedActivitiesOption(TeacherActivityFilter.ALL);
+    } else {
+      setPublishedActivitiesOption(value);
+    }
+  };
+
   const handleInfoPress = () => {
     router.push({
       pathname: "/courses/[courseId]/info",
@@ -104,16 +171,51 @@ export default function CoursePage() {
     });
   };
 
-  const handleActivitiesPress = (activityId: string) => {
+  const handleStudentActivitiesPress = (activityId: string) => {
     router.push({
-      pathname: "/courses/[courseId]/activities/[activityId]",
+      pathname: "/courses/[courseId]/activities/student/[activityId]",
       params: { courseId, activityId },
     });
   };
 
+  const handleTeacherActivitiesPress = (activityId: string) => {
+    router.push({
+      pathname: "/courses/[courseId]/activities/teacher/[activityId]",
+      params: { courseId, activityId },
+    });
+  };
+
+  const handleCreateActivityPress = (activityType: ActivityType) => {
+    setNewActivityModalVisible(false);
+    router.push({
+      pathname: "/courses/[courseId]/activities/teacher/create",
+      params: { courseId, activityType },
+    });
+  };
+
   useEffect(() => {
-    fetchCourse();
-  });
+    if (!courseContext.course || courseContext.course.courseId !== courseId) {
+      fetchCourse();
+    } else {
+      setIsLoading(false);
+      setIsOwner(courseContext.course.ownerId === userContext.user?.id);
+    }
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchActivities();
+    }, [])
+  );
+
+  useEffect(() => {
+    fetchActivities();
+  }, [
+    activitiesOption,
+    publishedActivitiesOption,
+    submitteedActivitiesOption,
+    isOwner,
+  ]);
 
   return (
     <>
@@ -154,26 +256,67 @@ export default function CoursePage() {
             />
             <SegmentedButtons
               value={activitiesOption}
-              onValueChange={(value) => {
-                handleActivitiesOptionChange(
-                  (value as ActivitiesOption) || ActivitiesOption.ALL
-                );
-              }}
+              onValueChange={handleActivitiesOptionChange}
               buttons={[
                 {
-                  value: "tasks",
+                  value: ActivitiesOption.TASKS,
                   label: "Tareas",
                   icon: "file-document",
                   disabled: isLoading,
                 },
                 {
-                  value: "exams",
+                  value: ActivitiesOption.EXAMS,
                   label: "Exámenes",
                   icon: "test-tube",
                   disabled: isLoading,
                 },
               ]}
             />
+
+            {/* Filter de actividades entregadas y/o publicadas */}
+
+            {isOwner ? (
+              <SegmentedButtons
+                value={publishedActivitiesOption}
+                onValueChange={handlePublishedActivitiesOptionChange}
+                buttons={[
+                  {
+                    value: TeacherActivityFilter.PUBLISHED,
+                    label: "Visibles",
+                    icon: "eye-outline",
+                    disabled: isLoading,
+                  },
+                  {
+                    value: TeacherActivityFilter.UNPUBLISHED,
+                    label: "No visibles",
+                    icon: "eye-off-outline",
+                    disabled: isLoading,
+                  },
+                ]}
+              />
+            ) : (
+              <SegmentedButtons
+                value={submitteedActivitiesOption}
+                onValueChange={handleSubmitteedActivitiesOptionChange}
+                buttons={[
+                  {
+                    value: StudentActivityFilter.SUBMITTED,
+                    label: "Entregadas",
+                    icon: "check-circle-outline",
+                    disabled: isLoading,
+                  },
+                  {
+                    value: StudentActivityFilter.PENDING,
+                    label: "No entregadas",
+                    icon: "circle-outline",
+                    disabled: isLoading,
+                  },
+                ]}
+              />
+            )}
+
+            {/* Lista de actividades */}
+
             {isOwner ? (
               <ScrollView
                 contentContainerStyle={{
@@ -190,7 +333,9 @@ export default function CoursePage() {
                       key={activity.activity.resourceId}
                       activity={activity}
                       onPress={() =>
-                        handleActivitiesPress(activity.activity.resourceId)
+                        handleTeacherActivitiesPress(
+                          activity.activity.resourceId
+                        )
                       }
                     />
                   ))
@@ -212,7 +357,9 @@ export default function CoursePage() {
                       key={activity.activity.resourceId}
                       activity={activity}
                       onPress={() =>
-                        handleActivitiesPress(activity.activity.resourceId)
+                        handleStudentActivitiesPress(
+                          activity.activity.resourceId
+                        )
                       }
                     />
                   ))
@@ -242,11 +389,7 @@ export default function CoursePage() {
           mode="contained"
           icon="file-document"
           onPress={() => {
-            setNewActivityModalVisible(false);
-            router.push({
-              pathname: "/courses/[courseId]/activities/create",
-              params: { courseId, activityType: ActivityType.TASK },
-            });
+            handleCreateActivityPress(ActivityType.TASK);
           }}
         >
           Crear una nueva tarea
@@ -256,11 +399,7 @@ export default function CoursePage() {
           mode="contained"
           icon="test-tube"
           onPress={() => {
-            setNewActivityModalVisible(false);
-            router.push({
-              pathname: "/courses/[courseId]/activities/create",
-              params: { courseId, activityType: ActivityType.EXAM },
-            });
+            handleCreateActivityPress(ActivityType.EXAM);
           }}
         >
           Crear un nuevo examen

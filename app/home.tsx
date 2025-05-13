@@ -12,12 +12,10 @@ import { router } from "expo-router";
 import CourseCard from "@/components/CourseCard";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import { useEffect, useState } from "react";
-import Course from "@/types/course";
+import { Course, SearchFilters, SearchOption } from "@/types/course";
 import { searchCourses } from "@/services/courseManagement";
 import { useUserContext } from "@/utils/storage/userContext";
 import axios from "axios";
-import { SearchOption } from "@/types/searchOption";
-import { SearchFilters } from "@/types/searchFilters";
 
 export default function HomePage() {
   const [courses, setCourses] = useState<Course[]>([]);
@@ -93,6 +91,12 @@ export default function HomePage() {
       <Appbar.Header>
         {/* <Appbar.Action icon="menu" /> */}
         <Appbar.Content title="Class Connect" />
+        <Appbar.Action
+          icon="filter"
+          onPress={() => {
+            setNewCourseModalVisible(true);
+          }}
+        />
         <Appbar.Action
           icon="account"
           onPress={() => router.push("/users/me")}
