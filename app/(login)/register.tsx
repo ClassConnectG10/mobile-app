@@ -45,10 +45,13 @@ export default function RegisterPage() {
 
   return (
     <View
-      style={[
-        globalStyles.mainContainer,
-        { backgroundColor: theme.colors.background },
-      ]}
+      style={{
+        backgroundColor: theme.colors.background,
+        padding: 20,
+        flex: 1,
+        gap: 20,
+        justifyContent: "center",
+      }}
     >
       <View
         style={[
@@ -63,10 +66,7 @@ export default function RegisterPage() {
         />
       </View>
 
-      <ScrollView
-        style={globalStyles.container}
-        contentContainerStyle={globalStyles.contentContainer}
-      >
+      <View style={{ gap: 16 }}>
         <TextInput
           label="Correo electrónico"
           autoCapitalize="none"
@@ -110,7 +110,7 @@ export default function RegisterPage() {
             </Text>
           </Link>
         </Text>
-      </ScrollView>
+      </View>
       <ErrorMessageSnackbar
         message={errorMessage}
         onDismiss={() => setErrorMessage("")}
