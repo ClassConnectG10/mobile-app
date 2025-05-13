@@ -20,12 +20,11 @@ import { FirebaseError } from "@firebase/util";
 export async function signUp(email: string, password: string) {
   const auth = getAuth(firebaseApp);
   try {
-    const userCredential = await createUserWithEmailAndPassword(
+    await createUserWithEmailAndPassword(
       auth,
       email,
       password
     );
-    return userCredential.user.uid;
   } catch (error) {
     if (error instanceof FirebaseError && error.code in authErrorMessages) {
       const errorMessage =
