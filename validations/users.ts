@@ -57,3 +57,7 @@ export const userSchema = z.object({
   id: z.number(),
   userInformation: userDetailsSchema,
 });
+
+export const resetSchema = z.object({
+  email: z.string().email("Correo electrónico inválido"),
+});

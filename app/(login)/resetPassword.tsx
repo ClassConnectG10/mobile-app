@@ -1,36 +1,35 @@
-import { Button, Divider, Text, TextInput, useTheme } from "react-native-paper";
-import { globalStyles } from "@/styles/globalStyles";
-import { useRouter } from "expo-router";
-import { loginSchema } from "@/validations/users";
-import { loginUser } from "@/services/userManagement";
-import { signIn } from "@/services/auth/authUtils";
 import { useState } from "react";
-import { useUserContext } from "@/utils/storage/userContext";
 import { View, Image, Pressable } from "react-native";
+import {
+  Button,
+  Dialog,
+  Portal,
+  Text,
+  TextInput,
+  useTheme,
+} from "react-native-paper";
+import { globalStyles } from "@/styles/globalStyles";
 import { ZodError } from "zod";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
+import { resetSchema } from "@/validations/users";
+import { useRouter } from "expo-router";
+import { passwordReset } from "@/services/auth/authUtils";
 
-export default function LoginPage() {
+export default function ResetPassword() {
   const theme = useTheme();
   const router = useRouter();
+
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [buttonDisabled, setButtonDisabled] = useState(false);
-  const { setUser } = useUserContext();
+  const [dialogVisible, setDialogVisible] = useState(false);
 
-  const handleLogin = async () => {
+  const handleResetPassword = async () => {
     setButtonDisabled(true);
-
     try {
-      loginSchema.parse({ email, password });
-
-      const uid = await signIn(email, password);
-      const userInfo = await loginUser(uid);
-
-      setUser(userInfo);
-
-      router.replace("/home");
+      resetSchema.parse({ email });
+      await passwordReset(email);
+      setDialogVisible(true);
     } catch (error) {
       if (error instanceof ZodError) {
         setErrorMessage(error.errors[0].message);
@@ -42,18 +41,21 @@ export default function LoginPage() {
     }
   };
 
+  const handleDialogDismiss = () => {
+    setDialogVisible(false);
+    router.replace("/login");
+  };
+
   return (
     <>
       <View
-        style={[
-          {
-            backgroundColor: theme.colors.baconPrimarykground,
-            padding: 20,
-            flex: 1,
-            gap: 20,
-            justifyContent: "center",
-          },
-        ]}
+        style={{
+          backgroundColor: theme.colors.onPrimary,
+          padding: 20,
+          flex: 1,
+          justifyContent: "center",
+          gap: 20,
+        }}
       >
         <View
           style={[
@@ -74,31 +76,31 @@ export default function LoginPage() {
             autoCapitalize="none"
             value={email}
             onChangeText={setEmail}
-          ></TextInput>
-          <TextInput
-            label="Contraseña"
-            autoCapitalize="none"
-            secureTextEntry={true}
-            value={password}
-            onChangeText={setPassword}
-          ></TextInput>
+          />
+
           <Button
-            icon="login"
+            icon="lock-reset"
             mode="contained"
+            onPress={handleResetPassword}
             disabled={buttonDisabled}
-            onPress={handleLogin}
           >
-            Ingresar
-          </Button>
-          <Divider />
-          <Button icon="google" mode="outlined">
-            Continuar con Google
-          </Button>
-          <Button icon="microsoft" mode="outlined">
-            Continuar con Microsoft
+            Restablecer contraseña
           </Button>
 
           <View style={{ gap: 20, marginTop: 10, alignItems: "center" }}>
+            <View style={{ flexDirection: "row" }}>
+              <Text style={globalStyles.linkText}>Ingresá a tu cuenta: </Text>
+              <Pressable
+                onPress={() => router.replace("/login")}
+                style={{ flexDirection: "row" }}
+              >
+                <Text
+                  style={[globalStyles.link, { color: theme.colors.primary }]}
+                >
+                  Iniciar sesión
+                </Text>
+              </Pressable>
+            </View>
             <View style={{ flexDirection: "row" }}>
               <Text style={globalStyles.linkText}>¿No tenés una cuenta? </Text>
               <Pressable
@@ -112,28 +114,30 @@ export default function LoginPage() {
                 </Text>
               </Pressable>
             </View>
-            <View style={{ flexDirection: "row" }}>
-              <Text style={globalStyles.linkText}>
-                ¿Olvidaste tu contraseña?{" "}
-              </Text>
-              <Pressable
-                onPress={() => router.replace("/resetPassword")}
-                style={{ flexDirection: "row" }}
-              >
-                <Text
-                  style={[globalStyles.link, { color: theme.colors.primary }]}
-                >
-                  Recuperar contraseña
-                </Text>
-              </Pressable>
-            </View>
           </View>
         </View>
       </View>
+
       <ErrorMessageSnackbar
         message={errorMessage}
         onDismiss={() => setErrorMessage("")}
       />
+
+      <Portal>
+        <Dialog visible={dialogVisible} onDismiss={handleDialogDismiss}>
+          <Dialog.Title>Correo enviado</Dialog.Title>
+          <Dialog.Content>
+            <Text>
+              Te enviamos un correo a "{email}" con instrucciones para
+              restablecer tu contraseña.
+            </Text>
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button onPress={handleDialogDismiss}>Aceptar</Button>
+          </Dialog.Actions>
+        </Dialog>
+      </Portal>
     </>
   );
 }
+// This code is a React Native component for a password reset screen. It includes a form for the user to enter their email address, and upon submission, it validates the input and sends a password reset request. If successful, it shows a dialog indicating that an email has been sent with instructions to reset the password. The component also includes navigation links to log in or register if the user doesn't have an account.

@@ -26,7 +26,6 @@ export const globalStyles = StyleSheet.create({
   },
   linkText: {
     textAlign: "center",
-    marginTop: 20,
   },
   link: {
     textDecorationLine: "underline",

@@ -1,7 +1,6 @@
 import { Avatar, Appbar, Button } from "react-native-paper";
 import { countries } from "@/utils/constants/countries";
 import { editUserProfile } from "@/services/userManagement";
-import { getAuth, signOut } from "firebase/auth";
 import { globalStyles } from "@/styles/globalStyles";
 import { ToggleableTextInput } from "@/components/ToggleableTextInput";
 import { useRouter } from "expo-router";
@@ -11,10 +10,10 @@ import { useUserInformation } from "@/hooks/useUserInformation";
 import { View, ScrollView } from "react-native";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import OptionPicker from "@/components/OptionPicker";
+import { signOut } from "@/services/auth/authUtils";
 
 export default function UserProfilePage() {
   const router = useRouter();
-  const auth = getAuth();
 
   const [isEditing, setIsEditing] = useState(false);
   const [buttonDisabled, setButtonDisabled] = useState(false);
@@ -66,7 +65,7 @@ export default function UserProfilePage() {
     try {
       setButtonDisabled(true);
 
-      await signOut(auth);
+      await signOut();
       // userContextHook.deleteUser();
 
       router.replace("/login");

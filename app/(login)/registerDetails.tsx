@@ -1,5 +1,5 @@
 import { Avatar, Button, TextInput, useTheme, Text } from "react-native-paper";
-import { ScrollView, View } from "react-native";
+import { View } from "react-native";
 import { useState } from "react";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import { registerUser } from "@/services/userManagement";
@@ -31,7 +31,7 @@ export default function RegisterDetailsPage() {
       const uid = user?.uid;
       if (!email || !uid || !accessToken) {
         setErrorMessage(
-          "Error al obtener el token de acceso o el uid del usuario"
+          "Error al obtener el token de acceso o el uid del usuario",
         );
         return;
       }
@@ -47,7 +47,7 @@ export default function RegisterDetailsPage() {
         CommonActions.reset({
           index: 0,
           routes: [{ name: "home" }],
-        })
+        }),
       );
     } catch (error) {
       setErrorMessage((error as Error).message);
@@ -57,15 +57,15 @@ export default function RegisterDetailsPage() {
   };
 
   return (
-    <View
-      style={[
-        globalStyles.mainContainer,
-        { backgroundColor: theme.colors.background },
-      ]}
-    >
-      <ScrollView
-        style={globalStyles.container}
-        contentContainerStyle={globalStyles.contentContainer}
+    <>
+      <View
+        style={{
+          backgroundColor: theme.colors.onPrimary,
+          padding: 20,
+          flex: 1,
+          gap: 20,
+          justifyContent: "center",
+        }}
       >
         <Text
           variant="titleLarge"
@@ -102,11 +102,11 @@ export default function RegisterDetailsPage() {
         >
           Confirmar datos
         </Button>
-      </ScrollView>
+      </View>
       <ErrorMessageSnackbar
         message={errorMessage}
         onDismiss={() => setErrorMessage("")}
       />
-    </View>
+    </>
   );
 }

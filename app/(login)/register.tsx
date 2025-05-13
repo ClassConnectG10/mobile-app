@@ -1,6 +1,6 @@
 import { Button, Divider, TextInput, useTheme, Text } from "react-native-paper";
-import { ScrollView, View, Image } from "react-native";
-import { Link, useRouter } from "expo-router";
+import { View, Image, Pressable } from "react-native";
+import { useRouter } from "expo-router";
 import { useState } from "react";
 import { signUp } from "@/services/auth/authUtils";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
@@ -44,77 +44,87 @@ export default function RegisterPage() {
   };
 
   return (
-    <View
-      style={{
-        backgroundColor: theme.colors.background,
-        padding: 20,
-        flex: 1,
-        gap: 20,
-        justifyContent: "center",
-      }}
-    >
+    <>
       <View
-        style={[
-          globalStyles.logoContainer,
-          { backgroundColor: theme.colors.primaryContainer },
-        ]}
+        style={{
+          backgroundColor: theme.colors.onPrimary,
+          padding: 20,
+          flex: 1,
+          gap: 20,
+          justifyContent: "center",
+        }}
       >
-        <Image
-          style={globalStyles.logo}
-          resizeMode="cover"
-          source={require("@/assets/images/logo.png")}
-        />
-      </View>
-
-      <View style={{ gap: 16 }}>
-        <TextInput
-          label="Correo electrónico"
-          autoCapitalize="none"
-          value={email}
-          onChangeText={setEmail}
-        ></TextInput>
-        <TextInput
-          label="Contraseña"
-          autoCapitalize="none"
-          secureTextEntry={true}
-          value={password}
-          onChangeText={setPassword}
-        ></TextInput>
-        <TextInput
-          label="Repetir contraseña"
-          autoCapitalize="none"
-          secureTextEntry={true}
-          value={confirmPassword}
-          onChangeText={setConfirmPassword}
-        ></TextInput>
-        <Button
-          icon="account-plus"
-          mode="contained"
-          disabled={buttonDisabled}
-          onPress={handleRegister}
+        <View
+          style={[
+            globalStyles.logoContainer,
+            { backgroundColor: theme.colors.primaryContainer },
+          ]}
         >
-          Registrar
-        </Button>
-        <Divider />
-        <Button icon="google" mode="outlined">
-          Continuar con Google
-        </Button>
-        <Button icon="microsoft" mode="outlined">
-          Continuar con Microsoft
-        </Button>
-        <Text style={globalStyles.linkText}>
-          ¿Ya tenés una cuenta?{" "}
-          <Link href="/login">
-            <Text style={[globalStyles.link, { color: theme.colors.primary }]}>
-              Iniciá sesión
-            </Text>
-          </Link>
-        </Text>
+          <Image
+            style={globalStyles.logo}
+            resizeMode="cover"
+            source={require("@/assets/images/logo.png")}
+          />
+        </View>
+
+        <View style={{ gap: 16 }}>
+          <TextInput
+            label="Correo electrónico"
+            autoCapitalize="none"
+            value={email}
+            onChangeText={setEmail}
+          ></TextInput>
+          <TextInput
+            label="Contraseña"
+            autoCapitalize="none"
+            secureTextEntry={true}
+            value={password}
+            onChangeText={setPassword}
+          ></TextInput>
+          <TextInput
+            label="Repetir contraseña"
+            autoCapitalize="none"
+            secureTextEntry={true}
+            value={confirmPassword}
+            onChangeText={setConfirmPassword}
+          ></TextInput>
+          <Button
+            icon="account-plus"
+            mode="contained"
+            disabled={buttonDisabled}
+            onPress={handleRegister}
+          >
+            Registrar
+          </Button>
+          <Divider />
+          <Button icon="google" mode="outlined">
+            Continuar con Google
+          </Button>
+          <Button icon="microsoft" mode="outlined">
+            Continuar con Microsoft
+          </Button>
+
+          <View style={{ gap: 20, marginTop: 10, alignItems: "center" }}>
+            <View style={{ flexDirection: "row" }}>
+              <Text style={globalStyles.linkText}>¿Ya tenés una cuenta? </Text>
+              <Pressable
+                onPress={() => router.replace("/login")}
+                style={{ flexDirection: "row" }}
+              >
+                <Text
+                  style={[globalStyles.link, { color: theme.colors.primary }]}
+                >
+                  Iniciá sesión
+                </Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
       </View>
       <ErrorMessageSnackbar
         message={errorMessage}
         onDismiss={() => setErrorMessage("")}
       />
-    </View>
+    </>
   );
 }
