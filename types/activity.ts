@@ -54,7 +54,7 @@ export class ActivityDetails {
 
 export class ActivitySubmission {
   constructor(
-    public resourceId: string,
+    public resourceId: number,
     public type: ActivityType,
     public studentId: number,
     public response: string,

@@ -54,7 +54,7 @@ export default function TeacherActivityPage() {
         console.log("Actividad de docente", activity);
         setTeacherActivity(activity);
         activityDetailsHook.setActivityDetails(
-          activity.activity.activityDetails,
+          activity.activity.activityDetails
         );
       }
     } catch (error) {
@@ -79,9 +79,14 @@ export default function TeacherActivityPage() {
   }, [courseId, activityId]);
 
   const handleViewSubmissions = async () => {
-    router.push(
-      `/courses/${courseId}/activities/teacher/${activityId}/submissions`,
-    );
+    router.push({
+      pathname:
+        "/courses/[courseId]/activities/teacher/[activityId]/submissions",
+      params: {
+        courseId: courseId,
+        activityId: activityId,
+      },
+    });
   };
 
   const handleEditActivity = async () => {
@@ -92,7 +97,7 @@ export default function TeacherActivityPage() {
         const updatedActivity = await updateActivity(
           courseId,
           teacherActivity.activity,
-          activityDetails,
+          activityDetails
         );
         setTeacherActivity(updatedActivity);
         setIsEditing(false);
@@ -112,7 +117,7 @@ export default function TeacherActivityPage() {
       if (teacherActivity) {
         const updatedActivity = await postActivity(
           courseId,
-          teacherActivity.activity,
+          teacherActivity.activity
         );
         setTeacherActivity(updatedActivity);
       }

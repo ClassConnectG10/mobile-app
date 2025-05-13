@@ -55,7 +55,7 @@ export default function ActivityDetails() {
       const response = await getActivitySubmission(
         courseId,
         studentActivity.activity.resourceId,
-        userContext.user.id,
+        userContext.user.id
       );
       setActivitySubmission(response);
       setResponse(response.response);
@@ -75,17 +75,17 @@ export default function ActivityDetails() {
         courseId,
         studentActivity.activity.resourceId,
         userContext.user.id,
-        response,
+        response
       );
       setActivitySubmission(
         new ActivitySubmission(
-          studentActivity.activity.resourceId.toString(),
+          studentActivity.activity.resourceId,
           studentActivity.activity.type,
           userContext.user.id,
           response,
           ActivityStatus.COMPLETED,
-          new Date(),
-        ),
+          new Date()
+        )
       );
     } catch (error) {
       setErrorMessage((error as Error).message);

@@ -6,6 +6,7 @@ import {
   Text,
   useTheme,
   Dialog,
+  ActivityIndicator,
 } from "react-native-paper";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import OptionPicker from "@/components/OptionPicker";
@@ -42,7 +43,7 @@ export default function CreateCoursePage() {
   const courseId = courseIdParam as string;
 
   const [isEditing, setIsEditing] = useState(false);
-  const [isLoading, setIsLoading] = useState(false); // TODO: Use loading state
+  const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [showConfirmationDelete, setShowConfirmationDelete] = useState(false);
   const [isOwner, setIsOwner] = useState(false);
@@ -65,8 +66,8 @@ export default function CreateCoursePage() {
 
     const requiredCourses = await Promise.all(
       courseContext.course.courseDetails.dependencies.map(
-        async (courseId) => await getCourse(courseId),
-      ),
+        async (courseId) => await getCourse(courseId)
+      )
     );
 
     requiredCoursesContext.setRequiredCourses(requiredCourses);
@@ -77,9 +78,8 @@ export default function CreateCoursePage() {
     if (!courseContext.course) return;
 
     try {
-
       console.log("Editing course:", courseContext.course);
-      
+
       setIsLoading(true);
       const newCourseDetails = courseDetailsHook.courseDetails;
       newCourseDetails.dependencies =
@@ -87,7 +87,7 @@ export default function CreateCoursePage() {
 
       const updatedCourse = await editCourse(
         courseContext.course,
-        newCourseDetails,
+        newCourseDetails
       );
 
       console.log("Updated course:", updatedCourse);
@@ -156,8 +156,8 @@ export default function CreateCoursePage() {
       setIsLoading(true);
       const requiredCourses = await Promise.all(
         courseContext.course.courseDetails.dependencies.map(
-          async (courseId) => await getCourse(courseId),
-        ),
+          async (courseId) => await getCourse(courseId)
+        )
       );
 
       requiredCoursesContext.setRequiredCourses(requiredCourses);
@@ -214,178 +214,190 @@ export default function CreateCoursePage() {
           />
         )}
       </Appbar.Header>
-      <View
-        style={[
-          globalStyles.mainContainer,
-          { backgroundColor: theme.colors.background },
-        ]}
-      >
-        <ScrollView contentContainerStyle={{ gap: 16 }}>
-          {courseOwner && (
-            <View style={{ gap: 8 }}>
-              <Text variant="titleMedium">Propietario del curso</Text>
-              <UserCard user={courseOwner} onPress={handleOwnerPress} />
-            </View>
-          )}
 
-          <ToggleableTextInput
-            label="Nombre del curso"
-            placeholder="Nombre del curso"
-            value={courseDetails.title}
-            editable={isEditing}
-            onChange={courseDetailsHook.setName}
+      {isLoading ? (
+        <View
+          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+        >
+          <ActivityIndicator
+            animating={true}
+            size="large"
+            color={theme.colors.primary}
           />
-          <ToggleableTextInput
-            label="Descripción del curso"
-            placeholder="Descripción del curso"
-            value={courseDetails.description}
-            onChange={courseDetailsHook.setDescription}
-            editable={isEditing}
-          />
-          {isEditing ? (
-            <ToggleableNumberInput
-              label="Cantidad máxima de alumnos"
-              value={courseDetails.maxNumberOfStudents}
-              onChange={courseDetailsHook.setNumberOfStudents}
+        </View>
+      ) : (
+        <View
+          style={[
+            globalStyles.mainContainer,
+            { backgroundColor: theme.colors.background },
+          ]}
+        >
+          <ScrollView contentContainerStyle={{ gap: 16 }}>
+            {courseOwner && (
+              <View style={{ gap: 8 }}>
+                <Text variant="titleMedium">Propietario del curso</Text>
+                <UserCard user={courseOwner} onPress={handleOwnerPress} />
+              </View>
+            )}
+
+            <ToggleableTextInput
+              label="Nombre del curso"
+              placeholder="Nombre del curso"
+              value={courseDetails.title}
+              editable={isEditing}
+              onChange={courseDetailsHook.setName}
+            />
+            <ToggleableTextInput
+              label="Descripción del curso"
+              placeholder="Descripción del curso"
+              value={courseDetails.description}
+              onChange={courseDetailsHook.setDescription}
               editable={isEditing}
             />
-          ) : (
-            courseContext.course && (
-              <View style={{ gap: 10 }}>
-                {/* <TextField
+            {isEditing ? (
+              <ToggleableNumberInput
+                label="Cantidad máxima de alumnos"
+                value={courseDetails.maxNumberOfStudents}
+                onChange={courseDetailsHook.setNumberOfStudents}
+                editable={isEditing}
+              />
+            ) : (
+              courseContext.course && (
+                <View style={{ gap: 10 }}>
+                  {/* <TextField
                   label="Cantidad de alumnos"
                   value={courseContext.course.numberOfStudens.toString()}
                 /> */}
-                <TextField
-                  label="Cantidad de alumnos inscritos"
-                  value={courseDetails.maxNumberOfStudents.toString()}
-                />
-              </View>
-            )
-          )}
-          <View
-            style={{
-              flexDirection: "row",
-              justifyContent: "space-between",
-              gap: 20,
-            }}
-          >
-            <DatePickerButton
-              label="Fecha de inicio"
-              value={courseDetails.startDate}
-              editable={isEditing}
-              onChange={courseDetailsHook.setStartDate}
-            />
-            <DatePickerButton
-              label="Fecha de finalización"
-              value={courseDetails.endDate}
-              editable={isEditing}
-              onChange={courseDetailsHook.setEndDate}
-            />
-          </View>
-          <OptionPicker
-            label="Nivel"
-            value={courseDetails.level}
-            items={levels}
-            editable={isEditing}
-            setValue={courseDetailsHook.setLevel}
-          />
-
-          <OptionPicker
-            label="Categoría"
-            value={courseDetails.category}
-            items={categories}
-            editable={isEditing}
-            setValue={courseDetailsHook.setCategory}
-          />
-
-          <OptionPicker
-            label="Modalidad"
-            value={courseDetails.modality}
-            items={modalities}
-            editable={isEditing}
-            setValue={courseDetailsHook.setModality}
-          />
-          {((courseContext.course &&
-            courseContext.course.courseDetails.dependencies.length > 0) ||
-            isEditing) && (
-            <View style={{ gap: 10 }}>
-              <Text variant="titleMedium">Cursos requeridos</Text>
-              {requiredCourses.map((course) => (
-                <View
-                  key={course.courseId}
-                  style={{
-                    flexDirection: "row",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    gap: 10,
-                  }}
-                >
-                  <CourseCard
-                    name={course.courseDetails.title}
-                    category={course.courseDetails.category}
-                    onPress={() => handleRequiredCoursePress(course.courseId)}
+                  <TextField
+                    label="Cantidad de alumnos inscritos"
+                    value={courseDetails.maxNumberOfStudents.toString()}
                   />
-                  {isEditing && (
-                    <IconButton
-                      icon="delete"
-                      mode="contained"
-                      onPress={() => {
-                        requiredCoursesContext.deleteRequiredCourse(course);
-                      }}
-                    />
-                  )}
                 </View>
-              ))}
-
-              {isEditing && (
-                <Button
-                  onPress={() => router.push("/courses/searchRequired")}
-                  mode="outlined"
-                  icon="plus"
-                >
-                  Agregar curso requerido
-                </Button>
-              )}
-            </View>
-          )}
-
-          {isEditing && (
-            <Button
-              onPress={() => setShowConfirmationDelete(true)}
-              mode="contained"
-              icon="delete"
-              disabled={isLoading}
+              )
+            )}
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                gap: 20,
+              }}
             >
-              Eliminar curso
-            </Button>
-          )}
-        </ScrollView>
+              <DatePickerButton
+                label="Fecha de inicio"
+                value={courseDetails.startDate}
+                editable={isEditing}
+                onChange={courseDetailsHook.setStartDate}
+              />
+              <DatePickerButton
+                label="Fecha de finalización"
+                value={courseDetails.endDate}
+                editable={isEditing}
+                onChange={courseDetailsHook.setEndDate}
+              />
+            </View>
+            <OptionPicker
+              label="Nivel"
+              value={courseDetails.level}
+              items={levels}
+              editable={isEditing}
+              setValue={courseDetailsHook.setLevel}
+            />
 
-        {/* Confirmation Dialog */}
+            <OptionPicker
+              label="Categoría"
+              value={courseDetails.category}
+              items={categories}
+              editable={isEditing}
+              setValue={courseDetailsHook.setCategory}
+            />
 
-        <Dialog
-          visible={showConfirmationDelete}
-          onDismiss={() => setShowConfirmationDelete(false)}
-        >
-          <Dialog.Title>Atención</Dialog.Title>
-          <Dialog.Content>
-            <Text variant="bodyMedium">
-              El curso '{courseDetails.title}' será eliminado.
-            </Text>
-          </Dialog.Content>
-          <Dialog.Actions>
-            <Button onPress={() => setShowConfirmationDelete(false)}>
-              Cancelar
-            </Button>
-            <Button onPress={handleDeleteCourse}>Eliminar</Button>
-          </Dialog.Actions>
-        </Dialog>
-        <ErrorMessageSnackbar
-          message={errorMessage}
-          onDismiss={() => setErrorMessage("")}
-        />
-      </View>
+            <OptionPicker
+              label="Modalidad"
+              value={courseDetails.modality}
+              items={modalities}
+              editable={isEditing}
+              setValue={courseDetailsHook.setModality}
+            />
+            {((courseContext.course &&
+              courseContext.course.courseDetails.dependencies.length > 0) ||
+              isEditing) && (
+              <View style={{ gap: 10 }}>
+                <Text variant="titleMedium">Cursos requeridos</Text>
+                {requiredCourses.map((course) => (
+                  <View
+                    key={course.courseId}
+                    style={{
+                      flexDirection: "row",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      gap: 10,
+                    }}
+                  >
+                    <CourseCard
+                      name={course.courseDetails.title}
+                      category={course.courseDetails.category}
+                      onPress={() => handleRequiredCoursePress(course.courseId)}
+                    />
+                    {isEditing && (
+                      <IconButton
+                        icon="delete"
+                        mode="contained"
+                        onPress={() => {
+                          requiredCoursesContext.deleteRequiredCourse(course);
+                        }}
+                      />
+                    )}
+                  </View>
+                ))}
+
+                {isEditing && (
+                  <Button
+                    onPress={() => router.push("/courses/searchRequired")}
+                    mode="outlined"
+                    icon="plus"
+                  >
+                    Agregar curso requerido
+                  </Button>
+                )}
+              </View>
+            )}
+
+            {isEditing && (
+              <Button
+                onPress={() => setShowConfirmationDelete(true)}
+                mode="contained"
+                icon="delete"
+                disabled={isLoading}
+              >
+                Eliminar curso
+              </Button>
+            )}
+          </ScrollView>
+        </View>
+      )}
+      {/* Confirmation Dialog */}
+
+      <Dialog
+        visible={showConfirmationDelete}
+        onDismiss={() => setShowConfirmationDelete(false)}
+      >
+        <Dialog.Title>Atención</Dialog.Title>
+        <Dialog.Content>
+          <Text variant="bodyMedium">
+            El curso '{courseDetails.title}' será eliminado.
+          </Text>
+        </Dialog.Content>
+        <Dialog.Actions>
+          <Button onPress={() => setShowConfirmationDelete(false)}>
+            Cancelar
+          </Button>
+          <Button onPress={handleDeleteCourse}>Eliminar</Button>
+        </Dialog.Actions>
+      </Dialog>
+      <ErrorMessageSnackbar
+        message={errorMessage}
+        onDismiss={() => setErrorMessage("")}
+      />
     </>
   );
 }
