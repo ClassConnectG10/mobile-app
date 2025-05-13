@@ -66,8 +66,8 @@ export default function CreateCoursePage() {
 
     const requiredCourses = await Promise.all(
       courseContext.course.courseDetails.dependencies.map(
-        async (courseId) => await getCourse(courseId)
-      )
+        async (courseId) => await getCourse(courseId),
+      ),
     );
 
     requiredCoursesContext.setRequiredCourses(requiredCourses);
@@ -78,8 +78,6 @@ export default function CreateCoursePage() {
     if (!courseContext.course) return;
 
     try {
-      console.log("Editing course:", courseContext.course);
-
       setIsLoading(true);
       const newCourseDetails = courseDetailsHook.courseDetails;
       newCourseDetails.dependencies =
@@ -87,10 +85,8 @@ export default function CreateCoursePage() {
 
       const updatedCourse = await editCourse(
         courseContext.course,
-        newCourseDetails
+        newCourseDetails,
       );
-
-      console.log("Updated course:", updatedCourse);
 
       courseContext.setCourse(updatedCourse);
       setIsEditing(false);
@@ -156,8 +152,8 @@ export default function CreateCoursePage() {
       setIsLoading(true);
       const requiredCourses = await Promise.all(
         courseContext.course.courseDetails.dependencies.map(
-          async (courseId) => await getCourse(courseId)
-        )
+          async (courseId) => await getCourse(courseId),
+        ),
       );
 
       requiredCoursesContext.setRequiredCourses(requiredCourses);
@@ -215,7 +211,11 @@ export default function CreateCoursePage() {
         )}
       </Appbar.Header>
 
-      {isLoading ? (
+      {isLoading ||
+      !courseContext.course ||
+      !courseDetails ||
+      !courseOwner ||
+      !requiredCourses ? (
         <View
           style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
         >

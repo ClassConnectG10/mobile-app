@@ -21,14 +21,14 @@ export const createEnrollCourseRequest = (courseId: string) => {
 
 export const createSearchCoursesRequest = (
   searchFilters: SearchFilters,
-  searchOption: SearchOption
+  searchOption: SearchOption,
 ) => {
   const params: Record<string, string> = {
     search_option: searchOption,
   };
 
   if (searchFilters.searchQuery && searchFilters.searchQuery !== "") {
-    params.search_query = searchFilters.searchQuery;
+    params.search = searchFilters.searchQuery;
   }
 
   if (searchFilters.startDate) {

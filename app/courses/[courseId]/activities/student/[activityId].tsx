@@ -6,12 +6,8 @@ import {
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { View } from "react-native";
-import { Appbar, Button, Text } from "react-native-paper";
-import {
-  ActivityStatus,
-  ActivitySubmission,
-  StudentActivity,
-} from "@/types/activity";
+import { Appbar, Button } from "react-native-paper";
+import { ActivitySubmission, StudentActivity } from "@/types/activity";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import { TextField } from "@/components/TextField";
 import { ToggleableTextInput } from "@/components/ToggleableTextInput";
@@ -48,15 +44,19 @@ export default function ActivityDetails() {
     }
   };
 
-  const fetchStudentActivityResponse = async () => {
+  const fetchStudentActivitySubmission = async () => {
     if (!studentActivity || !userContext.user) return;
+
     try {
       setIsLoading(true);
       const response = await getActivitySubmission(
         courseId,
-        studentActivity.activity.resourceId,
+        studentActivity.activity,
         userContext.user.id,
       );
+
+      console.log("Response", response);
+
       setActivitySubmission(response);
       setResponse(response.response);
     } catch (error) {
@@ -71,22 +71,8 @@ export default function ActivityDetails() {
 
     try {
       setIsLoading(true);
-      await submitActivity(
-        courseId,
-        studentActivity.activity.resourceId,
-        userContext.user.id,
-        response,
-      );
-      setActivitySubmission(
-        new ActivitySubmission(
-          studentActivity.activity.resourceId,
-          studentActivity.activity.type,
-          userContext.user.id,
-          response,
-          ActivityStatus.COMPLETED,
-          new Date(),
-        ),
-      );
+      await submitActivity(courseId, studentActivity.activity, response);
+      await fetchStudentActivitySubmission();
     } catch (error) {
       setErrorMessage((error as Error).message);
     } finally {
@@ -100,7 +86,7 @@ export default function ActivityDetails() {
 
   useEffect(() => {
     if (studentActivity) {
-      fetchStudentActivityResponse();
+      fetchStudentActivitySubmission();
     }
   }, [studentActivity]);
 
@@ -112,9 +98,8 @@ export default function ActivityDetails() {
           <Appbar.Content title={"Información de la actividad"} />
           <Appbar.Action icon="information-outline" />
         </Appbar.Header>
-        <Text>Detalles de la actividad</Text>
         {studentActivity && (
-          <View>
+          <View style={{ padding: 16, gap: 16 }}>
             <ActivityCard activity={studentActivity} />
 
             <TextField
@@ -130,7 +115,7 @@ export default function ActivityDetails() {
               label="Respuesta"
               value={response}
               placeholder={"Escribe tu respuesta aquí"}
-              editable={true}
+              editable={!studentActivity.submited}
               onChange={setResponse}
             />
 
@@ -138,12 +123,10 @@ export default function ActivityDetails() {
               mode="contained"
               onPress={handleSubmitResponse}
               disabled={
-                isLoading ||
-                response.trim() === "" ||
-                studentActivity.status === ActivityStatus.COMPLETED
+                isLoading || response.trim() === "" || studentActivity.submited
               }
             >
-              {studentActivity.status === ActivityStatus.COMPLETED
+              {studentActivity.submited
                 ? "Actividad completada"
                 : "Enviar respuesta"}
             </Button>

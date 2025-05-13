@@ -3,7 +3,7 @@ import SubmissionCard from "@/components/SubmissionCard";
 import { getActivitySubmissions } from "@/services/activityManagement";
 import { ActivitySubmission } from "@/types/activity";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FlatList, View, StyleSheet } from "react-native";
 import { ActivityIndicator, Appbar, Text } from "react-native-paper";
 
@@ -27,8 +27,11 @@ export default function TeacherSubmissionsPage() {
       if (courseId && activityId) {
         const submissionsData = await getActivitySubmissions(
           courseId,
-          Number(activityId)
+          Number(activityId),
         );
+
+        console.log("Submissions data", submissionsData);
+
         setStudentSubmissions(submissionsData);
       }
     } catch (error) {
@@ -37,6 +40,10 @@ export default function TeacherSubmissionsPage() {
       setIsLoading(false);
     }
   }
+
+  useEffect(() => {
+    fetchSubmissions();
+  }, [courseId, activityId]);
 
   return (
     <View>

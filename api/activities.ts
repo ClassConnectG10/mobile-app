@@ -88,6 +88,24 @@ export const createActivitySubmissionRequest = (
   studentId: number
 ) => {
   return createRequest({
-    uri: `courses/${courseId}/activity/${activityId}/submissions/${studentId}`,
+    uri: `courses/${courseId}/activity/${activityId}/submission/${studentId}`,
+  });
+};
+
+export const createTaskSubmissionPostRequest = (
+  courseId: string,
+  activityId: number
+) => {
+  return createRequest({
+    uri: `courses/${courseId}/task/${activityId}/submit`,
+  });
+};
+
+export const createExamSubmissionPostRequest = (
+  courseId: string,
+  activityId: number
+) => {
+  return createRequest({
+    uri: `courses/${courseId}/exam/${activityId}/submit`,
   });
 };

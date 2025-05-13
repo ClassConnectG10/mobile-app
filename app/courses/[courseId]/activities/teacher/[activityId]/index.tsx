@@ -54,7 +54,7 @@ export default function TeacherActivityPage() {
         console.log("Actividad de docente", activity);
         setTeacherActivity(activity);
         activityDetailsHook.setActivityDetails(
-          activity.activity.activityDetails
+          activity.activity.activityDetails,
         );
       }
     } catch (error) {
@@ -97,7 +97,7 @@ export default function TeacherActivityPage() {
         const updatedActivity = await updateActivity(
           courseId,
           teacherActivity.activity,
-          activityDetails
+          activityDetails,
         );
         setTeacherActivity(updatedActivity);
         setIsEditing(false);
@@ -117,7 +117,7 @@ export default function TeacherActivityPage() {
       if (teacherActivity) {
         const updatedActivity = await postActivity(
           courseId,
-          teacherActivity.activity
+          teacherActivity.activity,
         );
         setTeacherActivity(updatedActivity);
       }
@@ -216,7 +216,7 @@ export default function TeacherActivityPage() {
             onChange={activityDetailsHook.setDueDate}
           />
 
-          {!isEditing && (
+          {!isEditing && teacherActivity && teacherActivity.visible && (
             <Button
               onPress={handleViewSubmissions}
               mode="contained"

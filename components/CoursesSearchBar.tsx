@@ -23,6 +23,9 @@ export const CoursesSearchBar: React.FC<CoursesSearchBarProps> = ({
       onIconPress={() => {
         onSearch(searchTerm);
       }}
+      onSubmitEditing={() => {
+        onSearch(searchTerm);
+      }}
     />
   );
 };

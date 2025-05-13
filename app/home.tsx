@@ -1,11 +1,14 @@
 import React from "react";
 import { FlatList, StyleSheet, View } from "react-native";
 import {
+  ActivityIndicator,
   Appbar,
   Button,
   FAB,
   Modal,
   SegmentedButtons,
+  useTheme,
+  Text,
 } from "react-native-paper";
 import { router } from "expo-router";
 import CourseCard from "@/components/CourseCard";
@@ -19,6 +22,8 @@ import { CourseFilterModal } from "@/components/CourseFilterModal";
 import { CoursesSearchBar } from "@/components/CoursesSearchBar";
 
 export default function HomePage() {
+  const theme = useTheme();
+
   const [courses, setCourses] = useState<Course[]>([]);
   const [newCourseModalVisible, setNewCourseModalVisible] = useState(false);
 
@@ -26,7 +31,7 @@ export default function HomePage() {
   const [isLoading, setIsLoading] = useState(false);
 
   const [searchOption, setSearchOption] = useState<SearchOption>(
-    SearchOption.RELATED
+    SearchOption.RELATED,
   );
   const [searchFiltersModalVisible, setSearchFiltersModalVisible] =
     useState(false);
@@ -63,6 +68,7 @@ export default function HomePage() {
   };
 
   const handleSearch = (searchTerm: string) => {
+    console.log("Search term:", searchTerm);
     setSearchFilters((prev) => ({
       ...prev,
       searchQuery: searchTerm,
@@ -151,6 +157,33 @@ export default function HomePage() {
             />
           )}
           ItemSeparatorComponent={() => <View style={{ height: 16 }} />}
+          ListEmptyComponent={
+            isLoading ? (
+              <View
+                style={{
+                  flex: 1,
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <ActivityIndicator
+                  animating={true}
+                  size="large"
+                  color={theme.colors.primary}
+                />
+              </View>
+            ) : (
+              <View
+                style={{
+                  flex: 1,
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <Text variant="titleMedium">No se encontraron cursos</Text>
+              </View>
+            )
+          }
         />
       </View>
 

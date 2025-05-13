@@ -12,7 +12,6 @@ const SubmissionCard: React.FC<SubmissionCardProps> = ({
   onPress,
 }) => {
   const theme = useTheme();
-  const { status: submissionStatus } = submission;
 
   return (
     <Card
@@ -24,7 +23,9 @@ const SubmissionCard: React.FC<SubmissionCardProps> = ({
           <Text style={[styles.title, { color: theme.colors.onSurface }]}>
             {submission.studentId}
           </Text>
-          <Text style={[styles.dueDate]}>{submissionStatus}</Text>
+          <Text style={[styles.dueDate]}>
+            {submission.submited ? "Entregada" : "No entregada"}
+          </Text>
         </View>
       </View>
     </Card>

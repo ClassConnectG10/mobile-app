@@ -9,12 +9,6 @@ export const enum ActivitiesOption {
   EXAMS = "EXAM",
 }
 
-export enum ActivityStatus {
-  PENDING = "PENDING",
-  IN_PROGRESS = "IN_PROGRESS",
-  COMPLETED = "COMPLETED",
-}
-
 export enum StudentActivityFilter {
   ALL = "ALL",
   PENDING = "PENDING",
@@ -32,14 +26,18 @@ export class TeacherActivity {
 }
 
 export class StudentActivity {
-  constructor(public activity: Activity, public status: ActivityStatus) {}
+  constructor(
+    public activity: Activity,
+    public submited: boolean,
+    public submitedDate?: Date,
+  ) {}
 }
 
 export class Activity {
   constructor(
     public resourceId: number,
     public type: ActivityType,
-    public activityDetails: ActivityDetails
+    public activityDetails: ActivityDetails,
   ) {}
 }
 
@@ -48,7 +46,7 @@ export class ActivityDetails {
     public title: string,
     public description: string,
     public instruction: string,
-    public dueDate: Date
+    public dueDate: Date,
   ) {}
 }
 
@@ -58,7 +56,7 @@ export class ActivitySubmission {
     public type: ActivityType,
     public studentId: number,
     public response: string,
-    public status: ActivityStatus,
-    public submissionDate: Date | null
+    public submited: boolean,
+    public submissionDate?: Date,
   ) {}
 }

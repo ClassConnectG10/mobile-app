@@ -1,7 +1,6 @@
 import { Card, Icon, Text, useTheme } from "react-native-paper";
 import { StyleSheet, View } from "react-native";
 import {
-  ActivityStatus,
   ActivityType,
   StudentActivity,
   TeacherActivity,
@@ -34,9 +33,7 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onPress }) => {
   );
 
   if (activity instanceof StudentActivity) {
-    const { status } = activity;
-
-    if (status === ActivityStatus.COMPLETED) {
+    if (activity.submited) {
       statusIcon = (
         <Icon source="check-circle" size={24} color={customColors.success} />
       );

@@ -22,6 +22,8 @@ import {
   createTaskRequest,
   createTaskPostRequest,
   createExamPostRequest,
+  createTaskSubmissionPostRequest,
+  createExamSubmissionPostRequest,
 } from "@/api/activities";
 import {
   activityDetailsSchema,
@@ -30,7 +32,7 @@ import {
 
 export async function getCourseTeacherActivities(
   courseId: string,
-  activitiesOption: ActivitiesOption
+  activitiesOption: ActivitiesOption,
 ): Promise<TeacherActivity[]> {
   try {
     const request = await createActivitiesRequest(courseId, activitiesOption);
@@ -48,11 +50,11 @@ export async function getCourseTeacherActivities(
               activityData.title,
               activityData.description,
               activityData.instruction,
-              new Date(activityData.due_date)
-            )
+              new Date(activityData.due_date),
+            ),
           ),
-          activityData.visible
-        )
+          activityData.visible,
+        ),
     );
 
     return activities;
@@ -63,7 +65,7 @@ export async function getCourseTeacherActivities(
 
 export async function getCourseStudentActivities(
   courseId: string,
-  activitiesOption: ActivitiesOption
+  activitiesOption: ActivitiesOption,
 ): Promise<StudentActivity[]> {
   try {
     const request = await createActivitiesRequest(courseId, activitiesOption);
@@ -71,8 +73,8 @@ export async function getCourseStudentActivities(
 
     const activitiesData = response.data.data;
     const activities: StudentActivity[] = activitiesData.map(
-      (activityData: any) =>
-        new StudentActivity(
+      (activityData: any) => {
+        const studentActivity = new StudentActivity(
           new Activity(
             activityData.resource_id,
             activityData.type,
@@ -80,11 +82,18 @@ export async function getCourseStudentActivities(
               activityData.title,
               activityData.description,
               activityData.instruction,
-              new Date(activityData.due_date)
-            )
+              new Date(activityData.due_date),
+            ),
           ),
-          activityData.status
-        )
+          activityData.delivered,
+          activityData.delivered_date,
+        );
+
+        if (activityData.delivered && activityData.delivered_date) {
+          studentActivity.submitedDate = new Date(activityData.delivered_date);
+        }
+        return studentActivity;
+      },
     );
 
     return activities;
@@ -93,7 +102,10 @@ export async function getCourseStudentActivities(
   }
 }
 
-export async function getStudentActivity(courseId: string, activityId: number): Promise<StudentActivity> {
+export async function getStudentActivity(
+  courseId: string,
+  activityId: number,
+): Promise<StudentActivity> {
   try {
     const request = await createActivityRequest(courseId, activityId);
     const response = await request.get("");
@@ -106,18 +118,26 @@ export async function getStudentActivity(courseId: string, activityId: number): 
           activityData.title,
           activityData.description,
           activityData.instruction,
-          new Date(activityData.due_date)
-        )
+          new Date(activityData.due_date),
+        ),
       ),
-      activityData.status
+      activityData.delivered,
     );
+
+    if (activityData.delivered && activityData.delivered_date) {
+      activity.submitedDate = new Date(activityData.delivered_date);
+    }
+
     return activity;
   } catch (error) {
     throw handleError(error, "obtener la actividad del estudiante");
   }
 }
 
-export async function getTeacherActivity(courseId: string, activityId: number): Promise<TeacherActivity> {
+export async function getTeacherActivity(
+  courseId: string,
+  activityId: number,
+): Promise<TeacherActivity> {
   try {
     const request = await createActivityRequest(courseId, activityId);
     const response = await request.get("");
@@ -133,10 +153,10 @@ export async function getTeacherActivity(courseId: string, activityId: number): 
           activityData.title,
           activityData.description,
           activityData.instruction,
-          new Date(activityData.due_date)
-        )
+          new Date(activityData.due_date),
+        ),
       ),
-      activityData.visible
+      activityData.visible,
     );
 
     return activity;
@@ -147,7 +167,7 @@ export async function getTeacherActivity(courseId: string, activityId: number): 
 
 export async function postActivity(
   courseId: string,
-  activity: Activity
+  activity: Activity,
 ): Promise<TeacherActivity> {
   try {
     let request: AxiosInstance;
@@ -168,10 +188,10 @@ export async function postActivity(
           activityData.title,
           activityData.description,
           activityData.instruction,
-          new Date(activityData.due_date)
-        )
+          new Date(activityData.due_date),
+        ),
       ),
-      activityData.visible
+      activityData.visible,
     );
 
     return newActivity;
@@ -183,7 +203,7 @@ export async function postActivity(
 export async function updateActivity(
   courseId: string,
   activity: Activity,
-  activityDetails: ActivityDetails
+  activityDetails: ActivityDetails,
 ): Promise<TeacherActivity> {
   try {
     activityDetailsSchemaUpdate.parse(activityDetails);
@@ -213,10 +233,10 @@ export async function updateActivity(
           activityData.title,
           activityData.description,
           activityData.instruction,
-          new Date(activityData.due_date)
-        )
+          new Date(activityData.due_date),
+        ),
       ),
-      activityData.visible
+      activityData.visible,
     );
     return updatedActivity;
   } catch (error) {
@@ -226,7 +246,7 @@ export async function updateActivity(
 
 export async function deleteActivity(
   courseId: string,
-  activity: Activity
+  activity: Activity,
 ): Promise<void> {
   try {
     let request: AxiosInstance;
@@ -245,12 +265,12 @@ export async function deleteActivity(
 
 export async function getActivitySubmissions(
   courseId: string,
-  activityId: number
+  activityId: number,
 ): Promise<ActivitySubmission[]> {
   try {
     const request = await createActivitySubmissionsRequest(
       courseId,
-      activityId
+      activityId,
     );
     const response = await request.get("");
     const submissionsData = response.data.data;
@@ -260,10 +280,10 @@ export async function getActivitySubmissions(
           activityData.resource_id,
           activityData.activity_type,
           activityData.student_id,
-          activityData.response,
+          activityData.external_ref,
           activityData.status,
-          new Date(activityData.submission_date)
-        )
+          new Date(activityData.submission_date),
+        ),
     );
     return submissions;
   } catch (error) {
@@ -273,19 +293,33 @@ export async function getActivitySubmissions(
 
 export async function getActivitySubmission(
   courseId: string,
-  activityId: number,
-  studentId: number
+  activity: Activity,
+  studentId: number,
 ): Promise<ActivitySubmission> {
   try {
     const request = await createActivitySubmissionRequest(
       courseId,
-      activityId,
-      studentId
+      activity.resourceId,
+      studentId,
     );
     const response = await request.get("");
-    const submissionData = response.data.data;
 
-    return submissionData;
+    console.log("DATA DEL USER", response.data.data);
+
+    const submissionData = response.data.data;
+    const submission = new ActivitySubmission(
+      submissionData.task_id,
+      activity.type,
+      studentId,
+      submissionData.external_ref,
+      submissionData.delivered,
+    );
+
+    if (submissionData.delivered && submissionData.submission_date) {
+      submission.submissionDate = new Date(submissionData.submission_date);
+    }
+
+    return submission;
   } catch (error) {
     throw handleError(error, "obtener la entrega de la actividad");
   }
@@ -295,7 +329,7 @@ export async function createActivity(
   courseId: string,
   moduleId: string,
   activityType: ActivityType,
-  activityDetails: ActivityDetails
+  activityDetails: ActivityDetails,
 ): Promise<TeacherActivity> {
   try {
     activityDetailsSchema.parse(activityDetails);
@@ -328,10 +362,10 @@ export async function createActivity(
           activityData.title,
           activityData.description,
           activityData.instruction,
-          new Date(activityData.due_date)
-        )
+          new Date(activityData.due_date),
+        ),
       ),
-      activityData.visible
+      activityData.visible,
     );
 
     return newActivity;
@@ -362,19 +396,31 @@ export async function getCourseModuleId(courseId: string): Promise<string> {
 
 export async function submitActivity(
   courseId: string,
-  activityId: number,
-  studentId: number,
-  response: string
+  activity: Activity,
+  response: string,
 ): Promise<void> {
   try {
-    const request = await createActivitySubmissionRequest(
-      courseId,
-      activityId,
-      studentId
-    );
+    let request: AxiosInstance;
+
+    console.log("Activity", activity);
+    console.log("Response", response);
+
+    if (activity.type !== ActivityType.TASK) {
+      request = await createTaskSubmissionPostRequest(
+        courseId,
+        activity.resourceId,
+      );
+    } else {
+      request = await createExamSubmissionPostRequest(
+        courseId,
+        activity.resourceId,
+      );
+    }
+
     const body = {
-      data: response,
+      file: response,
     };
+
     await request.post("", body);
   } catch (error) {
     throw handleError(error, "enviar la actividad");
