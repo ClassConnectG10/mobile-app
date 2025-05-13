@@ -10,7 +10,7 @@ export interface SearchFiltersHook {
   setLevel: (level: string) => void;
   setModality: (modality: string) => void;
   setCategory: (category: string) => void;
-  resetSearchFilters: () => void;
+  resetFilters: () => void;
 }
 
 export function useSearchFilters(): SearchFiltersHook {
@@ -36,9 +36,10 @@ export function useSearchFilters(): SearchFiltersHook {
   const setCategory = (category: string) => {
     setSearchFilters((prev) => ({ ...prev, category }));
   };
-
-  const resetSearchFilters = () => {
-    setSearchFilters(new SearchFilters("", null, null, "", "", ""));
+  const resetFilters = () => {
+    setSearchFilters(
+      new SearchFilters(searchFilters.searchQuery, null, null, "", "", "")
+    );
   };
 
   return {
@@ -50,6 +51,6 @@ export function useSearchFilters(): SearchFiltersHook {
     setLevel,
     setModality,
     setCategory,
-    resetSearchFilters,
+    resetFilters,
   };
 }

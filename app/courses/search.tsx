@@ -1,48 +1,27 @@
 import { View, FlatList, StyleSheet } from "react-native";
-import {
-  Appbar,
-  Button,
-  Text,
-  Searchbar,
-  Modal,
-  Divider,
-  IconButton,
-  useTheme,
-} from "react-native-paper";
+import { Appbar, Searchbar } from "react-native-paper";
 import { useRouter } from "expo-router";
-import OptionPicker from "@/components/OptionPicker";
-import {
-  levels,
-  modalities,
-  categories,
-} from "@/utils/constants/courseDetails";
 import { globalStyles } from "@/styles/globalStyles";
-import { DatePickerButton } from "@/components/DatePickerButton";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Course, SearchFilters, SearchOption } from "@/types/course";
 import { searchCourses } from "@/services/courseManagement";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import CourseCard from "@/components/CourseCard";
-import { useSearchFilters } from "@/hooks/useSearchFilters";
 import { CourseFilterModal } from "@/components/CourseFilterModal";
+import { CoursesSearchBar } from "@/components/CoursesSearchBar";
 
 export default function SearchCoursesPage() {
   const router = useRouter();
-  const theme = useTheme();
   const [courses, setCourses] = useState<Course[]>([]);
   const [errorMessage, setErrorMessage] = useState("");
   const [searchFiltersModalVisible, setSearchFiltersModalVisible] =
     useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
   const [searchFilters, setSearchFilters] = useState(
     new SearchFilters("", null, null, "", "", "")
   );
 
   const fetchCourses = async () => {
     try {
-      console.log("JJJJJJJJ");
-      console.log("searchFilters", searchFilters);
-      searchFilters.searchQuery = searchQuery;
       const coursesData = await searchCourses(
         searchFilters,
         SearchOption.NOT_RELATED
@@ -60,10 +39,16 @@ export default function SearchCoursesPage() {
     });
   };
 
-  const handleApplyFilters = async (searchFilters: SearchFilters) => {
-    setSearchFiltersModalVisible(false);
-    setSearchFilters(searchFilters);
+  const handleSearch = (searchTerm: string) => {
+    setSearchFilters((prev) => ({
+      ...prev,
+      searchQuery: searchTerm,
+    }));
   };
+
+  useEffect(() => {
+    fetchCourses();
+  }, [searchFilters]);
 
   return (
     <>
@@ -79,12 +64,7 @@ export default function SearchCoursesPage() {
       </Appbar.Header>
 
       <View style={[globalStyles.mainContainer, styles.mainContainer]}>
-        <Searchbar
-          placeholder="Buscar cursos"
-          onChangeText={setSearchQuery}
-          value={searchQuery}
-          onIconPress={fetchCourses}
-        />
+        <CoursesSearchBar onSearch={handleSearch} />
 
         <View style={{ marginVertical: 16 }}>
           <FlatList
@@ -107,7 +87,7 @@ export default function SearchCoursesPage() {
           onDismiss={() => {
             setSearchFiltersModalVisible(false);
           }}
-          onApplyFilters={handleApplyFilters}
+          onApplyFilters={setSearchFilters}
         />
 
         <ErrorMessageSnackbar

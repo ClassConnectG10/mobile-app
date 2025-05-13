@@ -29,15 +29,21 @@ export const CourseFilterModal: React.FC<CourseFilterModalProps> = ({
   onDismiss,
   onApplyFilters,
 }) => {
-  const theme = useTheme();
   const searchFiltersHook = useSearchFilters();
-  const searchFilters = searchFiltersHook.searchFilters;
+  const {
+    searchFilters,
+    resetFilters,
+    setStartDate,
+    setEndDate,
+    setLevel,
+    setCategory,
+    setModality,
+  } = searchFiltersHook;
+
   return (
     <Modal
       visible={visible}
-      onDismiss={() => {
-        onDismiss();
-      }}
+      onDismiss={onDismiss}
       contentContainerStyle={styles.modalContainer}
       style={styles.modalContent}
     >
@@ -47,15 +53,14 @@ export const CourseFilterModal: React.FC<CourseFilterModalProps> = ({
         <DatePickerButton
           label="Fecha de inicio"
           value={searchFilters.startDate}
-          onChange={searchFiltersHook.setStartDate}
+          onChange={setStartDate}
         />
         <IconButton
-          icon="reload"
-          mode="contained"
-          iconColor={theme.colors.primary}
+          icon="close"
           size={20}
+          mode="contained"
           onPress={() => {
-            searchFiltersHook.setStartDate(null);
+            setEndDate(null);
           }}
         />
       </View>
@@ -64,15 +69,14 @@ export const CourseFilterModal: React.FC<CourseFilterModalProps> = ({
         <DatePickerButton
           label="Fecha de finalización"
           value={searchFilters.endDate}
-          onChange={searchFiltersHook.setEndDate}
+          onChange={setEndDate}
         />
         <IconButton
-          icon="reload"
-          mode="contained"
-          iconColor={theme.colors.primary}
+          icon="close"
           size={20}
+          mode="contained"
           onPress={() => {
-            searchFiltersHook.setEndDate(null);
+            setEndDate(null);
           }}
         />
       </View>
@@ -81,30 +85,32 @@ export const CourseFilterModal: React.FC<CourseFilterModalProps> = ({
         label="Nivel"
         value={searchFilters.level}
         items={levels}
-        setValue={searchFiltersHook.setLevel}
+        setValue={setLevel}
       />
+
       <OptionPicker
         label="Categoría"
         value={searchFilters.category}
         items={categories}
-        setValue={searchFiltersHook.setCategory}
+        setValue={setCategory}
       />
 
       <OptionPicker
         label="Modalidad"
         value={searchFilters.modality}
         items={modalities}
-        setValue={searchFiltersHook.setModality}
+        setValue={setModality}
       />
 
       <Divider />
-      <View style={{ flexDirection: "row", gap: 20 }}>
+
+      <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
         <Button
           mode="contained"
           icon="filter-remove"
           onPress={() => {
-            searchFiltersHook.resetSearchFilters;
-            onApplyFilters(searchFilters);
+            resetFilters();
+            // onApplyFilters(searchFilters);
           }}
         >
           Borrar filtros

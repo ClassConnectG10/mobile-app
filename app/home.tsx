@@ -16,25 +16,64 @@ import { Course, SearchFilters, SearchOption } from "@/types/course";
 import { searchCourses } from "@/services/courseManagement";
 import { useUserContext } from "@/utils/storage/userContext";
 import axios from "axios";
+import { CourseFilterModal } from "@/components/CourseFilterModal";
+import { CoursesSearchBar } from "@/components/CoursesSearchBar";
 
 export default function HomePage() {
   const [courses, setCourses] = useState<Course[]>([]);
   const [newCourseModalVisible, setNewCourseModalVisible] = useState(false);
 
-  const [searchTempQuery, setSearchTempQuery] = useState("");
-  const [searchQuery, setSearchQuery] = useState("");
-
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
   const [searchOption, setSearchOption] = useState<SearchOption>(
     SearchOption.RELATED
   );
+  const [searchFiltersModalVisible, setSearchFiltersModalVisible] =
+    useState(false);
+
+  const [searchFilters, setSearchFilters] = useState<SearchFilters>({
+    searchQuery: "",
+    startDate: null,
+    endDate: null,
+    level: "",
+    modality: "",
+    category: "",
+  });
 
   const userContextHook = useUserContext();
 
+  const handleSearchOptionChange = async (value: SearchOption) => {
+    if (searchOption === value) {
+      setSearchOption(SearchOption.RELATED);
+    } else {
+      setSearchOption(value);
+    }
+  };
+
+  const fetchCourses = async () => {
+    console.log("Fetching courses with filters:", searchFilters);
+    try {
+      setIsLoading(true);
+      const coursesData = await searchCourses(searchFilters, searchOption);
+      setCourses(coursesData);
+    } catch (error) {
+      console.error("Error fetching courses:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSearch = (searchTerm: string) => {
+    setSearchFilters((prev) => ({
+      ...prev,
+      searchQuery: searchTerm,
+    }));
+  };
+
   useEffect(() => {
-    fetchCourses(searchQuery, searchOption);
-  }, [searchQuery, searchOption]);
+    fetchCourses();
+  }, [searchFilters, searchOption]);
 
   // useEffect(() => {
   //   if (!userContextHook.user) {
@@ -45,42 +84,6 @@ export default function HomePage() {
   if (!userContextHook.user) {
     return null;
   }
-
-  const handleSearchOptionChange = async (value: SearchOption) => {
-    if (searchOption === value) {
-      setSearchOption(SearchOption.RELATED);
-    } else {
-      setSearchOption(value);
-    }
-  };
-
-  const handleSearchQueryChange = async () => {
-    setSearchQuery(searchTempQuery);
-  };
-
-  const fetchCourses = async (
-    searchQuery: string,
-    searchOption: SearchOption
-  ) => {
-    try {
-      setIsLoading(true);
-      const searchFilters: SearchFilters = {
-        searchQuery,
-        startDate: null,
-        endDate: null,
-        level: "",
-        modality: "",
-        category: "",
-      };
-
-      const coursesData = await searchCourses(searchFilters, searchOption);
-      setCourses(coursesData);
-    } catch (error) {
-      console.error("Error fetching courses:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   axios.defaults.headers.common["X-Caller-Id"] =
     userContextHook.user.id.toString();
@@ -94,7 +97,7 @@ export default function HomePage() {
         <Appbar.Action
           icon="filter"
           onPress={() => {
-            setNewCourseModalVisible(true);
+            setSearchFiltersModalVisible(true);
           }}
         />
         <Appbar.Action
@@ -108,10 +111,8 @@ export default function HomePage() {
       <View style={{ padding: 16, gap: 16, flex: 1 }}>
         <SegmentedButtons
           value={searchOption}
-          onValueChange={(value) => {
-            handleSearchOptionChange(
-              (value as SearchOption) || SearchOption.RELATED
-            );
+          onValueChange={(value: SearchOption) => {
+            handleSearchOptionChange(value);
           }}
           buttons={[
             {
@@ -131,12 +132,7 @@ export default function HomePage() {
 
         {/* Searchbar */}
 
-        <Searchbar
-          placeholder="Buscar cursos"
-          onChangeText={setSearchTempQuery}
-          onIconPress={handleSearchQueryChange}
-          value={searchQuery}
-        />
+        <CoursesSearchBar onSearch={handleSearch} />
 
         {/* Main scrollable content */}
         <FlatList
@@ -216,6 +212,14 @@ export default function HomePage() {
           Crear un nuevo curso
         </Button>
       </Modal>
+
+      <CourseFilterModal
+        visible={searchFiltersModalVisible}
+        onDismiss={() => {
+          setSearchFiltersModalVisible(false);
+        }}
+        onApplyFilters={setSearchFilters}
+      />
 
       <ErrorMessageSnackbar
         message={errorMessage}
