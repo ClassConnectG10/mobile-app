@@ -56,7 +56,7 @@ export class ActivitySubmission {
   constructor(
     public resourceId: string,
     public type: ActivityType,
-    public studentId: string,
+    public studentId: number,
     public response: string,
     public status: ActivityStatus,
     public submissionDate: Date | null

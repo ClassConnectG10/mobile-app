@@ -1,13 +1,14 @@
 import React, { useState } from "react";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { TextInput } from "react-native-paper";
-import { Pressable } from "react-native";
+import { IconButton, TextInput } from "react-native-paper";
+import { Pressable, View } from "react-native";
 
 type DatePickerProps = {
   label: string;
   value: Date | null;
   editable?: boolean;
   type?: "date" | "time" | "datetime";
+  canReset?: boolean;
   onChange: (date: Date) => void;
 };
 
@@ -16,6 +17,7 @@ export const DatePickerButton: React.FC<DatePickerProps> = ({
   value,
   editable = true,
   type = "date",
+  canReset = false,
   onChange,
 }) => {
   const [showPicker, setShowPicker] = useState<"date" | "time" | null>(null);
@@ -79,19 +81,39 @@ export const DatePickerButton: React.FC<DatePickerProps> = ({
 
   return (
     <>
-      <Pressable
-        style={{ flex: 1 }}
-        onPress={() =>
-          editable && setShowPicker(type === "time" ? "time" : "date")
-        }
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 8,
+        }}
       >
-        <TextInput
-          label={label}
-          value={formatValue()}
-          editable={false}
-          pointerEvents="none"
-        />
-      </Pressable>
+        <Pressable
+          style={{ flex: 1 }}
+          onPress={() =>
+            editable && setShowPicker(type === "time" ? "time" : "date")
+          }
+        >
+          <TextInput
+            label={label}
+            value={formatValue()}
+            editable={false}
+            pointerEvents="none"
+          />
+        </Pressable>
+
+        {canReset && (
+          <IconButton
+            icon="close"
+            size={20}
+            mode="contained"
+            onPress={() => {
+              onChange(null);
+            }}
+          />
+        )}
+      </View>
 
       {showPicker === "date" && (
         <DateTimePicker

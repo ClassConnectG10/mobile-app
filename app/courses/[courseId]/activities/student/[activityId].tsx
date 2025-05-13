@@ -1,13 +1,22 @@
-import { getStudentActivity } from "@/services/activityManagement";
+import {
+  getActivitySubmission,
+  getStudentActivity,
+  submitActivity,
+} from "@/services/activityManagement";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { View } from "react-native";
 import { Appbar, Button, Text } from "react-native-paper";
-import { ActivityStatus, StudentActivity } from "@/types/activity";
+import {
+  ActivityStatus,
+  ActivitySubmission,
+  StudentActivity,
+} from "@/types/activity";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import { TextField } from "@/components/TextField";
 import { ToggleableTextInput } from "@/components/ToggleableTextInput";
 import ActivityCard from "@/components/ActivityCard";
+import { useUserContext } from "@/utils/storage/userContext";
 
 export default function ActivityDetails() {
   const router = useRouter();
@@ -15,6 +24,8 @@ export default function ActivityDetails() {
     useState<StudentActivity | null>(null);
   const [errorMessage, setErrorMessage] = useState("");
   const [response, setResponse] = useState("");
+  const [activitySubmission, setActivitySubmission] =
+    useState<ActivitySubmission | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const { courseId: courseIdParam, activityId: activityIdParam } =
@@ -22,6 +33,8 @@ export default function ActivityDetails() {
 
   const courseId = courseIdParam as string;
   const activityId = activityIdParam as string;
+
+  const userContext = useUserContext();
 
   const fetchStudentActivity = async () => {
     try {
@@ -35,21 +48,61 @@ export default function ActivityDetails() {
     }
   };
 
-  useEffect(() => {
-    fetchStudentActivity();
-  });
-
-  const handleSubmitResponse = async () => {
+  const fetchStudentActivityResponse = async () => {
+    if (!studentActivity || !userContext.user) return;
     try {
       setIsLoading(true);
-      // Handle response submission logic here
-      // await submitResponse(courseId, activityId, response);
+      const response = await getActivitySubmission(
+        courseId,
+        studentActivity.activity.resourceId,
+        userContext.user.id,
+      );
+      setActivitySubmission(response);
+      setResponse(response.response);
     } catch (error) {
       setErrorMessage((error as Error).message);
     } finally {
       setIsLoading(false);
     }
   };
+
+  const handleSubmitResponse = async () => {
+    if (!studentActivity || !userContext.user) return;
+
+    try {
+      setIsLoading(true);
+      await submitActivity(
+        courseId,
+        studentActivity.activity.resourceId,
+        userContext.user.id,
+        response,
+      );
+      setActivitySubmission(
+        new ActivitySubmission(
+          studentActivity.activity.resourceId.toString(),
+          studentActivity.activity.type,
+          userContext.user.id,
+          response,
+          ActivityStatus.PENDING,
+          null,
+        ),
+      );
+    } catch (error) {
+      setErrorMessage((error as Error).message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchStudentActivity();
+  }, [courseId, activityId]);
+
+  useEffect(() => {
+    if (studentActivity) {
+      fetchStudentActivityResponse();
+    }
+  }, [studentActivity]);
 
   return (
     <>
@@ -86,14 +139,11 @@ export default function ActivityDetails() {
               onPress={handleSubmitResponse}
               disabled={
                 isLoading ||
-                !response ||
                 response.trim() === "" ||
                 studentActivity.status === ActivityStatus.COMPLETED
               }
             >
-              {isLoading
-                ? "Enviando..."
-                : studentActivity.status === ActivityStatus.COMPLETED
+              {studentActivity.status === ActivityStatus.COMPLETED
                 ? "Actividad completada"
                 : "Enviar respuesta"}
             </Button>

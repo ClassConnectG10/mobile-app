@@ -93,7 +93,7 @@ export async function getCourseStudentActivities(
   }
 }
 
-export async function getStudentActivity(courseId: string, activityId: number) {
+export async function getStudentActivity(courseId: string, activityId: number): Promise<StudentActivity> {
   try {
     const request = await createActivityRequest(courseId, activityId);
     const response = await request.get("");
@@ -117,39 +117,27 @@ export async function getStudentActivity(courseId: string, activityId: number) {
   }
 }
 
-export async function getTeacherActivity(courseId: string, activityId: number) {
+export async function getTeacherActivity(courseId: string, activityId: number): Promise<TeacherActivity> {
   try {
-    // for now, use the get all activities endpoint and filter the activity
+    const request = await createActivityRequest(courseId, activityId);
+    const response = await request.get("");
 
-    const activities = await getCourseTeacherActivities(
-      courseId,
-      ActivitiesOption.ALL
+    console.log(response.data);
+
+    const activityData = response.data.data;
+    const activity: TeacherActivity = new TeacherActivity(
+      new Activity(
+        activityData.resource_id,
+        activityData.type,
+        new ActivityDetails(
+          activityData.title,
+          activityData.description,
+          activityData.instruction,
+          new Date(activityData.due_date)
+        )
+      ),
+      activityData.visible
     );
-    const activity = activities.find(
-      (activity) => activity.activity.resourceId === activityId
-    );
-    if (!activity) {
-      throw new Error("Actividad no encontrada");
-    }
-
-    // const request = await createActivitiesRequest(courseId, getActivitiesOption.ALL);
-
-    // const request = await createActivityRequest(courseId, activityId);
-    // const response = await request.get("");
-    // const activityData = response.data.data;
-    // const activity: TeacherActivity = new TeacherActivity(
-    //   new Activity(
-    //     activityData.resource_id,
-    //     activityData.type,
-    //     new ActivityDetails(
-    //       activityData.title,
-    //       activityData.description,
-    //       activityData.instruction,
-    //       new Date(activityData.due_date)
-    //     )
-    //   ),
-    //   activityData.visible
-    // );
 
     return activity;
   } catch (error) {
@@ -287,7 +275,7 @@ export async function getActivitySubmission(
   courseId: string,
   activityId: number,
   studentId: number
-): Promise<any> {
+): Promise<ActivitySubmission> {
   try {
     const request = await createActivitySubmissionRequest(
       courseId,
@@ -296,6 +284,7 @@ export async function getActivitySubmission(
     );
     const response = await request.get("");
     const submissionData = response.data.data;
+
     return submissionData;
   } catch (error) {
     throw handleError(error, "obtener la entrega de la actividad");
@@ -351,7 +340,7 @@ export async function createActivity(
   }
 }
 
-export async function getCourseModuleId(courseId: string) {
+export async function getCourseModuleId(courseId: string): Promise<string> {
   try {
     const request = await createGetModuleRequest(courseId);
     const response = await request.get("");
@@ -368,5 +357,26 @@ export async function getCourseModuleId(courseId: string) {
     return moduleData[0].module_id;
   } catch (error) {
     throw handleError(error, "obtener el módulo del curso");
+  }
+}
+
+export async function submitActivity(
+  courseId: string,
+  activityId: number,
+  studentId: number,
+  response: string
+): Promise<void> {
+  try {
+    const request = await createActivitySubmissionRequest(
+      courseId,
+      activityId,
+      studentId
+    );
+    const body = {
+      data: response,
+    };
+    await request.post("", body);
+  } catch (error) {
+    throw handleError(error, "enviar la actividad");
   }
 }

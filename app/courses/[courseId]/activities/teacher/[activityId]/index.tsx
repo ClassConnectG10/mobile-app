@@ -8,11 +8,10 @@ import {
   postActivity,
   updateActivity,
 } from "@/services/activityManagement";
-import { globalStyles } from "@/styles/globalStyles";
 import { TeacherActivity } from "@/types/activity";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import { View, ScrollView } from "react-native";
+import { View } from "react-native";
 import {
   ActivityIndicator,
   Appbar,
@@ -168,13 +167,13 @@ export default function TeacherActivityPage() {
         </View>
       ) : (
         <View
-          style={[
-            globalStyles.mainContainer,
-            { backgroundColor: theme.colors.background },
-          ]}
+          style={{
+            padding: 16,
+            gap: 16,
+            flex: 1,
+          }}
         >
-          <ScrollView style={{ gap: 20 }}>
-            {/* <FlatList
+          {/* <FlatList
               style={styles.scrollContainer}
               data={studentSubmissions}
               keyExtractor={(item) => item.resourceId}
@@ -182,66 +181,67 @@ export default function TeacherActivityPage() {
               ListHeaderComponent={() => <TeacherActivityHeader />}
               ItemSeparatorComponent={() => <View style={{ height: 16 }} />}
             /> */}
-            <ToggleableTextInput
-              label="Nombre"
-              placeholder="Nombre de la actividad"
-              value={activityDetails.title}
-              editable={isEditing}
-              onChange={activityDetailsHook.setTitle}
-            />
-            <ToggleableTextInput
-              label="Descripción"
-              placeholder="Descripción de la actividad"
-              value={activityDetails.description}
-              onChange={activityDetailsHook.setDescription}
-              editable={isEditing}
-            />
-            <ToggleableTextInput
-              label="Instrucciones"
-              placeholder="Instrucciones de la actividad"
-              value={activityDetails.instruction}
-              onChange={activityDetailsHook.setInstruction}
-              editable={isEditing}
-            />
-            <DatePickerButton
-              label="Fecha límite"
-              type="datetime"
-              value={activityDetails.dueDate}
-              editable={isEditing}
-              onChange={activityDetailsHook.setDueDate}
-            />
-            {!isEditing && (
-              <Button
-                onPress={handleViewSubmissions}
-                mode="contained"
-                icon="clipboard-check"
-              >
-                Ver Entregas
-              </Button>
-            )}
 
-            {!isEditing && teacherActivity && !teacherActivity.visible && (
-              <Button
-                onPress={() => setShowConfirmationPublish(true)}
-                mode="contained"
-                disabled={isLoading}
-                icon="file-eye"
-              >
-                Publicar actividad
-              </Button>
-            )}
+          <ToggleableTextInput
+            label="Nombre"
+            placeholder="Nombre de la actividad"
+            value={activityDetails.title}
+            editable={isEditing}
+            onChange={activityDetailsHook.setTitle}
+          />
+          <ToggleableTextInput
+            label="Descripción"
+            placeholder="Descripción de la actividad"
+            value={activityDetails.description}
+            onChange={activityDetailsHook.setDescription}
+            editable={isEditing}
+          />
+          <ToggleableTextInput
+            label="Instrucciones"
+            placeholder="Instrucciones de la actividad"
+            value={activityDetails.instruction}
+            onChange={activityDetailsHook.setInstruction}
+            editable={isEditing}
+          />
+          <DatePickerButton
+            label="Fecha límite"
+            type="datetime"
+            value={activityDetails.dueDate}
+            editable={isEditing}
+            onChange={activityDetailsHook.setDueDate}
+          />
 
-            {!isEditing && (
-              <Button
-                onPress={() => setShowConfirmationDelete(true)}
-                mode="contained"
-                disabled={isLoading}
-                icon="delete"
-              >
-                Borrar actividad
-              </Button>
-            )}
-          </ScrollView>
+          {!isEditing && (
+            <Button
+              onPress={handleViewSubmissions}
+              mode="contained"
+              icon="clipboard-check"
+            >
+              Ver Entregas
+            </Button>
+          )}
+
+          {!isEditing && teacherActivity && !teacherActivity.visible && (
+            <Button
+              onPress={() => setShowConfirmationPublish(true)}
+              mode="contained"
+              disabled={isLoading}
+              icon="file-eye"
+            >
+              Publicar actividad
+            </Button>
+          )}
+
+          {!isEditing && (
+            <Button
+              onPress={() => setShowConfirmationDelete(true)}
+              mode="contained"
+              disabled={isLoading}
+              icon="delete"
+            >
+              Borrar actividad
+            </Button>
+          )}
         </View>
       )}
       <Dialog
