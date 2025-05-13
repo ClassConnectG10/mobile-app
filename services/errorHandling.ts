@@ -1,6 +1,7 @@
 import { ZodError } from "zod";
 
 export function handleError(error: any, action: string): Error {
+  console.error(error);
   if (error instanceof ZodError) {
     return new Error(
       `Error de validacion al ${action}: ${error.errors

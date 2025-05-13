@@ -32,7 +32,6 @@ export async function registerUser(
       email: userInformation.email,
       country: userInformation.country,
     });
-    console.log("Response data:", response.data);
     const user = new User(
       response.data.data.id,
       new UserInformation(
@@ -59,11 +58,8 @@ export async function registerUser(
 export async function loginUser(uid: string): Promise<User> {
   try {
     const request = await createLoginUserRequest(uid);
-    console.log("Request data uid:", uid);
     const response = await request.get("");
-
-    console.log("Response data:", response.data);
-
+    
     const userInfo = new UserInformation(
       response.data.data.name,
       response.data.data.surname,

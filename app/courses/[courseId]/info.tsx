@@ -65,8 +65,8 @@ export default function CreateCoursePage() {
 
     const requiredCourses = await Promise.all(
       courseContext.course.courseDetails.dependencies.map(
-        async (courseId) => await getCourse(courseId)
-      )
+        async (courseId) => await getCourse(courseId),
+      ),
     );
 
     requiredCoursesContext.setRequiredCourses(requiredCourses);
@@ -74,22 +74,25 @@ export default function CreateCoursePage() {
   };
 
   const handleEditCourse = async () => {
-    setIsLoading(true);
     if (!courseContext.course) return;
 
     try {
-      courseDetails.dependencies = requiredCourses.map(
-        (course) => course.courseId
-      );
+
+      console.log("Editing course:", courseContext.course);
+      
+      setIsLoading(true);
+      const newCourseDetails = courseDetailsHook.courseDetails;
+      newCourseDetails.dependencies =
+        requiredCoursesContext.requiredCourses.map((course) => course.courseId);
+
       const updatedCourse = await editCourse(
         courseContext.course,
-        courseDetails
+        newCourseDetails,
       );
-      courseContext.setCourse(updatedCourse);
-      courseDetailsHook.setCourseDetails({
-        ...updatedCourse.courseDetails,
-      });
 
+      console.log("Updated course:", updatedCourse);
+
+      courseContext.setCourse(updatedCourse);
       setIsEditing(false);
     } catch (error) {
       setErrorMessage((error as Error).message);
@@ -106,6 +109,7 @@ export default function CreateCoursePage() {
     try {
       await deleteCourse(courseContext.course.courseId);
       courseContext.setCourse(null);
+      requiredCoursesContext.setRequiredCourses([]);
       router.push("/home");
     } catch (error) {
       setErrorMessage((error as Error).message);
@@ -120,23 +124,18 @@ export default function CreateCoursePage() {
       setIsLoading(true);
       const course = await getCourse(courseId);
       courseContext.setCourse(course);
-      courseDetailsHook.setCourseDetails({
-        ...course.courseDetails,
-      });
-
-      const requiredCourses = await Promise.all(
-        course.courseDetails.dependencies.map(
-          async (courseId) => await getCourse(courseId)
-        )
-      );
-
-      requiredCoursesContext.setRequiredCourses(requiredCourses);
     } catch (error) {
       setErrorMessage((error as Error).message);
       courseContext.setCourse(null);
     } finally {
       setIsLoading(false);
     }
+  }
+
+  function setCourseDetails() {
+    courseDetailsHook.setCourseDetails({
+      ...courseContext.course?.courseDetails,
+    });
   }
 
   async function fetchCourseOwner() {
@@ -152,13 +151,32 @@ export default function CreateCoursePage() {
     }
   }
 
+  async function fetchRequiredCourses() {
+    try {
+      setIsLoading(true);
+      const requiredCourses = await Promise.all(
+        courseContext.course.courseDetails.dependencies.map(
+          async (courseId) => await getCourse(courseId),
+        ),
+      );
+
+      requiredCoursesContext.setRequiredCourses(requiredCourses);
+    } catch (error) {
+      setErrorMessage((error as Error).message);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
   useEffect(() => {
     fetchCourse();
-  }, []);
+  }, [courseId]);
 
   useEffect(() => {
     if (courseContext.course) {
+      setCourseDetails();
       fetchCourseOwner();
+      fetchRequiredCourses();
     }
   }, [courseContext.course]);
 
@@ -202,7 +220,7 @@ export default function CreateCoursePage() {
           { backgroundColor: theme.colors.background },
         ]}
       >
-        <ScrollView contentContainerStyle={globalStyles.courseDetailsContainer}>
+        <ScrollView contentContainerStyle={{ gap: 16 }}>
           {courseOwner && (
             <View style={{ gap: 8 }}>
               <Text variant="titleMedium">Propietario del curso</Text>
@@ -288,7 +306,9 @@ export default function CreateCoursePage() {
             editable={isEditing}
             setValue={courseDetailsHook.setModality}
           />
-          {(courseDetails.dependencies.length > 0 || isEditing) && (
+          {((courseContext.course &&
+            courseContext.course.courseDetails.dependencies.length > 0) ||
+            isEditing) && (
             <View style={{ gap: 10 }}>
               <Text variant="titleMedium">Cursos requeridos</Text>
               {requiredCourses.map((course) => (
@@ -306,13 +326,15 @@ export default function CreateCoursePage() {
                     category={course.courseDetails.category}
                     onPress={() => handleRequiredCoursePress(course.courseId)}
                   />
-                  <IconButton
-                    icon="delete"
-                    mode="contained"
-                    onPress={() => {
-                      requiredCoursesContext.deleteRequiredCourse(course);
-                    }}
-                  />
+                  {isEditing && (
+                    <IconButton
+                      icon="delete"
+                      mode="contained"
+                      onPress={() => {
+                        requiredCoursesContext.deleteRequiredCourse(course);
+                      }}
+                    />
+                  )}
                 </View>
               ))}
 

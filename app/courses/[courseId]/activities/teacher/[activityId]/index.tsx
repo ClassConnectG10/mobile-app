@@ -55,7 +55,7 @@ export default function TeacherActivityPage() {
         console.log("Actividad de docente", activity);
         setTeacherActivity(activity);
         activityDetailsHook.setActivityDetails(
-          activity.activity.activityDetails
+          activity.activity.activityDetails,
         );
       }
     } catch (error) {
@@ -81,7 +81,7 @@ export default function TeacherActivityPage() {
 
   const handleViewSubmissions = async () => {
     router.push(
-      `/courses/${courseId}/activities/teacher/${activityId}/submissions`
+      `/courses/${courseId}/activities/teacher/${activityId}/submissions`,
     );
   };
 
@@ -93,7 +93,7 @@ export default function TeacherActivityPage() {
         const updatedActivity = await updateActivity(
           courseId,
           teacherActivity.activity,
-          activityDetails
+          activityDetails,
         );
         setTeacherActivity(updatedActivity);
         setIsEditing(false);
@@ -113,7 +113,7 @@ export default function TeacherActivityPage() {
       if (teacherActivity) {
         const updatedActivity = await postActivity(
           courseId,
-          teacherActivity.activity
+          teacherActivity.activity,
         );
         setTeacherActivity(updatedActivity);
       }
@@ -173,9 +173,7 @@ export default function TeacherActivityPage() {
             { backgroundColor: theme.colors.background },
           ]}
         >
-          <ScrollView
-            contentContainerStyle={globalStyles.courseDetailsContainer}
-          >
+          <ScrollView style={{ gap: 20 }}>
             {/* <FlatList
               style={styles.scrollContainer}
               data={studentSubmissions}

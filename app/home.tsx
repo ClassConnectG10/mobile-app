@@ -51,7 +51,6 @@ export default function HomePage() {
   };
 
   const fetchCourses = async () => {
-    console.log("Fetching courses with filters:", searchFilters);
     try {
       setIsLoading(true);
       const coursesData = await searchCourses(searchFilters, searchOption);

@@ -32,7 +32,6 @@ export default function SearchCoursesPage() {
     try {
       const coursesData = await searchCourses(searchFilters, SearchOption.ALL);
 
-      console.log("Required courses context", requiredCoursesContext);
 
       const filteredCourses = coursesData.filter(
         (course) =>

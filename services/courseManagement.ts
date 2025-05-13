@@ -24,8 +24,6 @@ export async function createCourse(
   try {
     courseDetailsSchema.parse(courseDetails);
 
-    console.log("Dependencias: ", courseDetails.dependencies);
-
     const body = {
       title: courseDetails.title,
       description: courseDetails.description,
@@ -35,9 +33,8 @@ export async function createCourse(
       level: courseDetails.level,
       modality: courseDetails.modality,
       category: courseDetails.category,
-      elegibility_criteria: courseDetails.dependencies,
+      dependencies: courseDetails.dependencies,
     };
-    console.log("Body: ", body);
 
     const request = await createCoursesRequest();
     const response = await request.post("", body);
@@ -56,7 +53,7 @@ export async function createCourse(
         courseData.level,
         courseData.modality,
         courseData.category,
-        courseData.eligibility_criteria
+        courseDetails.dependencies
       )
     );
 
@@ -89,7 +86,8 @@ export async function getCourse(courseId: string): Promise<Course> {
         new Date(courseData.end_date),
         courseData.level,
         courseData.modality,
-        courseData.category
+        courseData.category,
+        courseData.dependencies.map((dep: any) => dep.course_id),
       )
     );
     return course;
@@ -151,22 +149,23 @@ export async function editCourse(
     const body = {
       title: newCourseDetails.title,
       description: newCourseDetails.description,
-      capacity: newCourseDetails.maxNumberOfStudents,
       start_date: formatDate(newCourseDetails.startDate),
       end_date: formatDate(newCourseDetails.endDate),
+      capacity: newCourseDetails.maxNumberOfStudents,
+      category: newCourseDetails.category,
       level: newCourseDetails.level,
       modality: newCourseDetails.modality,
-      category: newCourseDetails.category,
-      elegibility_criteria: newCourseDetails.dependencies,
+      dependencies: newCourseDetails.dependencies,
     };
 
     const request = await createCourseRequest(course.courseId);
     const response = await request.patch("", body);
+
     const courseData = response.data.data;
     const updatedCourse = new Course(
-      courseData.id,
-      courseData.ownerId,
-      courseData.numberOfStudents,
+      course.courseId,
+      course.ownerId,
+      course.numberOfStudens,
       new CourseDetails(
         courseData.title,
         courseData.description,
@@ -175,7 +174,8 @@ export async function editCourse(
         new Date(courseData.end_date),
         courseData.level,
         courseData.modality,
-        courseData.category
+        courseData.category,
+        newCourseDetails.dependencies
       )
     );
     return updatedCourse;
