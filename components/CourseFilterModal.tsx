@@ -53,7 +53,7 @@ export const CourseFilterModal: React.FC<CourseFilterModalProps> = ({
           size={20}
           mode="contained"
           onPress={() => {
-            setEndDate(null);
+            setStartDate(null);
           }}
         />
       </View>
