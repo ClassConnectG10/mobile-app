@@ -11,10 +11,7 @@ import { useUserInformation } from "@/hooks/useUserInformation";
 import { View, ScrollView } from "react-native";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import OptionPicker from "@/components/OptionPicker";
-import {
-  GoogleSignin,
-  statusCodes,
-} from "@react-native-google-signin/google-signin";
+import { GoogleSignin } from "@react-native-google-signin/google-signin";
 
 export default function UserProfilePage() {
   const router = useRouter();
