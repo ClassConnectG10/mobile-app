@@ -83,8 +83,8 @@ export default function ActivityDetails() {
           studentActivity.activity.type,
           userContext.user.id,
           response,
-          ActivityStatus.PENDING,
-          null,
+          ActivityStatus.COMPLETED,
+          new Date(),
         ),
       );
     } catch (error) {
