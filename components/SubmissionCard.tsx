@@ -1,14 +1,6 @@
-import { Card, Icon, Text, useTheme } from "react-native-paper";
+import { Card, Text, useTheme } from "react-native-paper";
 import { StyleSheet, View } from "react-native";
-import {
-  ActivityStatus,
-  ActivitySubmission,
-  ActivityType,
-  StudentActivity,
-  TeacherActivity,
-} from "@/types/activity";
-import { getRelativeTime } from "@/utils/date";
-import { customColors } from "@/utils/constants/colors";
+import { ActivitySubmission } from "@/types/activity";
 
 interface SubmissionCardProps {
   submission: ActivitySubmission;
@@ -20,7 +12,7 @@ const SubmissionCard: React.FC<SubmissionCardProps> = ({
   onPress,
 }) => {
   const theme = useTheme();
-  const { studentId, type, status: submissionStatus } = submission;
+  const { status: submissionStatus } = submission;
 
   return (
     <Card

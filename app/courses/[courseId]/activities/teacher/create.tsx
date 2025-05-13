@@ -43,7 +43,7 @@ export default function CreateActivity() {
         <Appbar.BackAction onPress={() => router.back()} />
         <Appbar.Content
           title={
-            activityType == ActivityType.EXAM ? "Nuevo examen" : "Nueva tarea"
+            activityType === ActivityType.EXAM ? "Nuevo examen" : "Nueva tarea"
           }
         />
       </Appbar.Header>
@@ -79,7 +79,9 @@ export default function CreateActivity() {
           />
 
           <Button onPress={handleCreateActivity} mode="contained">
-            {activityType == ActivityType.EXAM ? "Crear examen" : "Crear tarea"}
+            {activityType === ActivityType.EXAM
+              ? "Crear examen"
+              : "Crear tarea"}
           </Button>
         </ScrollView>
       </View>

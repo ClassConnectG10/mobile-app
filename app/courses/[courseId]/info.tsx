@@ -93,6 +93,7 @@ export default function CreateCoursePage() {
       setIsEditing(false);
     } catch (error) {
       setErrorMessage((error as Error).message);
+      handleDiscardChanges();
     } finally {
       setIsLoading(false);
     }
@@ -142,7 +143,7 @@ export default function CreateCoursePage() {
     try {
       setIsLoading(true);
       const courseOwner = await getUser(courseContext.course.ownerId);
-      setIsOwner(courseOwner.id == userContext.user?.id);
+      setIsOwner(courseOwner.id === userContext.user?.id);
       setCourseOwner(courseOwner);
     } catch (error) {
       setErrorMessage((error as Error).message);
@@ -332,6 +333,7 @@ export default function CreateCoursePage() {
               onPress={() => setShowConfirmationDelete(true)}
               mode="contained"
               icon="delete"
+              disabled={isLoading}
             >
               Eliminar curso
             </Button>

@@ -13,15 +13,39 @@ export const createGetModuleRequest = (courseId: string) => {
   });
 };
 
-export const createTaskRequest = (courseId: string) => {
+export const createTasksRequest = (courseId: string) => {
   return createRequest({
     uri: `courses/${courseId}/task`,
   });
 };
 
-export const createExamRequest = (courseId: string) => {
+export const createExamsRequest = (courseId: string) => {
   return createRequest({
     uri: `courses/${courseId}/exam`,
+  });
+};
+
+export const createTaskRequest = (courseId: string, taskId: number) => {
+  return createRequest({
+    uri: `courses/${courseId}/task/${taskId}`,
+  });
+};
+
+export const createExamRequest = (courseId: string, examId: number) => {
+  return createRequest({
+    uri: `courses/${courseId}/exam/${examId}`,
+  });
+};
+
+export const createTaskPostRequest = (courseId: string, taskId: number) => {
+  return createRequest({
+    uri: `courses/${courseId}/task/${taskId}/post`,
+  });
+};
+
+export const createExamPostRequest = (courseId: string, examId: number) => {
+  return createRequest({
+    uri: `courses/${courseId}/exam/${examId}/post`,
   });
 };
 
@@ -43,7 +67,7 @@ export const createActivitiesRequest = (
   }
 };
 
-export const createActivityRequest = (courseId: string, activityId: string) => {
+export const createActivityRequest = (courseId: string, activityId: number) => {
   return createRequest({
     uri: `courses/${courseId}/activity/${activityId}`,
   });
@@ -51,7 +75,7 @@ export const createActivityRequest = (courseId: string, activityId: string) => {
 
 export const createActivitySubmissionsRequest = (
   courseId: string,
-  activityId: string
+  activityId: number
 ) => {
   return createRequest({
     uri: `courses/${courseId}/activity/${activityId}/submissions`,
@@ -60,8 +84,8 @@ export const createActivitySubmissionsRequest = (
 
 export const createActivitySubmissionRequest = (
   courseId: string,
-  activityId: string,
-  studentId: string
+  activityId: number,
+  studentId: number
 ) => {
   return createRequest({
     uri: `courses/${courseId}/activity/${activityId}/submissions/${studentId}`,

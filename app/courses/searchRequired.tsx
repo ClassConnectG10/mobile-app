@@ -1,5 +1,5 @@
 import { View, FlatList, StyleSheet } from "react-native";
-import { Appbar, Searchbar } from "react-native-paper";
+import { Appbar } from "react-native-paper";
 import { useRouter } from "expo-router";
 import { globalStyles } from "@/styles/globalStyles";
 import { useEffect, useState } from "react";

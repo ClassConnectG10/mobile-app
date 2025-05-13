@@ -1,5 +1,5 @@
 import React from "react";
-import { Card, Text, Icon, Avatar, useTheme } from "react-native-paper";
+import { Card, Text, Avatar, useTheme } from "react-native-paper";
 import { View, StyleSheet } from "react-native";
 import { User } from "@/types/user";
 
@@ -10,7 +10,7 @@ interface UserCardProps {
 
 const UserCard: React.FC<UserCardProps> = ({ user, onPress }) => {
   const theme = useTheme();
-  const { firstName, lastName, email, country } = user.userInformation;
+  const { firstName, lastName, email } = user.userInformation;
 
   return (
     <Card

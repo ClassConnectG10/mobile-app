@@ -5,7 +5,6 @@ import {
   Button,
   FAB,
   Modal,
-  Searchbar,
   SegmentedButtons,
 } from "react-native-paper";
 import { router } from "expo-router";

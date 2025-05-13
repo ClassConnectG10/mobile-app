@@ -61,10 +61,10 @@ export async function createCourse(
     );
 
     const moduleRequest = await createModuleRequest(course.courseId);
-    const modulo = await moduleRequest.post("", {
+    await moduleRequest.post("", {
       title: "Módulo 1",
       description: "Descripción del módulo 1",
-    });
+    }); // TODO: Sacarlo cuando tengamos todo listo
     return course;
   } catch (error) {
     throw handleError(error, "crear el curso");

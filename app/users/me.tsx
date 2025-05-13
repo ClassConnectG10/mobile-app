@@ -55,9 +55,8 @@ export default function UserProfilePage() {
 
       setIsEditing(false);
     } catch (error) {
-      if (error instanceof Error) {
-        setErrorMessage(error.message);
-      }
+      setErrorMessage((error as Error).message);
+      handleCancelEdit();
     } finally {
       setButtonDisabled(false);
     }

@@ -7,7 +7,6 @@ import { ActivityStatus, StudentActivity } from "@/types/activity";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import { TextField } from "@/components/TextField";
 import { ToggleableTextInput } from "@/components/ToggleableTextInput";
-import { getRelativeTime } from "@/utils/date";
 import ActivityCard from "@/components/ActivityCard";
 
 export default function ActivityDetails() {
@@ -27,7 +26,7 @@ export default function ActivityDetails() {
   const fetchStudentActivity = async () => {
     try {
       setIsLoading(true);
-      const activity = await getStudentActivity(courseId, activityId);
+      const activity = await getStudentActivity(courseId, Number(activityId));
       setStudentActivity(activity);
     } catch (error) {
       setErrorMessage((error as Error).message);

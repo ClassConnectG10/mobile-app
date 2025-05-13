@@ -13,12 +13,20 @@ import {
   createActivityRequest,
   createActivitySubmissionsRequest,
   createActivitySubmissionRequest,
-  createExamRequest,
-  createTaskRequest,
+  createExamsRequest,
+  createTasksRequest,
   createActivitiesRequest,
   createModuleRequest,
   createGetModuleRequest,
+  createExamRequest,
+  createTaskRequest,
+  createTaskPostRequest,
+  createExamPostRequest,
 } from "@/api/activities";
+import {
+  activityDetailsSchema,
+  activityDetailsSchemaUpdate,
+} from "@/validations/activities";
 
 export async function getCourseTeacherActivities(
   courseId: string,
@@ -85,7 +93,7 @@ export async function getCourseStudentActivities(
   }
 }
 
-export async function getStudentActivity(courseId: string, activityId: string) {
+export async function getStudentActivity(courseId: string, activityId: number) {
   try {
     const request = await createActivityRequest(courseId, activityId);
     const response = await request.get("");
@@ -109,12 +117,62 @@ export async function getStudentActivity(courseId: string, activityId: string) {
   }
 }
 
-export async function getTeacherActivity(courseId: string, activityId: string) {
+export async function getTeacherActivity(courseId: string, activityId: number) {
   try {
-    const request = await createActivityRequest(courseId, activityId);
-    const response = await request.get("");
-    const activityData = response.data.data;
-    const activity: TeacherActivity = new TeacherActivity(
+    // for now, use the get all activities endpoint and filter the activity
+
+    const activities = await getCourseTeacherActivities(
+      courseId,
+      ActivitiesOption.ALL
+    );
+    const activity = activities.find(
+      (activity) => activity.activity.resourceId === activityId
+    );
+    if (!activity) {
+      throw new Error("Actividad no encontrada");
+    }
+
+    // const request = await createActivitiesRequest(courseId, getActivitiesOption.ALL);
+
+    // const request = await createActivityRequest(courseId, activityId);
+    // const response = await request.get("");
+    // const activityData = response.data.data;
+    // const activity: TeacherActivity = new TeacherActivity(
+    //   new Activity(
+    //     activityData.resource_id,
+    //     activityData.type,
+    //     new ActivityDetails(
+    //       activityData.title,
+    //       activityData.description,
+    //       activityData.instruction,
+    //       new Date(activityData.due_date)
+    //     )
+    //   ),
+    //   activityData.visible
+    // );
+
+    return activity;
+  } catch (error) {
+    throw handleError(error, "obtener la actividad del profesor");
+  }
+}
+
+export async function postActivity(
+  courseId: string,
+  activity: Activity
+): Promise<TeacherActivity> {
+  try {
+    let request: AxiosInstance;
+
+    if (activity.type === ActivityType.TASK) {
+      request = await createTaskPostRequest(courseId, activity.resourceId);
+    } else {
+      request = await createExamPostRequest(courseId, activity.resourceId);
+    }
+
+    const updatedActivity = await request.post("");
+    const activityData = updatedActivity.data.data;
+    const newActivity = new TeacherActivity(
       new Activity(
         activityData.resource_id,
         activityData.type,
@@ -128,15 +186,78 @@ export async function getTeacherActivity(courseId: string, activityId: string) {
       activityData.visible
     );
 
-    return activity;
+    return newActivity;
   } catch (error) {
-    throw handleError(error, "obtener la actividad del profesor");
+    throw handleError(error, "crear la actividad");
+  }
+}
+
+export async function updateActivity(
+  courseId: string,
+  activity: Activity,
+  activityDetails: ActivityDetails
+): Promise<TeacherActivity> {
+  try {
+    activityDetailsSchemaUpdate.parse(activityDetails);
+
+    let request: AxiosInstance;
+
+    if (activity.type === ActivityType.TASK) {
+      request = await createTaskRequest(courseId, activity.resourceId);
+    } else {
+      request = await createExamRequest(courseId, activity.resourceId);
+    }
+
+    const body = {
+      title: activityDetails.title,
+      description: activityDetails.description,
+      instruction: activityDetails.instruction,
+      due_date: activityDetails.dueDate.toISOString(),
+    };
+
+    const response = await request.patch("", body);
+    const activityData = response.data.data;
+    const updatedActivity = new TeacherActivity(
+      new Activity(
+        activityData.resource_id,
+        activityData.type,
+        new ActivityDetails(
+          activityData.title,
+          activityData.description,
+          activityData.instruction,
+          new Date(activityData.due_date)
+        )
+      ),
+      activityData.visible
+    );
+    return updatedActivity;
+  } catch (error) {
+    throw handleError(error, "actualizar la actividad");
+  }
+}
+
+export async function deleteActivity(
+  courseId: string,
+  activity: Activity
+): Promise<void> {
+  try {
+    let request: AxiosInstance;
+
+    if (activity.type === ActivityType.TASK) {
+      request = await createTaskRequest(courseId, activity.resourceId);
+    } else {
+      request = await createExamRequest(courseId, activity.resourceId);
+    }
+
+    await request.delete("");
+  } catch (error) {
+    throw handleError(error, "eliminar la actividad");
   }
 }
 
 export async function getActivitySubmissions(
   courseId: string,
-  activityId: string
+  activityId: number
 ): Promise<ActivitySubmission[]> {
   try {
     const request = await createActivitySubmissionsRequest(
@@ -164,8 +285,8 @@ export async function getActivitySubmissions(
 
 export async function getActivitySubmission(
   courseId: string,
-  activityId: string,
-  studentId: string
+  activityId: number,
+  studentId: number
 ): Promise<any> {
   try {
     const request = await createActivitySubmissionRequest(
@@ -188,12 +309,13 @@ export async function createActivity(
   activityDetails: ActivityDetails
 ): Promise<TeacherActivity> {
   try {
-    var request: AxiosInstance;
+    activityDetailsSchema.parse(activityDetails);
 
+    var request: AxiosInstance;
     if (activityType === ActivityType.TASK) {
-      request = await createTaskRequest(courseId);
+      request = await createTasksRequest(courseId);
     } else {
-      request = await createExamRequest(courseId);
+      request = await createExamsRequest(courseId);
     }
 
     const body = {

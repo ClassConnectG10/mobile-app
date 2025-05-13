@@ -15,7 +15,6 @@ import { enrollCourse, getCourse } from "@/services/courseManagement";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import { TextField } from "@/components/TextField";
 import CourseCard from "@/components/CourseCard";
-import { useCourseContext } from "@/utils/storage/courseContext";
 import UserCard from "@/components/UserCard";
 import { getUser } from "@/services/userManagement";
 import { useUserContext } from "@/utils/storage/userContext";
@@ -57,7 +56,7 @@ export default function CourseIncriptionDetails() {
       setIsLoading(true);
       if (!course) return;
       const courseOwner = await getUser(course.ownerId);
-      setIsOwner(courseOwner.id == userContext.user?.id);
+      setIsOwner(courseOwner.id === userContext.user?.id);
       setCourseOwner(courseOwner);
     } catch (error) {
       setErrorMessage((error as Error).message);
@@ -201,6 +200,7 @@ export default function CourseIncriptionDetails() {
           <Button
             mode="contained"
             icon="notebook-multiple"
+            disabled={isLoading}
             onPress={() => {
               handleEnrollCourse();
             }}

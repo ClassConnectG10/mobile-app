@@ -37,7 +37,7 @@ export class StudentActivity {
 
 export class Activity {
   constructor(
-    public resourceId: string,
+    public resourceId: number,
     public type: ActivityType,
     public activityDetails: ActivityDetails
   ) {}

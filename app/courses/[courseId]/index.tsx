@@ -75,7 +75,7 @@ export default function CoursePage() {
       setIsLoading(true);
       const course = await getCourse(courseId);
       setCourse(course);
-      setIsOwner(course.ownerId == userContext.user?.id);
+      setIsOwner(course.ownerId === userContext.user?.id);
     } catch (error) {
       setErrorMessage((error as Error).message);
       setCourse(null);
@@ -171,14 +171,14 @@ export default function CoursePage() {
     });
   };
 
-  const handleStudentActivitiesPress = (activityId: string) => {
+  const handleStudentActivitiesPress = (activityId: number) => {
     router.push({
       pathname: "/courses/[courseId]/activities/student/[activityId]",
       params: { courseId, activityId },
     });
   };
 
-  const handleTeacherActivitiesPress = (activityId: string) => {
+  const handleTeacherActivitiesPress = (activityId: number) => {
     router.push({
       pathname: "/courses/[courseId]/activities/teacher/[activityId]",
       params: { courseId, activityId },

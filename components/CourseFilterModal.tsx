@@ -4,14 +4,7 @@ import {
   modalities,
 } from "@/utils/constants/courseDetails";
 import { View } from "react-native";
-import {
-  Modal,
-  IconButton,
-  Divider,
-  Button,
-  Text,
-  useTheme,
-} from "react-native-paper";
+import { Modal, IconButton, Divider, Button, Text } from "react-native-paper";
 import { DatePickerButton } from "./DatePickerButton";
 import OptionPicker from "./OptionPicker";
 import { useSearchFilters } from "@/hooks/useSearchFilters";
