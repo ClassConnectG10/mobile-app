@@ -35,13 +35,15 @@ export default function CourseIncriptionDetails() {
 
   async function fetchCourse() {
     try {
-      const course = await getCourse(courseId as string);
-      setCourse(course);
+      const fetchedCourse = await getCourse(courseId);
+      setCourse(fetchedCourse);
+
+      console.log("course", fetchedCourse);
 
       const courseDependencies = await Promise.all(
-        course.courseDetails.dependencies.map((dependency) =>
-          getCourse(dependency)
-        )
+        fetchedCourse.courseDetails.dependencies.map((dependency) =>
+          getCourse(dependency),
+        ),
       );
 
       setDependencies(courseDependencies);
@@ -152,7 +154,6 @@ export default function CourseIncriptionDetails() {
           {dependencies.length > 0 && (
             <View
               style={{
-                padding: 10,
                 borderRadius: 10,
                 gap: 10,
               }}
@@ -178,16 +179,21 @@ export default function CourseIncriptionDetails() {
                     <CourseCard
                       name={dependency.courseDetails.title}
                       category={dependency.courseDetails.category}
-                      onPress={() => {
-                        router.push({
-                          pathname: "/courses/[courseId]",
-                          params: { courseId: dependency.courseId },
-                        });
-                      }}
+                      onPress={() =>
+                        false
+                          ? router.push({
+                              pathname: `/courses/[courseId]`,
+                              params: { courseId: dependency.courseId },
+                            })
+                          : router.push({
+                              pathname: `/courses/[courseId]/inscription`,
+                              params: { courseId: dependency.courseId },
+                            })
+                      } //TODO: Cambiar por el estado de completado
                     />
                     <Icon
-                      source={true ? "check-circle" : "alert-circle"} //TODO: Cambiar por el estado de completado
-                      color={true ? theme.colors.primary : theme.colors.error} //TODO: Cambiar por el estado de completado
+                      source={false ? "check-circle" : "alert-circle"} //TODO: Cambiar por el estado de completado
+                      color={false ? theme.colors.primary : theme.colors.error} //TODO: Cambiar por el estado de completado
                       size={30}
                     />
                   </View>
