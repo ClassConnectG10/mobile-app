@@ -44,7 +44,6 @@ export async function createCourse(
     const course = new Course(
       courseData.id,
       courseData.owner,
-      courseData.numberOfStudents,
       new CourseDetails(
         courseData.title,
         courseData.description,
@@ -56,6 +55,8 @@ export async function createCourse(
         courseData.category,
         courseDetails.dependencies,
       ),
+      0,
+      false,
     );
 
     const moduleRequest = await createModuleRequest(course.courseId);
@@ -78,7 +79,6 @@ export async function getCourse(courseId: string): Promise<Course> {
     const course = new Course(
       courseData.id,
       courseData.owner,
-      courseData.numberOfStudents,
       new CourseDetails(
         courseData.title,
         courseData.description,
@@ -90,6 +90,7 @@ export async function getCourse(courseId: string): Promise<Course> {
         courseData.category,
         courseData.dependencies.map((dep: any) => dep.course_id),
       ),
+      courseData.students ? courseData.students : 0,
       courseData.is_favorite,
     );
     return course;
@@ -109,7 +110,6 @@ export async function searchCourses(
     return new Course(
       courseData.id,
       courseData.ownerId,
-      courseData.numberOfStudents,
       new CourseDetails(
         courseData.title,
         courseData.description,
@@ -120,6 +120,7 @@ export async function searchCourses(
         courseData.modality,
         courseData.category,
       ),
+      courseData.students ? courseData.students : 0,
       courseData.is_favorite,
     );
   });
@@ -168,7 +169,6 @@ export async function editCourse(
     const updatedCourse = new Course(
       course.courseId,
       course.ownerId,
-      course.numberOfStudens,
       new CourseDetails(
         courseData.title,
         courseData.description,
@@ -180,6 +180,8 @@ export async function editCourse(
         courseData.category,
         newCourseDetails.dependencies,
       ),
+      course.numberOfStudens,
+      course.isFavorite,
     );
     return updatedCourse;
   } catch (error) {

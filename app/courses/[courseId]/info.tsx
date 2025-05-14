@@ -32,7 +32,7 @@ import { ToggleableTextInput } from "@/components/ToggleableTextInput";
 import { getUser } from "@/services/userManagement";
 import { useUserContext } from "@/utils/storage/userContext";
 import UserCard from "@/components/UserCard";
-import { TextField } from "@/components/TextField";
+import { SeatsField } from "@/components/SeatsField";
 
 export default function CreateCoursePage() {
   const theme = useTheme();
@@ -257,16 +257,11 @@ export default function CreateCoursePage() {
               />
             ) : (
               courseContext.course && (
-                <View style={{ gap: 10 }}>
-                  {/* <TextField
-                  label="Cantidad de alumnos"
-                  value={courseContext.course.numberOfStudens.toString()}
-                /> */}
-                  <TextField
-                    label="Cantidad de alumnos inscritos"
-                    value={courseDetails.maxNumberOfStudents.toString()}
-                  />
-                </View>
+                <SeatsField
+                  seats={courseDetails.maxNumberOfStudents}
+                  students={courseContext.course.numberOfStudens || 0}
+                  showAlert={false}
+                />
               )
             )}
             <View
