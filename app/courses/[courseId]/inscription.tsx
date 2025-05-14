@@ -41,8 +41,8 @@ export default function CourseIncriptionDetails() {
 
       const courseDependencies = await Promise.all(
         fetchedCourse.courseDetails.dependencies.map((dependency) =>
-          getCourse(dependency),
-        ),
+          getCourse(dependency)
+        )
       );
 
       setDependencies(courseDependencies);
@@ -74,7 +74,9 @@ export default function CourseIncriptionDetails() {
         params: { courseId: courseId },
       });
     } catch (error) {
-      setErrorMessage((error as Error).message);
+      setErrorMessage(
+        `Error al inscribirse al curso: ${(error as Error).message}`
+      );
     }
   };
 
