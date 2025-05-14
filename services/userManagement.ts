@@ -19,7 +19,7 @@ import {
  */
 export async function registerUser(
   uid: string,
-  userInformation: UserInformation
+  userInformation: UserInformation,
 ) {
   try {
     userDetailsSchema.parse(userInformation);
@@ -38,8 +38,8 @@ export async function registerUser(
         response.data.data.name,
         response.data.data.surname,
         response.data.data.email,
-        response.data.data.country
-      )
+        response.data.data.country,
+      ),
     );
     return user;
   } catch (error) {
@@ -55,24 +55,32 @@ export async function registerUser(
  *          the user's name, surname, email, and country.
  * @throws An error if the login request fails.
  */
-export async function loginUser(uid: string): Promise<User> {
+export async function loginUser(uid: string): Promise<User | null> {
   try {
     const request = await createLoginUserRequest(uid);
     const response = await request.get("");
-    
+
     const userInfo = new UserInformation(
       response.data.data.name,
       response.data.data.surname,
       response.data.data.email,
-      response.data.data.country
+      response.data.data.country,
     );
 
     const user = {
       id: response.data.data.id,
       userInformation: userInfo,
     };
+
     return user;
   } catch (error) {
+    if (
+      error.response?.status === 500 &&
+      error.response?.data?.detail === "Error logging in user: user not found"
+    ) {
+      return null; //TODO: should be another error
+    }
+
     throw handleError(error, "iniciar sesión");
   }
 }
@@ -100,7 +108,7 @@ export async function editUserProfile(user: User) {
       response.data.data.name,
       response.data.data.surname,
       response.data.data.email,
-      response.data.data.country
+      response.data.data.country,
     );
     return updatedUserInfo;
   } catch (error) {
@@ -116,7 +124,7 @@ export async function getUser(userId: number): Promise<User> {
       response.data.data.name,
       response.data.data.surname,
       response.data.data.email,
-      response.data.data.country
+      response.data.data.country,
     );
 
     const user = {

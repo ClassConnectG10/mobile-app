@@ -26,9 +26,15 @@ export default function LoginPage() {
       loginSchema.parse({ email, password });
 
       const uid = await signIn(email, password);
-      const userInfo = await loginUser(uid);
+      const user = await loginUser(uid);
 
-      setUser(userInfo);
+      if (!user) {
+        console.log("User not found in the user service");
+        router.replace("/registerDetails");
+        return;
+      }
+
+      setUser(user);
 
       router.replace("/home");
     } catch (error) {
@@ -47,7 +53,7 @@ export default function LoginPage() {
       <View
         style={[
           {
-            backgroundColor: theme.colors.baconPrimarykground,
+            backgroundColor: theme.colors.onPrimary,
             padding: 20,
             flex: 1,
             gap: 20,

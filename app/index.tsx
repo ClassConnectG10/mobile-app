@@ -17,11 +17,19 @@ export default function Index() {
       if (authUser) {
         try {
           const user = await loginUser(authUser.uid);
+
+          if (!user) {
+            console.log("User not found in the user service");
+            router.replace("/registerDetails");
+            return;
+          }
+
           setUser(user);
           router.replace("/home");
         } catch (error) {
-          console.log("No user session found", error);
+          console.log("Error logging in user service:", error);
           await auth.signOut();
+
           router.replace("/login");
         }
       } else {
