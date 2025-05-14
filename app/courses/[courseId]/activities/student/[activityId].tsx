@@ -7,7 +7,11 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { View } from "react-native";
 import { Appbar, Button } from "react-native-paper";
-import { ActivitySubmission, StudentActivity } from "@/types/activity";
+import {
+  ActivitySubmission,
+  ActivityType,
+  StudentActivity,
+} from "@/types/activity";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import { TextField } from "@/components/TextField";
 import { ToggleableTextInput } from "@/components/ToggleableTextInput";
@@ -55,8 +59,6 @@ export default function ActivityDetails() {
         userContext.user.id,
       );
 
-      console.log("Response", response);
-
       setActivitySubmission(response);
       setResponse(response.response);
     } catch (error) {
@@ -72,7 +74,18 @@ export default function ActivityDetails() {
     try {
       setIsLoading(true);
       await submitActivity(courseId, studentActivity.activity, response);
-      await fetchStudentActivitySubmission();
+      const submission = await getActivitySubmission(
+        courseId,
+        studentActivity.activity,
+        userContext.user.id,
+      );
+
+      setActivitySubmission(submission);
+      setStudentActivity((prev) => ({
+        ...prev,
+        submited: true,
+        submitedDate: submission.submissionDate,
+      }));
     } catch (error) {
       setErrorMessage((error as Error).message);
     } finally {
@@ -92,11 +105,16 @@ export default function ActivityDetails() {
 
   return (
     <>
-      <View>
+      <View style={{ flex: 1 }}>
         <Appbar.Header>
           <Appbar.BackAction onPress={() => router.back()} />
-          <Appbar.Content title={"Información de la actividad"} />
-          <Appbar.Action icon="information-outline" />
+          <Appbar.Content
+            title={
+              studentActivity?.activity.type === ActivityType.TASK
+                ? "Información de la tarea"
+                : "Información del examen"
+            }
+          />
         </Appbar.Header>
         {studentActivity && (
           <View style={{ padding: 16, gap: 16 }}>

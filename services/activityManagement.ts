@@ -402,23 +402,22 @@ export async function submitActivity(
   try {
     let request: AxiosInstance;
 
-    console.log("Activity", activity);
-    console.log("Response", response);
-
-    if (activity.type !== ActivityType.TASK) {
+    if (activity.type === ActivityType.TASK) {
       request = await createTaskSubmissionPostRequest(
         courseId,
         activity.resourceId,
       );
-    } else {
+    } else if (activity.type === ActivityType.EXAM) {
       request = await createExamSubmissionPostRequest(
         courseId,
         activity.resourceId,
       );
+    } else {
+      throw new Error("Tipo de actividad no soportado");
     }
 
     const body = {
-      file: response,
+      data: response,
     };
 
     await request.post("", body);
