@@ -27,10 +27,22 @@ Aplicación móvil del trabajo práctico grupal ClassConnect de la materia [Inge
    EXPO_PUBLIC_FIREBASE_APP_ID=<firebase app id>
 
    EXPO_PUBLIC_MIDDLEEND_BASE_URL=<middleend url>
+   EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID=<android client id>
+   EXPO_PUBLIC_EXPO_GO_CLIENT_ID=<expo go client id>
+   EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID=<web client id>
    ```
 
-3. Iniciar la aplicación:
+3. Incluir en el directorio raíz del proyecto el archivo `google-services.json` provisto por Firebase
+   (información sobre cómo obtenerlo [acá](https://firebase.google.com/docs/android/setup?hl=es-419#add-config-file))
+
+4. Generar una prebuild:
 
    ```bash
-   npm run start
+   npx expo prebuild --clean --platform android
+   ```
+
+5. Iniciar la aplicación:
+
+   ```bash
+   npx expo run:android
    ```
