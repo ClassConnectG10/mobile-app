@@ -16,7 +16,8 @@ export default function UserProfilePage() {
   const router = useRouter();
 
   const [isEditing, setIsEditing] = useState(false);
-  const [buttonDisabled, setButtonDisabled] = useState(false);
+  const [isLoading, setisLoading] = useState(false);
+
   const [errorMessage, setErrorMessage] = useState("");
 
   const userContextHook = useUserContext();
@@ -39,9 +40,8 @@ export default function UserProfilePage() {
   };
 
   const handleSave = async () => {
+    setisLoading(true);
     try {
-      setButtonDisabled(true);
-
       const newUser = {
         id: userContext.id,
         userInformation: {
@@ -51,19 +51,17 @@ export default function UserProfilePage() {
 
       await editUserProfile(newUser);
       userContextHook.setUser(newUser);
-
-      setIsEditing(false);
     } catch (error) {
       setErrorMessage((error as Error).message);
       handleCancelEdit();
     } finally {
-      setButtonDisabled(false);
+      setisLoading(false);
     }
   };
 
   const handleLogout = async () => {
     try {
-      setButtonDisabled(true);
+      setisLoading(true);
 
       await signOut();
       // userContextHook.deleteUser();
@@ -76,18 +74,18 @@ export default function UserProfilePage() {
 
   return (
     <>
-      <Appbar.Header>
-        <Appbar.BackAction
-          onPress={isEditing ? () => handleCancelEdit() : () => router.back()}
-        />
-        <Appbar.Content title={isEditing ? "Editar perfil" : "Perfil"} />
-        <Appbar.Action
-          icon={isEditing ? "check" : "pencil"}
-          onPress={isEditing ? () => handleSave() : () => setIsEditing(true)}
-        />
-      </Appbar.Header>
-      <View style={globalStyles.mainContainer}>
-        <ScrollView contentContainerStyle={globalStyles.courseDetailsContainer}>
+      <View style={{ flex: 1 }}>
+        <Appbar.Header>
+          <Appbar.BackAction
+            onPress={isEditing ? () => handleCancelEdit() : () => router.back()}
+          />
+          <Appbar.Content title="Mi Perfil" />
+          <Appbar.Action
+            icon={isEditing ? "check" : "pencil"}
+            onPress={isEditing ? () => handleSave() : () => setIsEditing(true)}
+          />
+        </Appbar.Header>
+        <ScrollView contentContainerStyle={{ padding: 16, gap: 16 }}>
           <View style={globalStyles.userIconContainer}>
             <Avatar.Icon size={96} icon="account" />
           </View>
@@ -128,18 +126,18 @@ export default function UserProfilePage() {
             <Button
               mode="contained"
               onPress={handleLogout}
-              disabled={buttonDisabled}
+              disabled={isLoading}
               style={{ marginTop: 20 }}
             >
               Cerrar sesión
             </Button>
           )}
         </ScrollView>
-        <ErrorMessageSnackbar
-          message={errorMessage}
-          onDismiss={() => setErrorMessage("")}
-        />
       </View>
+      <ErrorMessageSnackbar
+        message={errorMessage}
+        onDismiss={() => setErrorMessage("")}
+      />
     </>
   );
 }

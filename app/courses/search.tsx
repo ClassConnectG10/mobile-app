@@ -15,6 +15,7 @@ export default function SearchCoursesPage() {
   const router = useRouter();
   const [courses, setCourses] = useState<Course[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [searchFiltersModalVisible, setSearchFiltersModalVisible] =
     useState(false);
@@ -51,6 +52,15 @@ export default function SearchCoursesPage() {
     }));
   };
 
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      await fetchCourses();
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
   useEffect(() => {
     fetchCourses();
   }, [searchFilters]);
@@ -83,6 +93,8 @@ export default function SearchCoursesPage() {
                 onPress={() => handleSelectCourse(item)}
               />
             )}
+            refreshing={isRefreshing}
+            onRefresh={handleRefresh}
             ItemSeparatorComponent={() => <View style={{ height: 16 }} />}
             ListEmptyComponent={
               isLoading ? (

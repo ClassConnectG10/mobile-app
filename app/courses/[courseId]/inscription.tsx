@@ -18,6 +18,7 @@ import CourseCard from "@/components/CourseCard";
 import UserCard from "@/components/UserCard";
 import { getUser } from "@/services/userManagement";
 import { useUserContext } from "@/utils/storage/userContext";
+import { formatDate } from "@/utils/date";
 export default function CourseIncriptionDetails() {
   const router = useRouter();
   const theme = useTheme();
@@ -37,8 +38,6 @@ export default function CourseIncriptionDetails() {
     try {
       const fetchedCourse = await getCourse(courseId);
       setCourse(fetchedCourse);
-
-      console.log("course", fetchedCourse);
 
       const courseDependencies = await Promise.all(
         fetchedCourse.courseDetails.dependencies.map((dependency) =>
@@ -142,12 +141,12 @@ export default function CourseIncriptionDetails() {
           />
           <TextField
             label="Fecha de inicio"
-            value={course.courseDetails.startDate.toLocaleDateString()}
+            value={formatDate(course.courseDetails.startDate)}
           />
 
           <TextField
             label="Fecha de fin"
-            value={course.courseDetails.endDate.toLocaleDateString()}
+            value={formatDate(course.courseDetails.endDate)}
           />
 
           <TextField label="Nivel" value={course.courseDetails.level} />

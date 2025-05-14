@@ -30,7 +30,7 @@ export default function TeacherActivityPage() {
   const courseId = courseIdParam as string;
   const activityId = activityIdParam as string;
 
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [teacherActivity, setTeacherActivity] =
@@ -46,12 +46,8 @@ export default function TeacherActivityPage() {
   async function fetchTeacherActivity() {
     try {
       setIsLoading(true);
-      console.log("Cargando actividad de docente");
-      console.log("CourseID: ", courseId);
-      console.log("ActivityID: ", activityId);
       if (courseId && activityId) {
         const activity = await getTeacherActivity(courseId, Number(activityId));
-        console.log("Actividad de docente", activity);
         setTeacherActivity(activity);
         activityDetailsHook.setActivityDetails(
           activity.activity.activityDetails,
@@ -65,7 +61,6 @@ export default function TeacherActivityPage() {
   }
 
   const handleDiscardChanges = () => {
-    console.log("Descartando cambios");
     if (teacherActivity) {
       activityDetailsHook.setActivityDetails({
         ...teacherActivity.activity.activityDetails,
@@ -90,9 +85,9 @@ export default function TeacherActivityPage() {
   };
 
   const handleEditActivity = async () => {
+    setIsLoading(true);
+
     try {
-      setIsLoading(true);
-      console.log("Guardando cambios de actividad");
       if (teacherActivity) {
         const updatedActivity = await updateActivity(
           courseId,
@@ -111,9 +106,9 @@ export default function TeacherActivityPage() {
   };
 
   const handlePublishActivity = async () => {
+    setIsLoading(true);
+
     try {
-      setIsLoading(true);
-      console.log("Publicando actividad");
       if (teacherActivity) {
         const updatedActivity = await postActivity(
           courseId,
@@ -130,9 +125,9 @@ export default function TeacherActivityPage() {
   };
 
   const handleDeleteActivity = async () => {
+    setIsLoading(true);
+
     try {
-      setIsLoading(true);
-      console.log("Borrando actividad");
       if (teacherActivity) {
         await deleteActivity(courseId, teacherActivity.activity);
         setTeacherActivity(null);
@@ -178,15 +173,6 @@ export default function TeacherActivityPage() {
             flex: 1,
           }}
         >
-          {/* <FlatList
-              style={styles.scrollContainer}
-              data={studentSubmissions}
-              keyExtractor={(item) => item.resourceId}
-              renderItem={({ item }) => <SubmissionCard submission={item} />}
-              ListHeaderComponent={() => <TeacherActivityHeader />}
-              ItemSeparatorComponent={() => <View style={{ height: 16 }} />}
-            /> */}
-
           <ToggleableTextInput
             label="Nombre"
             placeholder="Nombre de la actividad"
@@ -237,7 +223,7 @@ export default function TeacherActivityPage() {
             </Button>
           )}
 
-          {!isEditing && (
+          {isEditing && (
             <Button
               onPress={() => setShowConfirmationDelete(true)}
               mode="contained"

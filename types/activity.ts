@@ -9,6 +9,12 @@ export const enum ActivitiesOption {
   EXAMS = "EXAM",
 }
 
+export enum ActivityStatusOption {
+  ALL = "ALL",
+  PENDING = "PENDING",
+  SUBMITTED = "SUBMITTED",
+}
+
 export enum StudentActivityFilter {
   ALL = "ALL",
   PENDING = "PENDING",
@@ -57,6 +63,7 @@ export class ActivitySubmission {
     public studentId: number,
     public response: string,
     public submited: boolean,
+    public dueDate: Date,
     public submissionDate?: Date,
   ) {}
 }

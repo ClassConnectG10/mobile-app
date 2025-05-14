@@ -11,6 +11,7 @@ import {
   createCourseRequest,
   createCoursesRequest,
   createEnrollCourseRequest,
+  createFavoriteCourseRequest,
   createSearchCoursesRequest,
 } from "@/api/courses";
 
@@ -19,7 +20,7 @@ function formatDate(date: Date): string {
 }
 
 export async function createCourse(
-  courseDetails: CourseDetails
+  courseDetails: CourseDetails,
 ): Promise<Course> {
   try {
     courseDetailsSchema.parse(courseDetails);
@@ -53,8 +54,8 @@ export async function createCourse(
         courseData.level,
         courseData.modality,
         courseData.category,
-        courseDetails.dependencies
-      )
+        courseDetails.dependencies,
+      ),
     );
 
     const moduleRequest = await createModuleRequest(course.courseId);
@@ -88,7 +89,8 @@ export async function getCourse(courseId: string): Promise<Course> {
         courseData.modality,
         courseData.category,
         courseData.dependencies.map((dep: any) => dep.course_id),
-      )
+      ),
+      courseData.is_favorite,
     );
     return course;
   } catch (error) {
@@ -98,7 +100,7 @@ export async function getCourse(courseId: string): Promise<Course> {
 
 export async function searchCourses(
   searchFilters: SearchFilters,
-  searchOption: SearchOption
+  searchOption: SearchOption,
 ): Promise<Course[]> {
   const request = await createSearchCoursesRequest(searchFilters, searchOption);
   const response = await request.get("");
@@ -116,8 +118,9 @@ export async function searchCourses(
         new Date(courseData.end_date),
         courseData.level,
         courseData.modality,
-        courseData.category
-      )
+        courseData.category,
+      ),
+      courseData.is_favorite,
     );
   });
 
@@ -135,14 +138,14 @@ export async function enrollCourse(courseId: string) {
 
 export async function editCourse(
   course: Course,
-  newCourseDetails: CourseDetails
+  newCourseDetails: CourseDetails,
 ): Promise<Course> {
   try {
     courseDetailsSchema.parse(newCourseDetails);
 
     if (course.numberOfStudens > newCourseDetails.maxNumberOfStudents) {
       throw new Error(
-        "El nuevo número máximo de estudiantes no puede ser menor que el número actual de estudiantes"
+        "El nuevo número máximo de estudiantes no puede ser menor que el número actual de estudiantes",
       );
     }
 
@@ -175,8 +178,8 @@ export async function editCourse(
         courseData.level,
         courseData.modality,
         courseData.category,
-        newCourseDetails.dependencies
-      )
+        newCourseDetails.dependencies,
+      ),
     );
     return updatedCourse;
   } catch (error) {
@@ -190,5 +193,25 @@ export async function deleteCourse(courseId: string): Promise<void> {
     await request.delete("");
   } catch (error) {
     throw handleError(error, "eliminar el curso");
+  }
+}
+
+export async function addCourseToFavorites(courseId: string): Promise<void> {
+  try {
+    const request = await createFavoriteCourseRequest(courseId);
+    await request.post("");
+  } catch (error) {
+    throw handleError(error, "agregar el curso a favoritos");
+  }
+}
+
+export async function removeCourseFromFavorites(
+  courseId: string,
+): Promise<void> {
+  try {
+    const request = await createFavoriteCourseRequest(courseId);
+    await request.delete("");
+  } catch (error) {
+    throw handleError(error, "eliminar el curso de favoritos");
   }
 }

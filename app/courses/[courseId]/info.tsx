@@ -16,7 +16,6 @@ import {
   categories,
 } from "@/utils/constants/courseDetails";
 import { useCourseDetails } from "@/hooks/useCourseDetails";
-import { globalStyles } from "@/styles/globalStyles";
 import { DatePickerButton } from "@/components/DatePickerButton";
 import { useRequiredCoursesContext } from "@/utils/storage/requiredCoursesContext";
 import CourseCard from "@/components/CourseCard";
@@ -196,43 +195,38 @@ export default function CreateCoursePage() {
 
   return (
     <>
-      <Appbar.Header>
-        <Appbar.BackAction
-          onPress={
-            isEditing ? () => handleDiscardChanges() : () => router.back()
-          }
-        />
-        <Appbar.Content title="Detalles del curso" />
-        {isOwner && (
-          <Appbar.Action
-            icon={isEditing ? "check" : "pencil"}
-            onPress={isEditing ? handleEditCourse : () => setIsEditing(true)}
+      <View style={{ flex: 1 }}>
+        <Appbar.Header>
+          <Appbar.BackAction
+            onPress={
+              isEditing ? () => handleDiscardChanges() : () => router.back()
+            }
           />
-        )}
-      </Appbar.Header>
+          <Appbar.Content title="Detalles del curso" />
+          {isOwner && (
+            <Appbar.Action
+              icon={isEditing ? "check" : "pencil"}
+              onPress={isEditing ? handleEditCourse : () => setIsEditing(true)}
+            />
+          )}
+        </Appbar.Header>
 
-      {isLoading ||
-      !courseContext.course ||
-      !courseDetails ||
-      !courseOwner ||
-      !requiredCourses ? (
-        <View
-          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
-        >
-          <ActivityIndicator
-            animating={true}
-            size="large"
-            color={theme.colors.primary}
-          />
-        </View>
-      ) : (
-        <View
-          style={[
-            globalStyles.mainContainer,
-            { backgroundColor: theme.colors.background },
-          ]}
-        >
-          <ScrollView contentContainerStyle={{ gap: 16 }}>
+        {isLoading ||
+        !courseContext.course ||
+        !courseDetails ||
+        !courseOwner ||
+        !requiredCourses ? (
+          <View
+            style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+          >
+            <ActivityIndicator
+              animating={true}
+              size="large"
+              color={theme.colors.primary}
+            />
+          </View>
+        ) : (
+          <ScrollView contentContainerStyle={{ gap: 16, padding: 16 }}>
             {courseOwner && (
               <View style={{ gap: 8 }}>
                 <Text variant="titleMedium">Propietario del curso</Text>
@@ -373,27 +367,27 @@ export default function CreateCoursePage() {
               </Button>
             )}
           </ScrollView>
-        </View>
-      )}
-      {/* Confirmation Dialog */}
+        )}
+        {/* Confirmation Dialog */}
 
-      <Dialog
-        visible={showConfirmationDelete}
-        onDismiss={() => setShowConfirmationDelete(false)}
-      >
-        <Dialog.Title>Atención</Dialog.Title>
-        <Dialog.Content>
-          <Text variant="bodyMedium">
-            El curso '{courseDetails.title}' será eliminado.
-          </Text>
-        </Dialog.Content>
-        <Dialog.Actions>
-          <Button onPress={() => setShowConfirmationDelete(false)}>
-            Cancelar
-          </Button>
-          <Button onPress={handleDeleteCourse}>Eliminar</Button>
-        </Dialog.Actions>
-      </Dialog>
+        <Dialog
+          visible={showConfirmationDelete}
+          onDismiss={() => setShowConfirmationDelete(false)}
+        >
+          <Dialog.Title>Atención</Dialog.Title>
+          <Dialog.Content>
+            <Text variant="bodyMedium">
+              El curso '{courseDetails.title}' será eliminado.
+            </Text>
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button onPress={() => setShowConfirmationDelete(false)}>
+              Cancelar
+            </Button>
+            <Button onPress={handleDeleteCourse}>Eliminar</Button>
+          </Dialog.Actions>
+        </Dialog>
+      </View>
       <ErrorMessageSnackbar
         message={errorMessage}
         onDismiss={() => setErrorMessage("")}

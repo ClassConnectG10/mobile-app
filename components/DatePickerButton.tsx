@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { IconButton, TextInput } from "react-native-paper";
 import { Pressable, View } from "react-native";
+import { formatDate, formatDateTime } from "@/utils/date";
 
 type DatePickerProps = {
   label: string;
@@ -58,22 +59,14 @@ export const DatePickerButton: React.FC<DatePickerProps> = ({
 
     switch (type) {
       case "date":
-        return value.toLocaleDateString();
+        return formatDate(value);
       case "time":
         return value.toLocaleTimeString([], {
           hour: "2-digit",
           minute: "2-digit",
         });
       case "datetime":
-        return (
-          value.toLocaleDateString() +
-          " " +
-          value.toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-            hourCycle: "h23",
-          })
-        );
+        return formatDateTime(value);
       default:
         return "";
     }

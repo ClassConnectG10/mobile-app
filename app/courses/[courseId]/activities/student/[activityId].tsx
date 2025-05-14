@@ -15,8 +15,9 @@ import {
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import { TextField } from "@/components/TextField";
 import { ToggleableTextInput } from "@/components/ToggleableTextInput";
-import ActivityCard from "@/components/ActivityCard";
 import { useUserContext } from "@/utils/storage/userContext";
+import SubmissionCard from "@/components/SubmissionCard";
+import { formatDateTime } from "@/utils/date";
 
 export default function ActivityDetails() {
   const router = useRouter();
@@ -26,7 +27,7 @@ export default function ActivityDetails() {
   const [response, setResponse] = useState("");
   const [activitySubmission, setActivitySubmission] =
     useState<ActivitySubmission | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
   const { courseId: courseIdParam, activityId: activityIdParam } =
     useLocalSearchParams();
@@ -118,7 +119,18 @@ export default function ActivityDetails() {
         </Appbar.Header>
         {studentActivity && (
           <View style={{ padding: 16, gap: 16 }}>
-            <ActivityCard activity={studentActivity} />
+            {/* <ActivityCard activity={studentActivity} /> */}
+            {activitySubmission && (
+              <SubmissionCard
+                student={userContext.user}
+                submission={activitySubmission}
+              />
+            )}
+
+            <TextField
+              label="Título"
+              value={studentActivity.activity.activityDetails.title}
+            />
 
             <TextField
               label="Descripción"
@@ -129,6 +141,20 @@ export default function ActivityDetails() {
               value={studentActivity.activity.activityDetails.instruction}
             />
 
+            <TextField
+              label="Fecha límite"
+              value={formatDateTime(
+                studentActivity.activity.activityDetails.dueDate,
+              )}
+            />
+
+            {studentActivity && studentActivity.submited && (
+              <TextField
+                label="Fecha de entrega"
+                value={formatDateTime(studentActivity.submitedDate)}
+              />
+            )}
+
             <ToggleableTextInput
               label="Respuesta"
               value={response}
@@ -137,17 +163,15 @@ export default function ActivityDetails() {
               onChange={setResponse}
             />
 
-            <Button
-              mode="contained"
-              onPress={handleSubmitResponse}
-              disabled={
-                isLoading || response.trim() === "" || studentActivity.submited
-              }
-            >
-              {studentActivity.submited
-                ? "Actividad completada"
-                : "Enviar respuesta"}
-            </Button>
+            {studentActivity && !studentActivity.submited && (
+              <Button
+                mode="contained"
+                onPress={handleSubmitResponse}
+                disabled={isLoading || response.trim() === ""}
+              >
+                Enviar respuesta
+              </Button>
+            )}
           </View>
         )}
       </View>

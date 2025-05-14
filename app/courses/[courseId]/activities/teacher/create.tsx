@@ -33,7 +33,6 @@ export default function CreateActivity() {
       router.back();
     } catch (error) {
       setErrorMessage((error as Error).message);
-      console.error("Error al crear la actividad:", error);
     }
   };
 

@@ -29,6 +29,7 @@ import {
   activityDetailsSchema,
   activityDetailsSchemaUpdate,
 } from "@/validations/activities";
+import { getDateFromBackend } from "@/utils/date";
 
 export async function getCourseTeacherActivities(
   courseId: string,
@@ -50,7 +51,7 @@ export async function getCourseTeacherActivities(
               activityData.title,
               activityData.description,
               activityData.instruction,
-              new Date(activityData.due_date),
+              getDateFromBackend(activityData.due_date),
             ),
           ),
           activityData.visible,
@@ -73,8 +74,8 @@ export async function getCourseStudentActivities(
 
     const activitiesData = response.data.data;
     const activities: StudentActivity[] = activitiesData.map(
-      (activityData: any) => {
-        const studentActivity = new StudentActivity(
+      (activityData: any) =>
+        new StudentActivity(
           new Activity(
             activityData.resource_id,
             activityData.type,
@@ -82,18 +83,14 @@ export async function getCourseStudentActivities(
               activityData.title,
               activityData.description,
               activityData.instruction,
-              new Date(activityData.due_date),
+              getDateFromBackend(activityData.due_date),
             ),
           ),
           activityData.delivered,
-          activityData.delivered_date,
-        );
-
-        if (activityData.delivered && activityData.delivered_date) {
-          studentActivity.submitedDate = new Date(activityData.delivered_date);
-        }
-        return studentActivity;
-      },
+          activityData.delivered_date
+            ? getDateFromBackend(activityData.delivered_date)
+            : null,
+        ),
     );
 
     return activities;
@@ -118,15 +115,14 @@ export async function getStudentActivity(
           activityData.title,
           activityData.description,
           activityData.instruction,
-          new Date(activityData.due_date),
+          getDateFromBackend(activityData.due_date),
         ),
       ),
       activityData.delivered,
+      activityData.delivered_date
+        ? getDateFromBackend(activityData.delivered_date)
+        : null,
     );
-
-    if (activityData.delivered && activityData.delivered_date) {
-      activity.submitedDate = new Date(activityData.delivered_date);
-    }
 
     return activity;
   } catch (error) {
@@ -142,7 +138,7 @@ export async function getTeacherActivity(
     const request = await createActivityRequest(courseId, activityId);
     const response = await request.get("");
 
-    console.log(response.data);
+    console.log("response", response.data.data);
 
     const activityData = response.data.data;
     const activity: TeacherActivity = new TeacherActivity(
@@ -153,7 +149,7 @@ export async function getTeacherActivity(
           activityData.title,
           activityData.description,
           activityData.instruction,
-          new Date(activityData.due_date),
+          getDateFromBackend(activityData.due_date),
         ),
       ),
       activityData.visible,
@@ -188,7 +184,7 @@ export async function postActivity(
           activityData.title,
           activityData.description,
           activityData.instruction,
-          new Date(activityData.due_date),
+          getDateFromBackend(activityData.due_date),
         ),
       ),
       activityData.visible,
@@ -233,7 +229,7 @@ export async function updateActivity(
           activityData.title,
           activityData.description,
           activityData.instruction,
-          new Date(activityData.due_date),
+          getDateFromBackend(activityData.due_date),
         ),
       ),
       activityData.visible,
@@ -265,24 +261,27 @@ export async function deleteActivity(
 
 export async function getActivitySubmissions(
   courseId: string,
-  activityId: number,
+  activity: Activity,
 ): Promise<ActivitySubmission[]> {
   try {
     const request = await createActivitySubmissionsRequest(
       courseId,
-      activityId,
+      activity.resourceId,
     );
     const response = await request.get("");
     const submissionsData = response.data.data;
     const submissions: [] = submissionsData.map(
       (activityData: any) =>
         new ActivitySubmission(
-          activityData.resource_id,
-          activityData.activity_type,
-          activityData.student_id,
+          activityData.task_id,
+          activity.type,
+          activityData.user_id,
           activityData.external_ref,
-          activityData.status,
-          new Date(activityData.submission_date),
+          activityData.delivered,
+          getDateFromBackend(activityData.due_date),
+          activityData.delivered_date
+            ? getDateFromBackend(activityData.delivered_date)
+            : null,
         ),
     );
     return submissions;
@@ -304,8 +303,6 @@ export async function getActivitySubmission(
     );
     const response = await request.get("");
 
-    console.log("DATA DEL USER", response.data.data);
-
     const submissionData = response.data.data;
     const submission = new ActivitySubmission(
       submissionData.task_id,
@@ -313,11 +310,11 @@ export async function getActivitySubmission(
       studentId,
       submissionData.external_ref,
       submissionData.delivered,
+      getDateFromBackend(submissionData.due_date),
+      submissionData.delivered_date
+        ? getDateFromBackend(submissionData.delivered_date)
+        : null,
     );
-
-    if (submissionData.delivered && submissionData.submission_date) {
-      submission.submissionDate = new Date(submissionData.submission_date);
-    }
 
     return submission;
   } catch (error) {
@@ -341,6 +338,8 @@ export async function createActivity(
       request = await createExamsRequest(courseId);
     }
 
+    console.log("activityDetails", activityDetails);
+
     const body = {
       type: activityType,
       title: activityDetails.title,
@@ -350,6 +349,8 @@ export async function createActivity(
       module: moduleId,
       visible: false,
     };
+
+    console.log("body", body);
 
     const response = await request.post("", body);
 
@@ -362,7 +363,7 @@ export async function createActivity(
           activityData.title,
           activityData.description,
           activityData.instruction,
-          new Date(activityData.due_date),
+          getDateFromBackend(activityData.due_date),
         ),
       ),
       activityData.visible,

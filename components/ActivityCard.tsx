@@ -5,7 +5,7 @@ import {
   StudentActivity,
   TeacherActivity,
 } from "@/types/activity";
-import { getRelativeTime } from "@/utils/date";
+import { getRelativeTimeFromNow } from "@/utils/date";
 import { customColors } from "@/utils/constants/colors";
 
 interface ActivityCardProps {
@@ -18,7 +18,8 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onPress }) => {
   const { type, activityDetails } = activity.activity;
   const { title, dueDate } = activityDetails;
 
-  const { relativeTime, isOverdue, isWarning } = getRelativeTime(dueDate);
+  const { relativeTime, isOverdue, isWarning } =
+    getRelativeTimeFromNow(dueDate);
 
   let statusText;
   let statusIcon;

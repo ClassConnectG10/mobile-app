@@ -51,8 +51,18 @@ export const createSearchCoursesRequest = (
     params.category = searchFilters.category;
   }
 
+  if (searchFilters.favorites) {
+    params.favorite = "true";
+  }
+
   return createRequest({
     uri: `courses`,
     params,
+  });
+};
+
+export const createFavoriteCourseRequest = (courseId: string) => {
+  return createRequest({
+    uri: `courses/${courseId}/favorite`,
   });
 };

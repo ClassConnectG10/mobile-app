@@ -13,7 +13,8 @@ export class SearchFilters {
     public endDate: Date | null,
     public level: string,
     public modality: string,
-    public category: string
+    public category: string,
+    public favorites: boolean = false,
   ) {}
 }
 
@@ -22,7 +23,8 @@ export class Course {
     public courseId: string,
     public ownerId: number,
     public numberOfStudens: number,
-    public courseDetails: CourseDetails
+    public courseDetails: CourseDetails,
+    public isFavorite?: boolean,
   ) {}
 }
 
@@ -36,6 +38,6 @@ export class CourseDetails {
     public level: string,
     public modality: string,
     public category: string,
-    public dependencies: string[] = []
+    public dependencies: string[] = [],
   ) {}
 }

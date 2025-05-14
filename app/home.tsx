@@ -9,6 +9,7 @@ import {
   SegmentedButtons,
   useTheme,
   Text,
+  IconButton,
 } from "react-native-paper";
 import { router } from "expo-router";
 import CourseCard from "@/components/CourseCard";
@@ -29,6 +30,7 @@ export default function HomePage() {
 
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const [searchOption, setSearchOption] = useState<SearchOption>(
     SearchOption.RELATED,
@@ -43,6 +45,7 @@ export default function HomePage() {
     level: "",
     modality: "",
     category: "",
+    favorites: false,
   });
 
   const userContextHook = useUserContext();
@@ -68,26 +71,24 @@ export default function HomePage() {
   };
 
   const handleSearch = (searchTerm: string) => {
-    console.log("Search term:", searchTerm);
     setSearchFilters((prev) => ({
       ...prev,
       searchQuery: searchTerm,
     }));
   };
 
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      await fetchCourses();
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
   useEffect(() => {
     fetchCourses();
   }, [searchFilters, searchOption]);
-
-  // useEffect(() => {
-  //   if (!userContextHook.user) {
-  //     router.replace("/login");
-  //   }
-  // }, []);
-
-  if (!userContextHook.user) {
-    return null;
-  }
 
   axios.defaults.headers.common["X-Caller-Id"] =
     userContextHook.user.id.toString();
@@ -113,26 +114,48 @@ export default function HomePage() {
       {/* Segmented control */}
 
       <View style={{ padding: 16, gap: 16, flex: 1 }}>
-        <SegmentedButtons
-          value={searchOption}
-          onValueChange={(value: SearchOption) => {
-            handleSearchOptionChange(value);
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 6,
+            justifyContent: "space-between",
           }}
-          buttons={[
-            {
-              value: "enrolled",
-              label: "Cursos inscriptos",
-              icon: "book-open-variant",
-              disabled: isLoading,
-            },
-            {
-              value: "taught",
-              label: "Cursos creados",
-              icon: "human-male-board",
-              disabled: isLoading,
-            },
-          ]}
-        />
+        >
+          <SegmentedButtons
+            style={{ flex: 1 }}
+            value={searchOption}
+            onValueChange={(value: SearchOption) => {
+              handleSearchOptionChange(value);
+            }}
+            buttons={[
+              {
+                value: "enrolled",
+                label: "Inscriptos",
+                icon: "book-open-variant",
+                disabled: isLoading,
+              },
+              {
+                value: "taught",
+                label: "Impartidos",
+                icon: "human-male-board",
+                disabled: isLoading,
+              },
+            ]}
+          />
+          <IconButton
+            icon="heart"
+            size={24}
+            mode={searchFilters.favorites ? "contained" : "outlined"}
+            onPress={() => {
+              setSearchFilters((prev) => ({
+                ...prev,
+                favorites: !prev.favorites,
+              }));
+            }}
+            disabled={isLoading}
+          />
+        </View>
 
         {/* Searchbar */}
 
@@ -143,6 +166,8 @@ export default function HomePage() {
           style={styles.scrollContainer}
           data={courses}
           keyExtractor={(item) => item.courseId}
+          refreshing={isRefreshing}
+          onRefresh={handleRefresh}
           renderItem={({ item }) => (
             <CourseCard
               name={item.courseDetails.title}
@@ -204,23 +229,6 @@ export default function HomePage() {
         contentContainerStyle={styles.modalContainer}
         style={styles.modalContent}
       >
-        {/* <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            gap: 16,
-          }}
-        >
-          <TextInput
-            label="Código del curso"
-            value={courseCode}
-            mode="outlined"
-            placeholder="Ingrese el código del curso"
-            onChangeText={setCourseCode}
-          />
-          <IconButton icon="check" mode="contained" onPress={() => {}} />
-        </View>
-        <Divider /> */}
         <Button
           mode="contained"
           icon="magnify"
@@ -261,12 +269,7 @@ export default function HomePage() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    position: "relative",
-  },
   scrollContainer: {
-    // padding: 16,
     paddingBottom: 100,
     gap: 16,
   },

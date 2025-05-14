@@ -1,4 +1,4 @@
-import { Avatar, Appbar } from "react-native-paper";
+import { Avatar, Appbar, useTheme } from "react-native-paper";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { View, ScrollView, ActivityIndicator } from "react-native";
 import { globalStyles } from "@/styles/globalStyles";
@@ -9,78 +9,73 @@ import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import { TextField } from "@/components/TextField"; // Importá tu componente
 
 export default function UserDetailsPage() {
+  const theme = useTheme();
   const router = useRouter();
+
   const { userId: userIdParam } = useLocalSearchParams();
   const userId = userIdParam as string;
 
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User>(null);
   const [errorMessage, setErrorMessage] = useState("");
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setLoading] = useState(false);
 
-  useEffect(() => {
+  const fetchUser = async () => {
     if (!userId) return;
 
-    const fetchUser = async () => {
-      try {
-        const userFetched = await getUser(Number(userId));
-        setUser(userFetched);
-      } catch (error) {
-        if (error instanceof Error) {
-          setErrorMessage(error.message);
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
+    setLoading(true);
 
+    try {
+      const userFetched = await getUser(Number(userId));
+      setUser(userFetched);
+    } catch (error) {
+      setErrorMessage((error as Error).message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchUser();
   }, [userId]);
 
-  if (loading) {
-    return (
-      <View style={{ justifyContent: "center", alignItems: "center", flex: 1 }}>
-        <ActivityIndicator size="large" />
-      </View>
-    );
-  }
-
-  if (!user) {
-    return (
-      <View style={{ justifyContent: "center", alignItems: "center", flex: 1 }}>
-        <TextField
-          label="Error"
-          value="No se pudo cargar la información del usuario."
-        />
-      </View>
-    );
-  }
-
-  const { firstName, lastName, email, country } = user.userInformation;
-
   return (
     <>
-      <Appbar.Header>
-        <Appbar.BackAction onPress={() => router.back()} />
-        <Appbar.Content title="Perfil de usuario" />
-      </Appbar.Header>
+      <View style={{ flex: 1 }}>
+        <Appbar.Header>
+          <Appbar.BackAction onPress={() => router.back()} />
+          <Appbar.Content title="Perfil de usuario" />
+        </Appbar.Header>
 
-      <View style={globalStyles.mainContainer}>
-        <ScrollView contentContainerStyle={globalStyles.courseDetailsContainer}>
-          <View style={globalStyles.userIconContainer}>
-            <Avatar.Icon size={96} icon="account" />
+        {isLoading || !user ? (
+          <View
+            style={{
+              flex: 1,
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <ActivityIndicator
+              animating={true}
+              size="large"
+              color={theme.colors.primary}
+            />
           </View>
+        ) : (
+          <ScrollView contentContainerStyle={{ padding: 16, gap: 16 }}>
+            <View style={globalStyles.userIconContainer}>
+              <Avatar.Icon size={96} icon="account" />
+            </View>
 
-          <TextField label="Nombre" value={firstName} />
-          <TextField label="Apellido" value={lastName} />
-          <TextField label="Email" value={email} />
-          <TextField label="País" value={country} />
-        </ScrollView>
-
-        <ErrorMessageSnackbar
-          message={errorMessage}
-          onDismiss={() => setErrorMessage("")}
-        />
+            <TextField label="Nombre" value={user.userInformation.firstName} />
+            <TextField label="Apellido" value={user.userInformation.lastName} />
+            <TextField label="Email" value={user.userInformation.email} />
+          </ScrollView>
+        )}
       </View>
+      <ErrorMessageSnackbar
+        message={errorMessage}
+        onDismiss={() => setErrorMessage("")}
+      />
     </>
   );
 }

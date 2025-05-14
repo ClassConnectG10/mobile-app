@@ -1,7 +1,11 @@
-import { getCourse } from "@/services/courseManagement";
+import {
+  addCourseToFavorites,
+  getCourse,
+  removeCourseFromFavorites,
+} from "@/services/courseManagement";
 import { useCourseContext } from "@/utils/storage/courseContext";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Appbar,
@@ -30,7 +34,6 @@ import {
   getCourseStudentActivities,
   getCourseTeacherActivities,
 } from "@/services/activityManagement";
-import { useFocusEffect } from "@react-navigation/native";
 import { FlatList } from "react-native";
 
 export default function CoursePage() {
@@ -41,7 +44,8 @@ export default function CoursePage() {
   const courseId = courseIdParam as string;
   const [newActivityModalVisible, setNewActivityModalVisible] = useState(false);
 
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
   const userContext = useUserContext();
@@ -58,24 +62,31 @@ export default function CoursePage() {
     StudentActivityFilter.ALL,
   );
 
-  const [isOwner, setIsOwner] = useState(false);
+  const [isOwner, setIsOwner] = useState(null);
 
-  const [studentActivities, setStudentActivities] = useState<StudentActivity[]>(
-    [],
-  );
-  const [teacherActivities, setTeacherActivities] = useState<TeacherActivity[]>(
-    [],
-  );
+  const [studentActivities, setStudentActivities] =
+    useState<StudentActivity[]>(null);
+
+  const [teacherActivities, setTeacherActivities] =
+    useState<TeacherActivity[]>(null);
+
+  const [filteredStudentActivities, setFilteredStudentActivities] =
+    useState<StudentActivity[]>(null);
+
+  const [filteredTeacherActivities, setFilteredTeacherActivities] =
+    useState<TeacherActivity[]>(null);
 
   const courseContext = useCourseContext();
   const { setCourse } = courseContext;
 
   async function fetchCourse() {
+    if (!courseId || !userContext.user) return;
+
+    setIsLoading(true);
     try {
-      setIsLoading(true);
       const course = await getCourse(courseId);
       setCourse(course);
-      setIsOwner(course.ownerId === userContext.user?.id);
+      setIsOwner(course.ownerId === userContext.user.id);
     } catch (error) {
       setErrorMessage((error as Error).message);
       setCourse(null);
@@ -85,6 +96,9 @@ export default function CoursePage() {
   }
 
   async function fetchActivities() {
+    if (!courseId || isOwner === null) return;
+
+    setIsLoading(true);
     try {
       if (isOwner) {
         const activities = await getCourseTeacherActivities(
@@ -92,38 +106,14 @@ export default function CoursePage() {
           activitiesOption,
         );
 
-        if (publishedActivitiesOption === TeacherActivityFilter.PUBLISHED) {
-          setTeacherActivities(
-            activities.filter((activity) => activity.visible),
-          );
-        } else if (
-          publishedActivitiesOption === TeacherActivityFilter.UNPUBLISHED
-        ) {
-          setTeacherActivities(
-            activities.filter((activity) => !activity.visible),
-          );
-        } else {
-          setTeacherActivities(activities);
-        }
+        setTeacherActivities(activities);
       } else {
         const activities = await getCourseStudentActivities(
           courseId,
           activitiesOption,
         );
 
-        if (submitteedActivitiesOption === StudentActivityFilter.SUBMITTED) {
-          setStudentActivities(
-            activities.filter((activity) => activity.submited),
-          );
-        } else if (
-          submitteedActivitiesOption === StudentActivityFilter.PENDING
-        ) {
-          setStudentActivities(
-            activities.filter((activity) => !activity.submited),
-          );
-        } else {
-          setStudentActivities(activities);
-        }
+        setStudentActivities(activities);
       }
     } catch (error) {
       setErrorMessage((error as Error).message);
@@ -132,31 +122,103 @@ export default function CoursePage() {
     }
   }
 
+  const filterStudentActivities = async () => {
+    if (!studentActivities) return;
+
+    const filterByType = studentActivities.filter((activity) => {
+      if (activitiesOption === ActivitiesOption.TASKS) {
+        return activity.activity.type === ActivityType.TASK;
+      }
+      if (activitiesOption === ActivitiesOption.EXAMS) {
+        return activity.activity.type === ActivityType.EXAM;
+      }
+      return true;
+    });
+
+    const filterByStatus = filterByType.filter((activity) => {
+      if (submitteedActivitiesOption === StudentActivityFilter.ALL) {
+        return true;
+      }
+      if (submitteedActivitiesOption === StudentActivityFilter.PENDING) {
+        return !activity.submited;
+      }
+      if (submitteedActivitiesOption === StudentActivityFilter.SUBMITTED) {
+        return activity.submited;
+      }
+    });
+
+    setFilteredStudentActivities(filterByStatus);
+  };
+
+  const filterTeacherActivities = async () => {
+    if (!teacherActivities) return;
+
+    const filterByType = teacherActivities.filter((activity) => {
+      if (activitiesOption === ActivitiesOption.TASKS) {
+        return activity.activity.type === ActivityType.TASK;
+      }
+      if (activitiesOption === ActivitiesOption.EXAMS) {
+        return activity.activity.type === ActivityType.EXAM;
+      }
+      return true;
+    });
+
+    const filterByStatus = filterByType.filter((activity) => {
+      if (publishedActivitiesOption === TeacherActivityFilter.ALL) {
+        return true;
+      }
+      if (publishedActivitiesOption === TeacherActivityFilter.PUBLISHED) {
+        return activity.visible;
+      }
+      if (publishedActivitiesOption === TeacherActivityFilter.UNPUBLISHED) {
+        return !activity.visible;
+      }
+    });
+
+    setFilteredTeacherActivities(filterByStatus);
+  };
+
   const handleActivitiesOptionChange = (value: ActivitiesOption) => {
-    if (activitiesOption === value) {
-      setActivitiesOption(ActivitiesOption.ALL);
-    } else {
-      setActivitiesOption(value);
-    }
+    setActivitiesOption(
+      activitiesOption === value ? ActivitiesOption.ALL : value,
+    );
   };
 
   const handleSubmitteedActivitiesOptionChange = (
     value: StudentActivityFilter,
   ) => {
-    if (submitteedActivitiesOption === value) {
-      setSubmitteedActivitiesOption(StudentActivityFilter.ALL);
-    } else {
-      setSubmitteedActivitiesOption(value);
-    }
+    setSubmitteedActivitiesOption(
+      submitteedActivitiesOption === value ? StudentActivityFilter.ALL : value,
+    );
   };
 
   const handlePublishedActivitiesOptionChange = (
     value: TeacherActivityFilter,
   ) => {
-    if (publishedActivitiesOption === value) {
-      setPublishedActivitiesOption(TeacherActivityFilter.ALL);
-    } else {
-      setPublishedActivitiesOption(value);
+    setPublishedActivitiesOption(
+      publishedActivitiesOption === value ? TeacherActivityFilter.ALL : value,
+    );
+  };
+
+  const handleFavoritePress = async () => {
+    if (!courseContext.course) return;
+    setIsLoading(true);
+
+    try {
+      if (courseContext.course.isFavorite) {
+        await removeCourseFromFavorites(courseContext.course.courseId);
+      } else {
+        await addCourseToFavorites(courseContext.course.courseId);
+      }
+
+      setCourse({
+        ...courseContext.course,
+        isFavorite: !courseContext.course.isFavorite,
+      });
+    } catch (error) {
+      setErrorMessage((error as Error).message);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -189,212 +251,243 @@ export default function CoursePage() {
     });
   };
 
-  useEffect(() => {
-    if (!courseContext.course || courseContext.course.courseId !== courseId) {
-      fetchCourse();
-    } else {
-      setIsLoading(false);
-      setIsOwner(courseContext.course.ownerId === userContext.user?.id);
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      await Promise.all([fetchActivities(), fetchCourse()]);
+    } finally {
+      setIsRefreshing(false);
     }
-  }, []);
-
-  useFocusEffect(
-    useCallback(() => {
-      fetchActivities();
-    }, []),
-  );
+  };
 
   useEffect(() => {
-    fetchActivities();
+    if (isOwner) {
+      filterTeacherActivities();
+    } else {
+      filterStudentActivities();
+    }
   }, [
     activitiesOption,
     publishedActivitiesOption,
     submitteedActivitiesOption,
+    studentActivities,
+    teacherActivities,
     isOwner,
   ]);
 
+  useEffect(() => {
+    fetchActivities();
+  }, [courseId, isOwner]);
+
+  useEffect(() => {
+    fetchCourse();
+  }, [courseId, userContext.user]);
+
   return (
     <>
-      <Appbar.Header>
-        <Appbar.BackAction
-          onPress={() => {
-            if (router.canGoBack()) {
-              router.back();
-            } else {
-              router.replace("/home");
-            }
-          }}
-        />
-        <Appbar.Content title={courseContext.course?.courseDetails.title} />
-        <Appbar.Action icon="information-outline" onPress={handleInfoPress} />
-      </Appbar.Header>
-      {isLoading ? (
-        <ActivityIndicator
-          animating={true}
-          size="large"
-          color={theme.colors.primary}
-        />
-      ) : (
-        <View style={{ flexDirection: "column", padding: 16, gap: 16 }}>
-          {/* Card de curso */}
-          <ScrollView style={{ gap: 16 }}>
-            <CourseCard
-              name={courseContext.course?.courseDetails.title || ""}
-              description={
-                courseContext.course?.courseDetails.description || ""
+      <View style={{ flex: 1, overflow: "hidden" }}>
+        <Appbar.Header>
+          <Appbar.BackAction
+            onPress={() => {
+              if (router.canGoBack()) {
+                router.back();
+              } else {
+                router.replace("/home");
               }
-              category={courseContext.course?.courseDetails.category || ""}
-            />
-          </ScrollView>
-
-          <SegmentedButtons
-            value={activitiesOption}
-            onValueChange={handleActivitiesOptionChange}
-            buttons={[
-              {
-                value: ActivitiesOption.TASKS,
-                label: "Tareas",
-                icon: "file-document",
-                disabled: isLoading,
-              },
-              {
-                value: ActivitiesOption.EXAMS,
-                label: "Exámenes",
-                icon: "test-tube",
-                disabled: isLoading,
-              },
-            ]}
+            }}
           />
-          {/* Filter de actividades entregadas y/o publicadas */}
-          {isOwner ? (
+          <Appbar.Content title={courseContext.course?.courseDetails.title} />
+          <Appbar.Action
+            icon={courseContext.course?.isFavorite ? "heart" : "heart-outline"}
+            onPress={handleFavoritePress}
+            disabled={isLoading || !courseContext.course}
+          />
+          <Appbar.Action icon="information" onPress={handleInfoPress} />
+        </Appbar.Header>
+        {isLoading ||
+        !courseContext.course ||
+        isOwner === null ||
+        (isOwner && !filteredTeacherActivities) ||
+        (!isOwner && !filteredStudentActivities) ? (
+          <View
+            style={{
+              flex: 1,
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <ActivityIndicator
+              animating={true}
+              size="large"
+              color={theme.colors.primary}
+            />
+          </View>
+        ) : (
+          <View style={{ padding: 16, gap: 16 }}>
+            {/* Card de curso */}
+            <ScrollView style={{ gap: 16 }}>
+              <CourseCard
+                name={courseContext.course?.courseDetails.title || ""}
+                description={
+                  courseContext.course?.courseDetails.description || ""
+                }
+                category={courseContext.course?.courseDetails.category || ""}
+              />
+            </ScrollView>
+
             <SegmentedButtons
-              value={publishedActivitiesOption}
-              onValueChange={handlePublishedActivitiesOptionChange}
+              value={activitiesOption}
+              onValueChange={handleActivitiesOptionChange}
               buttons={[
                 {
-                  value: TeacherActivityFilter.PUBLISHED,
-                  label: "Visibles",
-                  icon: "eye-outline",
+                  value: ActivitiesOption.TASKS,
+                  label: "Tareas",
+                  icon: "file-document",
                   disabled: isLoading,
                 },
                 {
-                  value: TeacherActivityFilter.UNPUBLISHED,
-                  label: "No visibles",
-                  icon: "eye-off-outline",
+                  value: ActivitiesOption.EXAMS,
+                  label: "Exámenes",
+                  icon: "test-tube",
                   disabled: isLoading,
                 },
               ]}
             />
-          ) : (
-            <SegmentedButtons
-              value={submitteedActivitiesOption}
-              onValueChange={handleSubmitteedActivitiesOptionChange}
-              buttons={[
-                {
-                  value: StudentActivityFilter.SUBMITTED,
-                  label: "Entregadas",
-                  icon: "check-circle-outline",
-                  disabled: isLoading,
-                },
-                {
-                  value: StudentActivityFilter.PENDING,
-                  label: "No entregadas",
-                  icon: "circle-outline",
-                  disabled: isLoading,
-                },
-              ]}
-            />
-          )}
-          {/* Lista de actividades */}
-          {isOwner ? (
-            <FlatList
-              data={teacherActivities}
-              keyExtractor={(item) => item.activity.resourceId.toString()}
-              renderItem={({ item }) => (
-                <ActivityCard
-                  activity={item}
-                  onPress={() =>
-                    handleTeacherActivitiesPress(item.activity.resourceId)
-                  }
-                />
-              )}
-              ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
-              ListEmptyComponent={
-                isLoading ? (
-                  <View
-                    style={{
-                      flex: 1,
-                      justifyContent: "center",
-                      alignItems: "center",
-                    }}
-                  >
-                    <ActivityIndicator
-                      animating={true}
-                      size="large"
-                      color={theme.colors.primary}
-                    />
-                  </View>
-                ) : (
-                  <View
-                    style={{
-                      flex: 1,
-                      justifyContent: "center",
-                      alignItems: "center",
-                    }}
-                  >
-                    <Text variant="titleMedium">
-                      No se encontraron actividades
-                    </Text>
-                  </View>
-                )
-              }
-            />
-          ) : (
-            <FlatList
-              data={studentActivities}
-              keyExtractor={(item) => item.activity.resourceId.toString()}
-              renderItem={({ item }) => (
-                <ActivityCard
-                  activity={item}
-                  onPress={() =>
-                    handleStudentActivitiesPress(item.activity.resourceId)
-                  }
-                />
-              )}
-              ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
-              ListEmptyComponent={
-                isLoading ? (
-                  <View
-                    style={{
-                      flex: 1,
-                      justifyContent: "center",
-                      alignItems: "center",
-                    }}
-                  >
-                    <ActivityIndicator
-                      animating={true}
-                      size="large"
-                      color={theme.colors.primary}
-                    />
-                  </View>
-                ) : (
-                  <View
-                    style={{
-                      flex: 1,
-                      justifyContent: "center",
-                      alignItems: "center",
-                    }}
-                  >
-                    <Text variant="titleMedium">
-                      No se encontraron actividades
-                    </Text>
-                  </View>
-                )
-              }
-            />
-          )}
-        </View>
-      )}
+            {/* Filter de actividades entregadas y/o publicadas */}
+            {isOwner ? (
+              <SegmentedButtons
+                value={publishedActivitiesOption}
+                onValueChange={handlePublishedActivitiesOptionChange}
+                buttons={[
+                  {
+                    value: TeacherActivityFilter.PUBLISHED,
+                    label: "Visibles",
+                    icon: "eye-outline",
+                    disabled: isLoading,
+                  },
+                  {
+                    value: TeacherActivityFilter.UNPUBLISHED,
+                    label: "No visibles",
+                    icon: "eye-off-outline",
+                    disabled: isLoading,
+                  },
+                ]}
+              />
+            ) : (
+              <SegmentedButtons
+                value={submitteedActivitiesOption}
+                onValueChange={handleSubmitteedActivitiesOptionChange}
+                buttons={[
+                  {
+                    value: StudentActivityFilter.SUBMITTED,
+                    label: "Entregadas",
+                    icon: "check-circle-outline",
+                    disabled: isLoading,
+                  },
+                  {
+                    value: StudentActivityFilter.PENDING,
+                    label: "No entregadas",
+                    icon: "circle-outline",
+                    disabled: isLoading,
+                  },
+                ]}
+              />
+            )}
+            {/* Lista de actividades */}
+            {isOwner ? (
+              <FlatList
+                data={filteredTeacherActivities}
+                keyExtractor={(item) => item.activity.resourceId.toString()}
+                refreshing={isRefreshing}
+                onRefresh={handleRefresh}
+                renderItem={({ item }) => (
+                  <ActivityCard
+                    activity={item}
+                    onPress={() =>
+                      handleTeacherActivitiesPress(item.activity.resourceId)
+                    }
+                  />
+                )}
+                ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
+                ListEmptyComponent={
+                  isLoading ? (
+                    <View
+                      style={{
+                        flex: 1,
+                        justifyContent: "center",
+                        alignItems: "center",
+                      }}
+                    >
+                      <ActivityIndicator
+                        animating={true}
+                        size="large"
+                        color={theme.colors.primary}
+                      />
+                    </View>
+                  ) : (
+                    <View
+                      style={{
+                        flex: 1,
+                        justifyContent: "center",
+                        alignItems: "center",
+                      }}
+                    >
+                      <Text variant="titleMedium">
+                        No se encontraron actividades
+                      </Text>
+                    </View>
+                  )
+                }
+              />
+            ) : (
+              <FlatList
+                data={filteredStudentActivities}
+                keyExtractor={(item) => item.activity.resourceId.toString()}
+                refreshing={isRefreshing}
+                onRefresh={handleRefresh}
+                renderItem={({ item }) => (
+                  <ActivityCard
+                    activity={item}
+                    onPress={() =>
+                      handleStudentActivitiesPress(item.activity.resourceId)
+                    }
+                  />
+                )}
+                ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
+                ListEmptyComponent={
+                  isLoading ? (
+                    <View
+                      style={{
+                        flex: 1,
+                        justifyContent: "center",
+                        alignItems: "center",
+                      }}
+                    >
+                      <ActivityIndicator
+                        animating={true}
+                        size="large"
+                        color={theme.colors.primary}
+                      />
+                    </View>
+                  ) : (
+                    <View
+                      style={{
+                        flex: 1,
+                        justifyContent: "center",
+                        alignItems: "center",
+                      }}
+                    >
+                      <Text variant="titleMedium">
+                        No se encontraron actividades
+                      </Text>
+                    </View>
+                  )
+                }
+              />
+            )}
+          </View>
+        )}
+      </View>
       {isOwner && (
         <FAB
           icon="plus"
