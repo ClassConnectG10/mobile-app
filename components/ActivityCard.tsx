@@ -80,7 +80,12 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onPress }) => {
   return (
     <Card
       onPress={onPress}
-      style={[styles.card, { backgroundColor: theme.colors.onPrimary }]}
+      style={[
+        styles.card,
+        {
+          backgroundColor: theme.colors.onPrimary,
+        },
+      ]}
     >
       <View style={styles.row}>
         {typeIcon}
@@ -100,7 +105,8 @@ const styles = StyleSheet.create({
   card: {
     padding: 16,
     borderRadius: 8,
-    elevation: 2,
+    elevation: 0,
+    shadowColor: "transparent",
   },
   title: {
     fontSize: 18,
