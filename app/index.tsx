@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { Image, StyleSheet, View } from "react-native";
 import { ActivityIndicator, Text, useTheme } from "react-native-paper";
 import { useRouter } from "expo-router";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { getAuth, onAuthStateChanged } from "@react-native-firebase/auth";
 import { loginUser } from "@/services/userManagement";
 import { useUserContext } from "@/utils/storage/userContext";
 

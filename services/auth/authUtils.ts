@@ -5,7 +5,7 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   sendPasswordResetEmail,
-} from "firebase/auth";
+} from "@react-native-firebase/auth";
 import { FirebaseError } from "@firebase/util";
 
 /**
@@ -20,11 +20,7 @@ import { FirebaseError } from "@firebase/util";
 export async function signUp(email: string, password: string) {
   const auth = getAuth(firebaseApp);
   try {
-    await createUserWithEmailAndPassword(
-      auth,
-      email,
-      password
-    );
+    await createUserWithEmailAndPassword(auth, email, password);
   } catch (error) {
     if (error instanceof FirebaseError && error.code in authErrorMessages) {
       const errorMessage =
@@ -78,7 +74,6 @@ export async function signOut() {
   }
 }
 
-
 /**
  * Sends a password reset email to the specified email address.
  *
@@ -90,8 +85,7 @@ export async function passwordReset(email: string) {
   const auth = getAuth(firebaseApp);
   try {
     await sendPasswordResetEmail(auth, email);
-  }
-  catch (error) {
+  } catch (error) {
     if (error instanceof FirebaseError && error.code in authErrorMessages) {
       const errorMessage =
         authErrorMessages[error.code as keyof typeof authErrorMessages];
