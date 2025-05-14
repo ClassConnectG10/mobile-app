@@ -11,12 +11,8 @@ export interface ActivityDetailsHook {
 }
 
 export function useActivityDetails(): ActivityDetailsHook {
-  const now = new Date();
-  const nowPlusOneYear = new Date();
-  nowPlusOneYear.setFullYear(now.getFullYear() + 1);
-
   const [activityDetails, setActivityDetails] = useState(
-    new ActivityDetails("", "", "", new Date())
+    new ActivityDetails("", "", "", null),
   );
 
   const setTitle = (title: string) => {

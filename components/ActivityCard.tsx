@@ -1,12 +1,11 @@
 import { Card, Icon, Text, useTheme } from "react-native-paper";
 import { StyleSheet, View } from "react-native";
 import {
-  ActivityStatus,
   ActivityType,
   StudentActivity,
   TeacherActivity,
 } from "@/types/activity";
-import { getRelativeTime } from "@/utils/date";
+import { getRelativeTimeFromNow } from "@/utils/date";
 import { customColors } from "@/utils/constants/colors";
 
 interface ActivityCardProps {
@@ -19,7 +18,8 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onPress }) => {
   const { type, activityDetails } = activity.activity;
   const { title, dueDate } = activityDetails;
 
-  const { relativeTime, isOverdue, isWarning } = getRelativeTime(dueDate);
+  const { relativeTime, isOverdue, isWarning } =
+    getRelativeTimeFromNow(dueDate);
 
   let statusText;
   let statusIcon;
@@ -34,9 +34,7 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onPress }) => {
   );
 
   if (activity instanceof StudentActivity) {
-    const { status } = activity;
-
-    if (status === ActivityStatus.COMPLETED) {
+    if (activity.submited) {
       statusIcon = (
         <Icon source="check-circle" size={24} color={customColors.success} />
       );
@@ -78,17 +76,17 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, onPress }) => {
         </Text>
       );
     }
-
-    const visibilityColor = visible
-      ? theme.colors.onSurface
-      : customColors.error;
-    const iconName = visible ? "eye" : "eye-off";
   }
 
   return (
     <Card
       onPress={onPress}
-      style={[styles.card, { backgroundColor: theme.colors.background }]}
+      style={[
+        styles.card,
+        {
+          backgroundColor: theme.colors.onPrimary,
+        },
+      ]}
     >
       <View style={styles.row}>
         {typeIcon}
@@ -108,7 +106,8 @@ const styles = StyleSheet.create({
   card: {
     padding: 16,
     borderRadius: 8,
-    elevation: 2,
+    elevation: 0,
+    shadowColor: "transparent",
   },
   title: {
     fontSize: 18,

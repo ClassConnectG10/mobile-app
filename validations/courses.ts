@@ -26,7 +26,7 @@ export const courseDetailsSchema = z
     level: z.enum(levels),
     modality: z.enum(modalities),
     category: z.enum(categories),
-    dependencies: z.array(z.number()),
+    dependencies: z.array(z.string().uuid()),
   })
   .refine((data) => data.startDate <= data.endDate, {
     message: "End date must be after or equal to start date",

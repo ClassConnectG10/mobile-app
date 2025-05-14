@@ -1,7 +1,6 @@
 import { Avatar, Appbar, Button } from "react-native-paper";
 import { countries } from "@/utils/constants/countries";
 import { editUserProfile } from "@/services/userManagement";
-import { getAuth, signOut } from "firebase/auth";
 import { globalStyles } from "@/styles/globalStyles";
 import { ToggleableTextInput } from "@/components/ToggleableTextInput";
 import { useRouter } from "expo-router";
@@ -11,31 +10,29 @@ import { useUserInformation } from "@/hooks/useUserInformation";
 import { View, ScrollView } from "react-native";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import OptionPicker from "@/components/OptionPicker";
+import { signOut } from "@/services/auth/authUtils";
 
 export default function UserProfilePage() {
   const router = useRouter();
-  const auth = getAuth();
 
   const [isEditing, setIsEditing] = useState(false);
-  const [buttonDisabled, setButtonDisabled] = useState(false);
+  const [isLoading, setisLoading] = useState(false);
+
   const [errorMessage, setErrorMessage] = useState("");
 
   const userContextHook = useUserContext();
   const userInformationHook = useUserInformation();
 
-  if (!userContextHook.user) {
-    router.replace("/login");
-    return;
-  }
-
   const userContext = userContextHook.user;
   const userInformation = userInformationHook.userInformation;
 
   useEffect(() => {
-    userInformationHook.setUserInformation({
-      ...userContext.userInformation,
-    });
-  }, [userContext.userInformation]);
+    if (userContext) {
+      userInformationHook.setUserInformation({
+        ...userContext.userInformation,
+      });
+    }
+  }, []);
 
   const handleCancelEdit = () => {
     userInformationHook.setUserInformation({ ...userContext.userInformation });
@@ -43,9 +40,8 @@ export default function UserProfilePage() {
   };
 
   const handleSave = async () => {
+    setisLoading(true);
     try {
-      setButtonDisabled(true);
-
       const newUser = {
         id: userContext.id,
         userInformation: {
@@ -55,23 +51,20 @@ export default function UserProfilePage() {
 
       await editUserProfile(newUser);
       userContextHook.setUser(newUser);
-
-      setIsEditing(false);
     } catch (error) {
-      if (error instanceof Error) {
-        setErrorMessage(error.message);
-      }
+      setErrorMessage((error as Error).message);
+      handleCancelEdit();
     } finally {
-      setButtonDisabled(false);
+      setisLoading(false);
     }
   };
 
   const handleLogout = async () => {
     try {
-      setButtonDisabled(true);
+      setisLoading(true);
 
+      await signOut();
       // userContextHook.deleteUser();
-      await signOut(auth);
 
       router.replace("/login");
     } catch {
@@ -81,18 +74,18 @@ export default function UserProfilePage() {
 
   return (
     <>
-      <Appbar.Header>
-        <Appbar.BackAction
-          onPress={isEditing ? () => handleCancelEdit() : () => router.back()}
-        />
-        <Appbar.Content title={isEditing ? "Editar perfil" : "Perfil"} />
-        <Appbar.Action
-          icon={isEditing ? "check" : "pencil"}
-          onPress={isEditing ? () => handleSave() : () => setIsEditing(true)}
-        />
-      </Appbar.Header>
-      <View style={globalStyles.mainContainer}>
-        <ScrollView contentContainerStyle={globalStyles.courseDetailsContainer}>
+      <View style={{ flex: 1 }}>
+        <Appbar.Header>
+          <Appbar.BackAction
+            onPress={isEditing ? () => handleCancelEdit() : () => router.back()}
+          />
+          <Appbar.Content title="Mi Perfil" />
+          <Appbar.Action
+            icon={isEditing ? "check" : "pencil"}
+            onPress={isEditing ? () => handleSave() : () => setIsEditing(true)}
+          />
+        </Appbar.Header>
+        <ScrollView contentContainerStyle={{ padding: 16, gap: 16 }}>
           <View style={globalStyles.userIconContainer}>
             <Avatar.Icon size={96} icon="account" />
           </View>
@@ -133,18 +126,18 @@ export default function UserProfilePage() {
             <Button
               mode="contained"
               onPress={handleLogout}
-              disabled={buttonDisabled}
+              disabled={isLoading}
               style={{ marginTop: 20 }}
             >
               Cerrar sesión
             </Button>
           )}
         </ScrollView>
-        <ErrorMessageSnackbar
-          message={errorMessage}
-          onDismiss={() => setErrorMessage("")}
-        />
       </View>
+      <ErrorMessageSnackbar
+        message={errorMessage}
+        onDismiss={() => setErrorMessage("")}
+      />
     </>
   );
 }

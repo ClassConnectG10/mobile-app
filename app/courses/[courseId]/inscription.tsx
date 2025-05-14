@@ -1,4 +1,4 @@
-import Course from "@/types/course";
+import { Course } from "@/types/course";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import { ScrollView, View } from "react-native";
@@ -15,7 +15,10 @@ import { enrollCourse, getCourse } from "@/services/courseManagement";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import { TextField } from "@/components/TextField";
 import CourseCard from "@/components/CourseCard";
-import { useCourseContext } from "@/utils/storage/courseContext";
+import UserCard from "@/components/UserCard";
+import { getUser } from "@/services/userManagement";
+import { useUserContext } from "@/utils/storage/userContext";
+import { formatDate } from "@/utils/date";
 export default function CourseIncriptionDetails() {
   const router = useRouter();
   const theme = useTheme();
@@ -24,24 +27,42 @@ export default function CourseIncriptionDetails() {
 
   const [errorMessage, setErrorMessage] = useState("");
   const [dependencies, setDependencies] = useState<Course[]>([]);
+  const [courseOwner, setCourseOwner] = useState(null);
+  const [isOwner, setIsOwner] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [course, setCourse] = useState<Course | null>(null);
 
-  const courseContext = useCourseContext();
+  const userContext = useUserContext();
 
   async function fetchCourse() {
     try {
-      const course = await getCourse(courseId as string);
-      setCourse(course);
-      setDependencies([]);
+      const fetchedCourse = await getCourse(courseId);
+      setCourse(fetchedCourse);
 
-      course.courseDetails.dependencies.forEach(async (dependency) => {
-        const dependencyCourse = await getCourse(dependency);
-        if (dependencyCourse) {
-          setDependencies((prev) => [...prev, dependencyCourse]);
-        }
-      });
+      const courseDependencies = await Promise.all(
+        fetchedCourse.courseDetails.dependencies.map((dependency) =>
+          getCourse(dependency),
+        ),
+      );
+
+      setDependencies(courseDependencies);
     } catch (error) {
       setErrorMessage((error as Error).message);
       setCourse(null);
+    }
+  }
+
+  async function fetchCourseOwner() {
+    try {
+      setIsLoading(true);
+      if (!course) return;
+      const courseOwner = await getUser(course.ownerId);
+      setIsOwner(courseOwner.id === userContext.user?.id);
+      setCourseOwner(courseOwner);
+    } catch (error) {
+      setErrorMessage((error as Error).message);
+    } finally {
+      setIsLoading(false);
     }
   }
 
@@ -57,28 +78,55 @@ export default function CourseIncriptionDetails() {
     }
   };
 
-  useEffect(() => {
-    if (!courseContext.course || courseContext.course.courseId !== courseId) {
-      fetchCourse();
+  const handleOwnerPress = () => {
+    if (courseOwner) {
+      if (isOwner) {
+        router.push({
+          pathname: "/users/me",
+        });
+      } else {
+        router.push({
+          pathname: "/users/[userId]",
+          params: { userId: courseOwner.id },
+        });
+      }
     }
-  }, [courseId]);
+  };
 
-  const [course, setCourse] = useState<Course | null>(null);
+  useEffect(() => {
+    fetchCourse();
+  }, []);
+
+  useEffect(() => {
+    if (course) {
+      fetchCourseOwner();
+    }
+  }, [course]);
 
   return (
-    <View>
+    <>
       <Appbar.Header>
         <Appbar.BackAction onPress={() => router.back()} />
         <Appbar.Content title="Detalles de inscripción" />
       </Appbar.Header>
-      {course === null ? (
-        <ActivityIndicator
-          animating={true}
-          size="large"
-          color={theme.colors.primary}
-        />
+      {isLoading || !course || !courseOwner || !dependencies ? (
+        <View
+          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+        >
+          <ActivityIndicator
+            animating={true}
+            size="large"
+            color={theme.colors.primary}
+          />
+        </View>
       ) : (
         <ScrollView contentContainerStyle={{ padding: 16, gap: 10 }}>
+          {courseOwner && (
+            <View style={{ gap: 8 }}>
+              <Text variant="titleMedium">Propietario del curso</Text>
+              <UserCard user={courseOwner} onPress={handleOwnerPress} />
+            </View>
+          )}
           <TextField
             label="Nombre del curso"
             value={course.courseDetails.title}
@@ -93,12 +141,12 @@ export default function CourseIncriptionDetails() {
           />
           <TextField
             label="Fecha de inicio"
-            value={course.courseDetails.startDate.toLocaleDateString()}
+            value={formatDate(course.courseDetails.startDate)}
           />
 
           <TextField
             label="Fecha de fin"
-            value={course.courseDetails.endDate.toLocaleDateString()}
+            value={formatDate(course.courseDetails.endDate)}
           />
 
           <TextField label="Nivel" value={course.courseDetails.level} />
@@ -109,7 +157,6 @@ export default function CourseIncriptionDetails() {
           {dependencies.length > 0 && (
             <View
               style={{
-                padding: 10,
                 borderRadius: 10,
                 gap: 10,
               }}
@@ -135,16 +182,21 @@ export default function CourseIncriptionDetails() {
                     <CourseCard
                       name={dependency.courseDetails.title}
                       category={dependency.courseDetails.category}
-                      onPress={() => {
-                        router.push({
-                          pathname: "/courses/[courseId]",
-                          params: { courseId: dependency.courseId },
-                        });
-                      }}
+                      onPress={() =>
+                        false
+                          ? router.push({
+                              pathname: `/courses/[courseId]`,
+                              params: { courseId: dependency.courseId },
+                            })
+                          : router.push({
+                              pathname: `/courses/[courseId]/inscription`,
+                              params: { courseId: dependency.courseId },
+                            })
+                      } //TODO: Cambiar por el estado de completado
                     />
                     <Icon
-                      source={true ? "check-circle" : "alert-circle"} //TODO: Cambiar por el estado de completado
-                      color={true ? theme.colors.primary : theme.colors.error} //TODO: Cambiar por el estado de completado
+                      source={false ? "check-circle" : "alert-circle"} //TODO: Cambiar por el estado de completado
+                      color={false ? theme.colors.primary : theme.colors.error} //TODO: Cambiar por el estado de completado
                       size={30}
                     />
                   </View>
@@ -157,6 +209,7 @@ export default function CourseIncriptionDetails() {
           <Button
             mode="contained"
             icon="notebook-multiple"
+            disabled={isLoading}
             onPress={() => {
               handleEnrollCourse();
             }}
@@ -170,6 +223,6 @@ export default function CourseIncriptionDetails() {
         message={errorMessage}
         onDismiss={() => setErrorMessage("")}
       />
-    </View>
+    </>
   );
 }

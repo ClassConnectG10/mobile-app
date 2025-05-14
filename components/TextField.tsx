@@ -16,6 +16,6 @@ export const TextField: React.FC<TextFieldProps> = ({ label, value }) => {
       value={String(value)}
       multiline={true}
       numberOfLines={NUMBER_OF_LINES}
-    ></TextInput>
+    />
   );
 };

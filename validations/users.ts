@@ -3,7 +3,7 @@ import { countries } from "../utils/constants/countries";
 
 export const loginSchema = z.object({
   email: z.string().email("Dirección de correo electrónico inválida"),
-  password: z.string().min(8, "La contraseña debe tener al menos 8 caracteres"),
+  password: z.string().nonempty("La contraseña es obligatoria"),
 });
 
 export const registerSchema = z
@@ -18,8 +18,8 @@ export const registerSchema = z
       .regex(/[a-zA-Z]/, "La contraseña debe contener al menos una letra")
       .regex(/[0-9]/, "La contraseña debe contener al menos un número")
       .regex(
-        /[@$!%*?&]/,
-        "La contraseña debe contener al menos un carácter especial"
+        /[!@#$%^&*(),.?":{}|<>]/,
+        "La contraseña debe contener al menos un carácter especial",
       ),
     confirmPassword: z
       .string()
@@ -56,4 +56,8 @@ export const userDetailsSchema = z.object({
 export const userSchema = z.object({
   id: z.number(),
   userInformation: userDetailsSchema,
+});
+
+export const resetSchema = z.object({
+  email: z.string().email("Correo electrónico inválido"),
 });

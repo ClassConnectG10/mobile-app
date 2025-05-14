@@ -13,20 +13,23 @@ export default function Index() {
 
   useEffect(() => {
     const auth = getAuth();
-    onAuthStateChanged(auth, async (authUser) => {
+    const unsuscribe = onAuthStateChanged(auth, async (authUser) => {
       if (authUser) {
         try {
           const user = await loginUser(authUser.uid);
           setUser(user);
           router.replace("/home");
-        } catch {
-          console.log("No user session found");
+        } catch (error) {
+          console.log("No user session found", error);
+          await auth.signOut();
+          router.replace("/login");
         }
       } else {
         router.replace("/login");
       }
     });
-  }, [router, setUser]);
+    return () => unsuscribe();
+  }, []);
 
   return (
     <View style={styles.background}>

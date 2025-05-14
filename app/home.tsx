@@ -1,72 +1,66 @@
 import React from "react";
 import { FlatList, StyleSheet, View } from "react-native";
 import {
+  ActivityIndicator,
   Appbar,
   Button,
-  Divider,
   FAB,
-  IconButton,
   Modal,
-  Searchbar,
   SegmentedButtons,
-  TextInput,
+  useTheme,
+  Text,
+  IconButton,
 } from "react-native-paper";
 import { router } from "expo-router";
 import CourseCard from "@/components/CourseCard";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import { useEffect, useState } from "react";
-import Course from "@/types/course";
+import { Course, SearchFilters, SearchOption } from "@/types/course";
 import { searchCourses } from "@/services/courseManagement";
 import { useUserContext } from "@/utils/storage/userContext";
 import axios from "axios";
-import { SearchOption } from "@/types/searchOption";
-import { SearchFilters } from "@/types/searchFilters";
+import { CourseFilterModal } from "@/components/CourseFilterModal";
+import { CoursesSearchBar } from "@/components/CoursesSearchBar";
 
 export default function HomePage() {
-  const [courseCode, setCourseCode] = useState("");
+  const theme = useTheme();
+
   const [courses, setCourses] = useState<Course[]>([]);
   const [newCourseModalVisible, setNewCourseModalVisible] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
+
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
   const [searchOption, setSearchOption] = useState<SearchOption>(
-    SearchOption.RELATED
+    SearchOption.RELATED,
   );
+  const [searchFiltersModalVisible, setSearchFiltersModalVisible] =
+    useState(false);
+
+  const [searchFilters, setSearchFilters] = useState<SearchFilters>({
+    searchQuery: "",
+    startDate: null,
+    endDate: null,
+    level: "",
+    modality: "",
+    category: "",
+    favorites: false,
+  });
 
   const userContextHook = useUserContext();
 
-  useEffect(() => {
-    if (!userContextHook.user) {
-      router.replace("/login");
-    }
-  }, []);
-
-  if (!userContextHook.user) {
-    return null; // Evita renderizar el contenido mientras rediriges
-  }
-
   const handleSearchOptionChange = async (value: SearchOption) => {
-    setIsLoading(true);
     if (searchOption === value) {
       setSearchOption(SearchOption.RELATED);
     } else {
       setSearchOption(value);
     }
-
-    // await fetchCourses();
   };
 
   const fetchCourses = async () => {
     try {
-      const searchFilters: SearchFilters = {
-        searchQuery,
-        startDate: null,
-        endDate: null,
-        level: "",
-        modality: "",
-        category: "",
-      };
-
+      setIsLoading(true);
       const coursesData = await searchCourses(searchFilters, searchOption);
       setCourses(coursesData);
     } catch (error) {
@@ -76,9 +70,25 @@ export default function HomePage() {
     }
   };
 
+  const handleSearch = (searchTerm: string) => {
+    setSearchFilters((prev) => ({
+      ...prev,
+      searchQuery: searchTerm,
+    }));
+  };
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      await fetchCourses();
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
   useEffect(() => {
     fetchCourses();
-  }, [searchOption]);
+  }, [searchFilters, searchOption]);
 
   axios.defaults.headers.common["X-Caller-Id"] =
     userContextHook.user.id.toString();
@@ -90,6 +100,12 @@ export default function HomePage() {
         {/* <Appbar.Action icon="menu" /> */}
         <Appbar.Content title="Class Connect" />
         <Appbar.Action
+          icon="filter"
+          onPress={() => {
+            setSearchFiltersModalVisible(true);
+          }}
+        />
+        <Appbar.Action
           icon="account"
           onPress={() => router.push("/users/me")}
         />
@@ -98,43 +114,60 @@ export default function HomePage() {
       {/* Segmented control */}
 
       <View style={{ padding: 16, gap: 16, flex: 1 }}>
-        <SegmentedButtons
-          value={searchOption}
-          onValueChange={(value) => {
-            handleSearchOptionChange(
-              (value as SearchOption) || SearchOption.RELATED
-            );
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 6,
+            justifyContent: "space-between",
           }}
-          buttons={[
-            {
-              value: "enrolled",
-              label: "Cursos inscriptos",
-              icon: "book-open-variant",
-              disabled: isLoading,
-            },
-            {
-              value: "taught",
-              label: "Cursos creados",
-              icon: "human-male-board",
-              disabled: isLoading,
-            },
-          ]}
-        />
+        >
+          <SegmentedButtons
+            style={{ flex: 1 }}
+            value={searchOption}
+            onValueChange={(value: SearchOption) => {
+              handleSearchOptionChange(value);
+            }}
+            buttons={[
+              {
+                value: "enrolled",
+                label: "Inscriptos",
+                icon: "book-open-variant",
+                disabled: isLoading,
+              },
+              {
+                value: "taught",
+                label: "Impartidos",
+                icon: "human-male-board",
+                disabled: isLoading,
+              },
+            ]}
+          />
+          <IconButton
+            icon="heart"
+            size={24}
+            mode={searchFilters.favorites ? "contained" : "outlined"}
+            onPress={() => {
+              setSearchFilters((prev) => ({
+                ...prev,
+                favorites: !prev.favorites,
+              }));
+            }}
+            disabled={isLoading}
+          />
+        </View>
 
         {/* Searchbar */}
 
-        <Searchbar
-          placeholder="Buscar cursos"
-          onChangeText={setSearchQuery}
-          onIconPress={fetchCourses}
-          value={searchQuery}
-        />
+        <CoursesSearchBar onSearch={handleSearch} />
 
         {/* Main scrollable content */}
         <FlatList
           style={styles.scrollContainer}
           data={courses}
           keyExtractor={(item) => item.courseId}
+          refreshing={isRefreshing}
+          onRefresh={handleRefresh}
           renderItem={({ item }) => (
             <CourseCard
               name={item.courseDetails.title}
@@ -149,6 +182,33 @@ export default function HomePage() {
             />
           )}
           ItemSeparatorComponent={() => <View style={{ height: 16 }} />}
+          ListEmptyComponent={
+            isLoading ? (
+              <View
+                style={{
+                  flex: 1,
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <ActivityIndicator
+                  animating={true}
+                  size="large"
+                  color={theme.colors.primary}
+                />
+              </View>
+            ) : (
+              <View
+                style={{
+                  flex: 1,
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <Text variant="titleMedium">No se encontraron cursos</Text>
+              </View>
+            )
+          }
         />
       </View>
 
@@ -169,23 +229,6 @@ export default function HomePage() {
         contentContainerStyle={styles.modalContainer}
         style={styles.modalContent}
       >
-        {/* <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            gap: 16,
-          }}
-        >
-          <TextInput
-            label="Código del curso"
-            value={courseCode}
-            mode="outlined"
-            placeholder="Ingrese el código del curso"
-            onChangeText={setCourseCode}
-          />
-          <IconButton icon="check" mode="contained" onPress={() => {}} />
-        </View>
-        <Divider /> */}
         <Button
           mode="contained"
           icon="magnify"
@@ -209,6 +252,14 @@ export default function HomePage() {
         </Button>
       </Modal>
 
+      <CourseFilterModal
+        visible={searchFiltersModalVisible}
+        onDismiss={() => {
+          setSearchFiltersModalVisible(false);
+        }}
+        onApplyFilters={setSearchFilters}
+      />
+
       <ErrorMessageSnackbar
         message={errorMessage}
         onDismiss={() => setErrorMessage("")}
@@ -218,12 +269,7 @@ export default function HomePage() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    position: "relative",
-  },
   scrollContainer: {
-    // padding: 16,
     paddingBottom: 100,
     gap: 16,
   },

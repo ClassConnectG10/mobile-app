@@ -1,4 +1,4 @@
-import Course from "@/types/course";
+import { Course } from "@/types/course";
 import { createContext, useContext, useState } from "react";
 
 interface requiredCoursesContext {
@@ -10,12 +10,13 @@ interface requiredCoursesContext {
 
 const defaultContext: requiredCoursesContext = {
   requiredCourses: [],
-  addRequiredCourse: () => { },
-  setRequiredCourses: () => { },
-  deleteRequiredCourse: () => { },
+  addRequiredCourse: () => {},
+  setRequiredCourses: () => {},
+  deleteRequiredCourse: () => {},
 };
 
-const RequiredCoursesContext = createContext<requiredCoursesContext>(defaultContext);
+const RequiredCoursesContext =
+  createContext<requiredCoursesContext>(defaultContext);
 
 export const RequiredCoursesProvider: React.FC<{
   children: React.ReactNode;

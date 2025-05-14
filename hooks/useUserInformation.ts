@@ -1,4 +1,4 @@
-import UserInformation from "@/types/userInformation";
+import { UserInformation } from "@/types/user";
 import { useState } from "react";
 
 export interface UserHook {
@@ -10,17 +10,17 @@ export interface UserHook {
   setCountry: (country: string) => void;
 }
 
-export function useUserInformation(
-): UserHook {
-  
+export function useUserInformation(): UserHook {
   const defaultUserInformation: UserInformation = {
     firstName: "",
     lastName: "",
     email: "",
     country: "",
   };
-  
-  const [userInformation, setUserInformation] = useState<UserInformation>(defaultUserInformation);
+
+  const [userInformation, setUserInformation] = useState<UserInformation>(
+    defaultUserInformation
+  );
 
   const setFirstName = (firstName: string) => {
     setUserInformation((prev) => ({ ...prev, firstName }));

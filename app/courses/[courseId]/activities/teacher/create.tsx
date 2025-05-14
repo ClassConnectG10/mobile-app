@@ -2,19 +2,13 @@ import { DatePickerButton } from "@/components/DatePickerButton";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import { useActivityDetails } from "@/hooks/useActivityDetails";
 import { createActivity } from "@/services/activityManagement";
+import { getCourseModuleId } from "@/services/activityManagement";
 import { globalStyles } from "@/styles/globalStyles";
 import { ActivityType } from "@/types/activity";
-import courseDetails from "@/types/courseDetails";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
 import { View, ScrollView } from "react-native";
-import {
-  Appbar,
-  Button,
-  IconButton,
-  TextInput,
-  useTheme,
-} from "react-native-paper";
+import { Appbar, Button, TextInput, useTheme } from "react-native-paper";
 
 export default function CreateActivity() {
   const router = useRouter();
@@ -33,15 +27,12 @@ export default function CreateActivity() {
   const handleCreateActivity = async () => {
     try {
       // Call the function to create the activity
-      await createActivity(courseId, activityType, activityDetails);
+      const moduleId = await getCourseModuleId(courseId);
+      await createActivity(courseId, moduleId, activityType, activityDetails);
       // Navigate to the course details page
-      router.replace({
-        pathname: "/courses/[courseId]",
-        params: { courseId },
-      });
+      router.back();
     } catch (error) {
       setErrorMessage((error as Error).message);
-      console.error("Error al crear la actividad:", error);
     }
   };
 
@@ -49,7 +40,11 @@ export default function CreateActivity() {
     <>
       <Appbar.Header>
         <Appbar.BackAction onPress={() => router.back()} />
-        <Appbar.Content title="Crear actividad" />
+        <Appbar.Content
+          title={
+            activityType === ActivityType.EXAM ? "Nuevo examen" : "Nueva tarea"
+          }
+        />
       </Appbar.Header>
       <View
         style={[
@@ -83,7 +78,9 @@ export default function CreateActivity() {
           />
 
           <Button onPress={handleCreateActivity} mode="contained">
-            Crear actividad
+            {activityType === ActivityType.EXAM
+              ? "Crear examen"
+              : "Crear tarea"}
           </Button>
         </ScrollView>
       </View>

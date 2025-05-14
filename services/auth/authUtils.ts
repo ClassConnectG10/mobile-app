@@ -4,6 +4,7 @@ import {
   getAuth,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
+  sendPasswordResetEmail,
 } from "firebase/auth";
 import { FirebaseError } from "@firebase/util";
 
@@ -19,12 +20,11 @@ import { FirebaseError } from "@firebase/util";
 export async function signUp(email: string, password: string) {
   const auth = getAuth(firebaseApp);
   try {
-    const userCredential = await createUserWithEmailAndPassword(
+    await createUserWithEmailAndPassword(
       auth,
       email,
       password
     );
-    return userCredential.user.uid;
   } catch (error) {
     if (error instanceof FirebaseError && error.code in authErrorMessages) {
       const errorMessage =
@@ -54,6 +54,44 @@ export async function signIn(email: string, password: string) {
     );
     return userCredential.user.uid;
   } catch (error) {
+    if (error instanceof FirebaseError && error.code in authErrorMessages) {
+      const errorMessage =
+        authErrorMessages[error.code as keyof typeof authErrorMessages];
+      throw new Error(errorMessage);
+    }
+    throw error;
+  }
+}
+
+/**
+ * Signs out the currently authenticated user.
+ *
+ * @returns A promise that resolves when the user has been successfully signed out.
+ * @throws An error if the sign-out process fails.
+ */
+export async function signOut() {
+  const auth = getAuth(firebaseApp);
+  try {
+    await auth.signOut();
+  } catch (error) {
+    throw new Error("Error signing out: " + error);
+  }
+}
+
+
+/**
+ * Sends a password reset email to the specified email address.
+ *
+ * @param email - The email address to send the password reset email to.
+ * @returns A promise that resolves when the email has been sent successfully.
+ * @throws An error if the password reset process fails.
+ */
+export async function passwordReset(email: string) {
+  const auth = getAuth(firebaseApp);
+  try {
+    await sendPasswordResetEmail(auth, email);
+  }
+  catch (error) {
     if (error instanceof FirebaseError && error.code in authErrorMessages) {
       const errorMessage =
         authErrorMessages[error.code as keyof typeof authErrorMessages];

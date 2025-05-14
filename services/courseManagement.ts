@@ -1,23 +1,26 @@
 import {
-  createCreateCourseRequest,
-  createCourseRequest as createCourseRequest,
-  createGetSearchedCoursesRequest,
-  createEnrollCourseRequest,
-  createModuleRequest,
-} from "@/api/axios";
-import Course from "@/types/course";
-import CourseDetails from "@/types/courseDetails";
+  Course,
+  CourseDetails,
+  SearchFilters,
+  SearchOption,
+} from "@/types/course";
 import { handleError } from "./errorHandling";
 import { courseDetailsSchema } from "@/validations/courses";
-import { SearchOption } from "@/types/searchOption";
-import { SearchFilters } from "@/types/searchFilters";
+import { createModuleRequest } from "@/api/activities";
+import {
+  createCourseRequest,
+  createCoursesRequest,
+  createEnrollCourseRequest,
+  createFavoriteCourseRequest,
+  createSearchCoursesRequest,
+} from "@/api/courses";
 
 function formatDate(date: Date): string {
   return date.toISOString().split("T")[0];
 }
 
 export async function createCourse(
-  courseDetails: CourseDetails
+  courseDetails: CourseDetails,
 ): Promise<Course> {
   try {
     courseDetailsSchema.parse(courseDetails);
@@ -29,17 +32,18 @@ export async function createCourse(
       start_date: formatDate(courseDetails.startDate),
       end_date: formatDate(courseDetails.endDate),
       level: courseDetails.level,
-      modalidad: courseDetails.modality,
+      modality: courseDetails.modality,
       category: courseDetails.category,
+      dependencies: courseDetails.dependencies,
     };
 
-    const request = await createCreateCourseRequest();
+    const request = await createCoursesRequest();
     const response = await request.post("", body);
 
     const courseData = response.data.data;
     const course = new Course(
       courseData.id,
-      courseData.ownerId,
+      courseData.owner,
       courseData.numberOfStudents,
       new CourseDetails(
         courseData.title,
@@ -48,17 +52,17 @@ export async function createCourse(
         new Date(courseData.start_date),
         new Date(courseData.end_date),
         courseData.level,
-        courseData.modalidad,
-        courseData.category
-      )
+        courseData.modality,
+        courseData.category,
+        courseDetails.dependencies,
+      ),
     );
 
     const moduleRequest = await createModuleRequest(course.courseId);
-    const modulo = await moduleRequest.post("", {
+    await moduleRequest.post("", {
       title: "Módulo 1",
       description: "Descripción del módulo 1",
-    });
-    console.log("Módulo creado: ", modulo.data.data);
+    }); // TODO: Sacarlo cuando tengamos todo listo
     return course;
   } catch (error) {
     throw handleError(error, "crear el curso");
@@ -70,10 +74,10 @@ export async function getCourse(courseId: string): Promise<Course> {
     const request = await createCourseRequest(courseId);
     const response = await request.get("");
     const courseData = response.data.data;
-    console.log("courseData: ", courseData);
+
     const course = new Course(
       courseData.id,
-      courseData.ownerId,
+      courseData.owner,
       courseData.numberOfStudents,
       new CourseDetails(
         courseData.title,
@@ -82,9 +86,11 @@ export async function getCourse(courseId: string): Promise<Course> {
         new Date(courseData.start_date),
         new Date(courseData.end_date),
         courseData.level,
-        courseData.modalidad,
-        courseData.category
-      )
+        courseData.modality,
+        courseData.category,
+        courseData.dependencies.map((dep: any) => dep.course_id),
+      ),
+      courseData.is_favorite,
     );
     return course;
   } catch (error) {
@@ -94,12 +100,9 @@ export async function getCourse(courseId: string): Promise<Course> {
 
 export async function searchCourses(
   searchFilters: SearchFilters,
-  searchOption: SearchOption
+  searchOption: SearchOption,
 ): Promise<Course[]> {
-  const request = await createGetSearchedCoursesRequest(
-    searchFilters,
-    searchOption
-  );
+  const request = await createSearchCoursesRequest(searchFilters, searchOption);
   const response = await request.get("");
   const coursesData = response.data.data;
   const courses: Course[] = coursesData.map((courseData: any) => {
@@ -115,8 +118,9 @@ export async function searchCourses(
         new Date(courseData.end_date),
         courseData.level,
         courseData.modality,
-        courseData.category
-      )
+        courseData.category,
+      ),
+      courseData.is_favorite,
     );
   });
 
@@ -134,35 +138,37 @@ export async function enrollCourse(courseId: string) {
 
 export async function editCourse(
   course: Course,
-  newCourseDetails: CourseDetails
+  newCourseDetails: CourseDetails,
 ): Promise<Course> {
   try {
     courseDetailsSchema.parse(newCourseDetails);
 
     if (course.numberOfStudens > newCourseDetails.maxNumberOfStudents) {
       throw new Error(
-        "El nuevo número máximo de estudiantes no puede ser menor que el número actual de estudiantes"
+        "El nuevo número máximo de estudiantes no puede ser menor que el número actual de estudiantes",
       );
     }
 
     const body = {
       title: newCourseDetails.title,
       description: newCourseDetails.description,
-      capacity: newCourseDetails.maxNumberOfStudents,
       start_date: formatDate(newCourseDetails.startDate),
       end_date: formatDate(newCourseDetails.endDate),
-      level: newCourseDetails.level,
-      modalidad: newCourseDetails.modality,
+      capacity: newCourseDetails.maxNumberOfStudents,
       category: newCourseDetails.category,
+      level: newCourseDetails.level,
+      modality: newCourseDetails.modality,
+      dependencies: newCourseDetails.dependencies,
     };
 
     const request = await createCourseRequest(course.courseId);
     const response = await request.patch("", body);
+
     const courseData = response.data.data;
     const updatedCourse = new Course(
-      courseData.id,
-      courseData.ownerId,
-      courseData.numberOfStudents,
+      course.courseId,
+      course.ownerId,
+      course.numberOfStudens,
       new CourseDetails(
         courseData.title,
         courseData.description,
@@ -170,9 +176,10 @@ export async function editCourse(
         new Date(courseData.start_date),
         new Date(courseData.end_date),
         courseData.level,
-        courseData.modalidad,
-        courseData.category
-      )
+        courseData.modality,
+        courseData.category,
+        newCourseDetails.dependencies,
+      ),
     );
     return updatedCourse;
   } catch (error) {
@@ -186,5 +193,25 @@ export async function deleteCourse(courseId: string): Promise<void> {
     await request.delete("");
   } catch (error) {
     throw handleError(error, "eliminar el curso");
+  }
+}
+
+export async function addCourseToFavorites(courseId: string): Promise<void> {
+  try {
+    const request = await createFavoriteCourseRequest(courseId);
+    await request.post("");
+  } catch (error) {
+    throw handleError(error, "agregar el curso a favoritos");
+  }
+}
+
+export async function removeCourseFromFavorites(
+  courseId: string,
+): Promise<void> {
+  try {
+    const request = await createFavoriteCourseRequest(courseId);
+    await request.delete("");
+  } catch (error) {
+    throw handleError(error, "eliminar el curso de favoritos");
   }
 }

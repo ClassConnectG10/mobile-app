@@ -1,7 +1,7 @@
-import { View } from "react-native";
-import { Dropdown } from "react-native-paper-dropdown";
-import { ToggleableTextInput } from "./ToggleableTextInput";
-import { TextInput } from "react-native-paper";
+import React, { useState } from "react";
+import { View, Pressable } from "react-native";
+import { Menu, IconButton } from "react-native-paper";
+import { TextField } from "./TextField";
 
 interface OptionPickerProps {
   label: string;
@@ -18,26 +18,49 @@ const OptionPicker: React.FC<OptionPickerProps> = ({
   editable = true,
   setValue,
 }) => {
+  const [menuVisible, setMenuVisible] = useState(false);
+
   return (
     <View>
       {editable ? (
-        <Dropdown
-          label={label}
-          placeholder="Select an option"
-          value={value}
-          onSelect={(selectedValue) => {
-            setValue(selectedValue ?? "");
-          }}
-          options={items.map((v) => ({ label: v, value: v }))}
-        />
+        <Menu
+          visible={menuVisible}
+          onDismiss={() => setMenuVisible(false)}
+          anchor={
+            <View
+              style={{ flexDirection: "row", alignItems: "center", gap: 10 }}
+            >
+              <Pressable
+                style={{ flex: 1 }}
+                onPress={() => setMenuVisible(true)}
+              >
+                <TextField label={label} value={value} />
+              </Pressable>
+              <IconButton
+                icon="close"
+                size={20}
+                mode="contained"
+                onPress={() => {
+                  setValue("");
+                  setMenuVisible(false);
+                }}
+              />
+            </View>
+          }
+        >
+          {items.map((item) => (
+            <Menu.Item
+              key={item}
+              onPress={() => {
+                setValue(item);
+                setMenuVisible(false);
+              }}
+              title={item}
+            />
+          ))}
+        </Menu>
       ) : (
-        <TextInput
-          label={label}
-          placeholder={label}
-          value={value}
-          editable={false}
-          onChangeText={setValue}
-        />
+        <TextField label={label} value={value} />
       )}
     </View>
   );

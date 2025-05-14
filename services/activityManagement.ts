@@ -1,28 +1,42 @@
 import {
-  creatCourseActivitiesRequest,
-  creatCourseExamRequest,
-  creatCourseTaskRequest,
-  createStudentActivityRequest,
-} from "@/api/axios";
-import {
   TeacherActivity,
   Activity,
   ActivityDetails,
   StudentActivity,
   ActivitiesOption,
   ActivityType,
+  ActivitySubmission,
 } from "@/types/activity";
 import { handleError } from "./errorHandling";
+import { AxiosInstance } from "axios";
+import {
+  createActivityRequest,
+  createActivitySubmissionsRequest,
+  createActivitySubmissionRequest,
+  createExamsRequest,
+  createTasksRequest,
+  createActivitiesRequest,
+  createModuleRequest,
+  createGetModuleRequest,
+  createExamRequest,
+  createTaskRequest,
+  createTaskPostRequest,
+  createExamPostRequest,
+  createTaskSubmissionPostRequest,
+  createExamSubmissionPostRequest,
+} from "@/api/activities";
+import {
+  activityDetailsSchema,
+  activityDetailsSchemaUpdate,
+} from "@/validations/activities";
+import { getDateFromBackend } from "@/utils/date";
 
 export async function getCourseTeacherActivities(
   courseId: string,
-  activitiesOption: ActivitiesOption
+  activitiesOption: ActivitiesOption,
 ): Promise<TeacherActivity[]> {
   try {
-    const request = await creatCourseActivitiesRequest(
-      courseId,
-      activitiesOption
-    );
+    const request = await createActivitiesRequest(courseId, activitiesOption);
     const response = await request.get("");
 
     const activitiesData = response.data.data;
@@ -37,11 +51,11 @@ export async function getCourseTeacherActivities(
               activityData.title,
               activityData.description,
               activityData.instruction,
-              new Date(activityData.due_date)
-            )
+              getDateFromBackend(activityData.due_date),
+            ),
           ),
-          activityData.visible
-        )
+          activityData.visible,
+        ),
     );
 
     return activities;
@@ -52,13 +66,10 @@ export async function getCourseTeacherActivities(
 
 export async function getCourseStudentActivities(
   courseId: string,
-  activitiesOption: ActivitiesOption
+  activitiesOption: ActivitiesOption,
 ): Promise<StudentActivity[]> {
   try {
-    const request = await creatCourseActivitiesRequest(
-      courseId,
-      activitiesOption
-    );
+    const request = await createActivitiesRequest(courseId, activitiesOption);
     const response = await request.get("");
 
     const activitiesData = response.data.data;
@@ -72,11 +83,14 @@ export async function getCourseStudentActivities(
               activityData.title,
               activityData.description,
               activityData.instruction,
-              new Date(activityData.due_date)
-            )
+              getDateFromBackend(activityData.due_date),
+            ),
           ),
-          activityData.status
-        )
+          activityData.delivered,
+          activityData.delivered_date
+            ? getDateFromBackend(activityData.delivered_date)
+            : null,
+        ),
     );
 
     return activities;
@@ -85,9 +99,12 @@ export async function getCourseStudentActivities(
   }
 }
 
-export async function getStudentActivity(courseId: string, activityId: string) {
+export async function getStudentActivity(
+  courseId: string,
+  activityId: number,
+): Promise<StudentActivity> {
   try {
-    const request = await createStudentActivityRequest(courseId, activityId);
+    const request = await createActivityRequest(courseId, activityId);
     const response = await request.get("");
     const activityData = response.data.data;
     const activity = new StudentActivity(
@@ -98,31 +115,230 @@ export async function getStudentActivity(courseId: string, activityId: string) {
           activityData.title,
           activityData.description,
           activityData.instruction,
-          new Date(activityData.due_date)
-        )
+          getDateFromBackend(activityData.due_date),
+        ),
       ),
-      activityData.status
+      activityData.delivered,
+      activityData.delivered_date
+        ? getDateFromBackend(activityData.delivered_date)
+        : null,
     );
+
     return activity;
   } catch (error) {
     throw handleError(error, "obtener la actividad del estudiante");
   }
 }
 
-export async function createActivity(
+export async function getTeacherActivity(
   courseId: string,
-  activityType: ActivityType,
-  activityDetails: ActivityDetails
+  activityId: number,
 ): Promise<TeacherActivity> {
   try {
-    console.log("courseId: ", courseId);
-    var request;
+    const request = await createActivityRequest(courseId, activityId);
+    const response = await request.get("");
 
-    if (activityType === ActivityType.TASK) {
-      request = await creatCourseTaskRequest(courseId);
+    console.log("response", response.data.data);
+
+    const activityData = response.data.data;
+    const activity: TeacherActivity = new TeacherActivity(
+      new Activity(
+        activityData.resource_id,
+        activityData.type,
+        new ActivityDetails(
+          activityData.title,
+          activityData.description,
+          activityData.instruction,
+          getDateFromBackend(activityData.due_date),
+        ),
+      ),
+      activityData.visible,
+    );
+
+    return activity;
+  } catch (error) {
+    throw handleError(error, "obtener la actividad del profesor");
+  }
+}
+
+export async function postActivity(
+  courseId: string,
+  activity: Activity,
+): Promise<TeacherActivity> {
+  try {
+    let request: AxiosInstance;
+
+    if (activity.type === ActivityType.TASK) {
+      request = await createTaskPostRequest(courseId, activity.resourceId);
     } else {
-      request = await creatCourseExamRequest(courseId);
+      request = await createExamPostRequest(courseId, activity.resourceId);
     }
+
+    const updatedActivity = await request.post("");
+    const activityData = updatedActivity.data.data;
+    const newActivity = new TeacherActivity(
+      new Activity(
+        activityData.resource_id,
+        activityData.type,
+        new ActivityDetails(
+          activityData.title,
+          activityData.description,
+          activityData.instruction,
+          getDateFromBackend(activityData.due_date),
+        ),
+      ),
+      activityData.visible,
+    );
+
+    return newActivity;
+  } catch (error) {
+    throw handleError(error, "crear la actividad");
+  }
+}
+
+export async function updateActivity(
+  courseId: string,
+  activity: Activity,
+  activityDetails: ActivityDetails,
+): Promise<TeacherActivity> {
+  try {
+    activityDetailsSchemaUpdate.parse(activityDetails);
+
+    let request: AxiosInstance;
+
+    if (activity.type === ActivityType.TASK) {
+      request = await createTaskRequest(courseId, activity.resourceId);
+    } else {
+      request = await createExamRequest(courseId, activity.resourceId);
+    }
+
+    const body = {
+      title: activityDetails.title,
+      description: activityDetails.description,
+      instruction: activityDetails.instruction,
+      due_date: activityDetails.dueDate.toISOString(),
+    };
+
+    const response = await request.patch("", body);
+    const activityData = response.data.data;
+    const updatedActivity = new TeacherActivity(
+      new Activity(
+        activityData.resource_id,
+        activityData.type,
+        new ActivityDetails(
+          activityData.title,
+          activityData.description,
+          activityData.instruction,
+          getDateFromBackend(activityData.due_date),
+        ),
+      ),
+      activityData.visible,
+    );
+    return updatedActivity;
+  } catch (error) {
+    throw handleError(error, "actualizar la actividad");
+  }
+}
+
+export async function deleteActivity(
+  courseId: string,
+  activity: Activity,
+): Promise<void> {
+  try {
+    let request: AxiosInstance;
+
+    if (activity.type === ActivityType.TASK) {
+      request = await createTaskRequest(courseId, activity.resourceId);
+    } else {
+      request = await createExamRequest(courseId, activity.resourceId);
+    }
+
+    await request.delete("");
+  } catch (error) {
+    throw handleError(error, "eliminar la actividad");
+  }
+}
+
+export async function getActivitySubmissions(
+  courseId: string,
+  activity: Activity,
+): Promise<ActivitySubmission[]> {
+  try {
+    const request = await createActivitySubmissionsRequest(
+      courseId,
+      activity.resourceId,
+    );
+    const response = await request.get("");
+    const submissionsData = response.data.data;
+    const submissions: [] = submissionsData.map(
+      (activityData: any) =>
+        new ActivitySubmission(
+          activityData.task_id,
+          activity.type,
+          activityData.user_id,
+          activityData.external_ref,
+          activityData.delivered,
+          getDateFromBackend(activityData.due_date),
+          activityData.delivered_date
+            ? getDateFromBackend(activityData.delivered_date)
+            : null,
+        ),
+    );
+    return submissions;
+  } catch (error) {
+    throw handleError(error, "obtener las entregas de la actividad");
+  }
+}
+
+export async function getActivitySubmission(
+  courseId: string,
+  activity: Activity,
+  studentId: number,
+): Promise<ActivitySubmission> {
+  try {
+    const request = await createActivitySubmissionRequest(
+      courseId,
+      activity.resourceId,
+      studentId,
+    );
+    const response = await request.get("");
+
+    const submissionData = response.data.data;
+    const submission = new ActivitySubmission(
+      submissionData.task_id,
+      activity.type,
+      studentId,
+      submissionData.external_ref,
+      submissionData.delivered,
+      getDateFromBackend(submissionData.due_date),
+      submissionData.delivered_date
+        ? getDateFromBackend(submissionData.delivered_date)
+        : null,
+    );
+
+    return submission;
+  } catch (error) {
+    throw handleError(error, "obtener la entrega de la actividad");
+  }
+}
+
+export async function createActivity(
+  courseId: string,
+  moduleId: string,
+  activityType: ActivityType,
+  activityDetails: ActivityDetails,
+): Promise<TeacherActivity> {
+  try {
+    activityDetailsSchema.parse(activityDetails);
+
+    var request: AxiosInstance;
+    if (activityType === ActivityType.TASK) {
+      request = await createTasksRequest(courseId);
+    } else {
+      request = await createExamsRequest(courseId);
+    }
+
+    console.log("activityDetails", activityDetails);
 
     const body = {
       type: activityType,
@@ -130,9 +346,11 @@ export async function createActivity(
       description: activityDetails.description,
       instruction: activityDetails.instruction,
       due_date: activityDetails.dueDate.toISOString(),
-      module: 6,
+      module: moduleId,
       visible: false,
     };
+
+    console.log("body", body);
 
     const response = await request.post("", body);
 
@@ -145,14 +363,66 @@ export async function createActivity(
           activityData.title,
           activityData.description,
           activityData.instruction,
-          new Date(activityData.due_date)
-        )
+          getDateFromBackend(activityData.due_date),
+        ),
       ),
-      activityData.visible
+      activityData.visible,
     );
 
     return newActivity;
   } catch (error) {
     throw handleError(error, "crear la actividad");
+  }
+}
+
+export async function getCourseModuleId(courseId: string): Promise<string> {
+  try {
+    const request = await createGetModuleRequest(courseId);
+    const response = await request.get("");
+    const moduleData = response.data.data;
+
+    if (moduleData.length === 0) {
+      const moduleRequest = await createModuleRequest(courseId);
+      const modulo = await moduleRequest.post("", {
+        title: "Módulo por defecto",
+        description: "Esto es un modulo por defecto",
+      });
+      return modulo.data.data.module_id;
+    }
+    return moduleData[0].module_id;
+  } catch (error) {
+    throw handleError(error, "obtener el módulo del curso");
+  }
+}
+
+export async function submitActivity(
+  courseId: string,
+  activity: Activity,
+  response: string,
+): Promise<void> {
+  try {
+    let request: AxiosInstance;
+
+    if (activity.type === ActivityType.TASK) {
+      request = await createTaskSubmissionPostRequest(
+        courseId,
+        activity.resourceId,
+      );
+    } else if (activity.type === ActivityType.EXAM) {
+      request = await createExamSubmissionPostRequest(
+        courseId,
+        activity.resourceId,
+      );
+    } else {
+      throw new Error("Tipo de actividad no soportado");
+    }
+
+    const body = {
+      data: response,
+    };
+
+    await request.post("", body);
+  } catch (error) {
+    throw handleError(error, "enviar la actividad");
   }
 }
