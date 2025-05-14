@@ -105,17 +105,21 @@ export default function CourseIncriptionDetails() {
   }, [course]);
 
   return (
-    <View>
+    <>
       <Appbar.Header>
         <Appbar.BackAction onPress={() => router.back()} />
         <Appbar.Content title="Detalles de inscripción" />
       </Appbar.Header>
-      {course === null ? (
-        <ActivityIndicator
-          animating={true}
-          size="large"
-          color={theme.colors.primary}
-        />
+      {isLoading || !course || !courseOwner || !dependencies ? (
+        <View
+          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+        >
+          <ActivityIndicator
+            animating={true}
+            size="large"
+            color={theme.colors.primary}
+          />
+        </View>
       ) : (
         <ScrollView contentContainerStyle={{ padding: 16, gap: 10 }}>
           {courseOwner && (
@@ -220,6 +224,6 @@ export default function CourseIncriptionDetails() {
         message={errorMessage}
         onDismiss={() => setErrorMessage("")}
       />
-    </View>
+    </>
   );
 }
