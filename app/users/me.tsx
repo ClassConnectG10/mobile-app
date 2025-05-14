@@ -51,6 +51,7 @@ export default function UserProfilePage() {
 
       await editUserProfile(newUser);
       userContextHook.setUser(newUser);
+      setIsEditing(false);
     } catch (error) {
       setErrorMessage((error as Error).message);
       handleCancelEdit();
