@@ -19,6 +19,7 @@ import UserCard from "@/components/UserCard";
 import { getUser } from "@/services/userManagement";
 import { useUserContext } from "@/utils/storage/userContext";
 import { formatDate } from "@/utils/date";
+import { hasNoSeats, SeatsField } from "@/components/SeatsField";
 export default function CourseIncriptionDetails() {
   const router = useRouter();
   const theme = useTheme();
@@ -137,10 +138,13 @@ export default function CourseIncriptionDetails() {
             label="Descripción del curso"
             value={course.courseDetails.description}
           />
-          <TextField
-            label="Cantidad máxima de estudiantes"
-            value={course.courseDetails.maxNumberOfStudents}
+
+          <SeatsField
+            seats={course.courseDetails.maxNumberOfStudents}
+            students={course.numberOfStudens || 0}
+            showAlert={true}
           />
+
           <TextField
             label="Fecha de inicio"
             value={formatDate(course.courseDetails.startDate)}
@@ -211,10 +215,14 @@ export default function CourseIncriptionDetails() {
           <Button
             mode="contained"
             icon="notebook-multiple"
-            disabled={isLoading}
-            onPress={() => {
-              handleEnrollCourse();
-            }}
+            disabled={
+              isLoading ||
+              hasNoSeats(
+                course.courseDetails.maxNumberOfStudents,
+                course.numberOfStudens || 0,
+              )
+            }
+            onPress={handleEnrollCourse}
           >
             Inscribirse al curso
           </Button>
