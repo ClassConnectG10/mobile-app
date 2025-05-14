@@ -11,6 +11,8 @@ import { View, ScrollView } from "react-native";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import OptionPicker from "@/components/OptionPicker";
 import { signOut } from "@/services/auth/authUtils";
+import { GoogleSignin } from "@react-native-google-signin/google-signin";
+import { getAuth } from "@react-native-firebase/auth";
 
 export default function UserProfilePage() {
   const router = useRouter();
@@ -63,13 +65,19 @@ export default function UserProfilePage() {
   const handleLogout = async () => {
     try {
       setisLoading(true);
+      const auth = getAuth();
+      const user = auth.currentUser;
+      const providerId = user?.providerData[0].providerId;
+      if (providerId === "google.com") {
+        await GoogleSignin.signOut();
+      }
 
       await signOut();
       // userContextHook.deleteUser();
 
       router.replace("/login");
-    } catch {
-      setErrorMessage("Error al cerrar sesión");
+    } catch (error) {
+      setErrorMessage(`Error al cerrar sesión: ${error}`);
     }
   };
 

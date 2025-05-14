@@ -5,6 +5,11 @@ import { useRouter } from "expo-router";
 import { getAuth, onAuthStateChanged } from "@react-native-firebase/auth";
 import { loginUser } from "@/services/userManagement";
 import { useUserContext } from "@/utils/storage/userContext";
+import { GoogleSignin } from "@react-native-google-signin/google-signin";
+
+GoogleSignin.configure({
+  webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
+});
 
 export default function Index() {
   const theme = useTheme();
@@ -27,7 +32,11 @@ export default function Index() {
           setUser(user);
           router.replace("/home");
         } catch (error) {
-          console.log("Error logging in user service:", error);
+          console.log("No user session found", error);
+          const providerId = authUser.providerData[0].providerId;
+          if (providerId === "google.com") {
+            await GoogleSignin.signOut();
+          }
           await auth.signOut();
 
           router.replace("/login");
