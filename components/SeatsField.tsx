@@ -10,6 +10,7 @@ interface SeatsFieldProps {
 }
 
 const PORCENTAGE_LIMIT = 0.1;
+const REMAINING_SEATS_LIMIT = 5;
 
 function getRemainingSeats(seats: number, students: number): number {
   if (seats === 0) return 0;
@@ -20,7 +21,9 @@ function getRemainingSeats(seats: number, students: number): number {
 function hasLimitedSeats(seats: number, students: number): boolean {
   const remaining = getRemainingSeats(seats, students);
   const limit = seats * PORCENTAGE_LIMIT;
-  return remaining > 0 && remaining <= limit;
+  return (
+    remaining > 0 && (remaining <= limit || remaining <= REMAINING_SEATS_LIMIT)
+  );
 }
 
 export function hasNoSeats(seats: number, students: number): boolean {
