@@ -138,8 +138,6 @@ export async function getTeacherActivity(
     const request = await createActivityRequest(courseId, activityId);
     const response = await request.get("");
 
-    console.log("response", response.data.data);
-
     const activityData = response.data.data;
     const activity: TeacherActivity = new TeacherActivity(
       new Activity(
@@ -338,8 +336,6 @@ export async function createActivity(
       request = await createExamsRequest(courseId);
     }
 
-    console.log("activityDetails", activityDetails);
-
     const body = {
       type: activityType,
       title: activityDetails.title,
@@ -349,8 +345,6 @@ export async function createActivity(
       module: moduleId,
       visible: false,
     };
-
-    console.log("body", body);
 
     const response = await request.post("", body);
 
