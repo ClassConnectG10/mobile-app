@@ -5,16 +5,19 @@ import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import { registerUser } from "@/services/userManagement";
 import { globalStyles } from "@/styles/globalStyles";
 import { useUserContext } from "@/utils/storage/userContext";
-import { getAuth } from "firebase/auth";
+import { getAuth } from "@react-native-firebase/auth";
 import { useNavigation, CommonActions } from "@react-navigation/native";
 import { countries, defaultCountry } from "@/utils/constants/countries";
 import OptionPicker from "@/components/OptionPicker";
+import { useLocalSearchParams } from "expo-router";
 
 export default function RegisterDetailsPage() {
   const theme = useTheme();
   const navigation = useNavigation();
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
+  const { firstName: initialFirstName, lastName: initialLastName } =
+    useLocalSearchParams();
+  const [firstName, setFirstName] = useState(initialFirstName as string);
+  const [lastName, setLastName] = useState(initialLastName as string);
   const [country, setcountry] = useState(defaultCountry);
   const [errorMessage, setErrorMessage] = useState("");
   const [buttonDisabled, setButtonDisabled] = useState(false);
@@ -31,7 +34,7 @@ export default function RegisterDetailsPage() {
       const uid = user?.uid;
       if (!email || !uid || !accessToken) {
         setErrorMessage(
-          "Error al obtener el token de acceso o el uid del usuario",
+          "Error al obtener el token de acceso o el uid del usuario"
         );
         return;
       }
@@ -47,7 +50,7 @@ export default function RegisterDetailsPage() {
         CommonActions.reset({
           index: 0,
           routes: [{ name: "home" }],
-        }),
+        })
       );
     } catch (error) {
       setErrorMessage((error as Error).message);

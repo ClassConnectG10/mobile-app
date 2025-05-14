@@ -2,9 +2,14 @@ import { useEffect } from "react";
 import { Image, StyleSheet, View } from "react-native";
 import { ActivityIndicator, Text, useTheme } from "react-native-paper";
 import { useRouter } from "expo-router";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { getAuth, onAuthStateChanged } from "@react-native-firebase/auth";
 import { loginUser } from "@/services/userManagement";
 import { useUserContext } from "@/utils/storage/userContext";
+import { GoogleSignin } from "@react-native-google-signin/google-signin";
+
+GoogleSignin.configure({
+  webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
+});
 
 export default function Index() {
   const theme = useTheme();
@@ -17,11 +22,23 @@ export default function Index() {
       if (authUser) {
         try {
           const user = await loginUser(authUser.uid);
+
+          if (!user) {
+            console.log("User not found in the user service");
+            router.replace("/registerDetails");
+            return;
+          }
+
           setUser(user);
           router.replace("/home");
         } catch (error) {
           console.log("No user session found", error);
+          const providerId = authUser.providerData[0].providerId;
+          if (providerId === "google.com") {
+            await GoogleSignin.signOut();
+          }
           await auth.signOut();
+
           router.replace("/login");
         }
       } else {

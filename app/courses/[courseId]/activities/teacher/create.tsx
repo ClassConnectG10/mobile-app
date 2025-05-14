@@ -17,6 +17,7 @@ export default function CreateActivity() {
     useLocalSearchParams();
 
   const [errorMessage, setErrorMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const courseId = courseIdParam as string;
   const activityType = activityTypeParam as ActivityType;
@@ -25,6 +26,7 @@ export default function CreateActivity() {
   const activityDetails = activityDetailsHook.activityDetails;
 
   const handleCreateActivity = async () => {
+    setIsLoading(true);
     try {
       // Call the function to create the activity
       const moduleId = await getCourseModuleId(courseId);
@@ -33,6 +35,8 @@ export default function CreateActivity() {
       router.back();
     } catch (error) {
       setErrorMessage((error as Error).message);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -77,7 +81,11 @@ export default function CreateActivity() {
             onChange={activityDetailsHook.setDueDate}
           />
 
-          <Button onPress={handleCreateActivity} mode="contained">
+          <Button
+            onPress={handleCreateActivity}
+            mode="contained"
+            disabled={isLoading}
+          >
             {activityType === ActivityType.EXAM
               ? "Crear examen"
               : "Crear tarea"}

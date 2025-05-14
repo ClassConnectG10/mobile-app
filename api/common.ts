@@ -1,5 +1,5 @@
 import axios, { AxiosInstance } from "axios";
-import { getAuth } from "firebase/auth";
+import { getAuth } from "@react-native-firebase/auth";
 
 const BASE_URL = process.env.EXPO_PUBLIC_MIDDLEEND_BASE_URL;
 

@@ -9,10 +9,18 @@ import { useUserContext } from "@/utils/storage/userContext";
 import { View, Image, Pressable } from "react-native";
 import { ZodError } from "zod";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
+import { GoogleSignin } from "@react-native-google-signin/google-signin";
+import {
+  fetchSignInMethodsForEmail,
+  getAuth,
+  GoogleAuthProvider,
+  signInWithCredential,
+} from "@react-native-firebase/auth";
 
 export default function LoginPage() {
   const theme = useTheme();
   const router = useRouter();
+  const auth = getAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
@@ -26,9 +34,15 @@ export default function LoginPage() {
       loginSchema.parse({ email, password });
 
       const uid = await signIn(email, password);
-      const userInfo = await loginUser(uid);
+      const user = await loginUser(uid);
 
-      setUser(userInfo);
+      if (!user) {
+        console.log("User not found in the user service");
+        router.replace("/registerDetails");
+        return;
+      }
+
+      setUser(user);
 
       router.replace("/home");
     } catch (error) {
@@ -42,12 +56,51 @@ export default function LoginPage() {
     }
   };
 
+  const handleGoogleSignIn = async () => {
+    setButtonDisabled(true);
+    try {
+      await GoogleSignin.hasPlayServices(); // Verifica que los servicios de Google Play estén disponibles
+      const signInData = (await GoogleSignin.signIn()).data; // Obtiene el token de Google
+      if (signInData) {
+        const idToken = signInData.idToken;
+        const googleEmail = signInData.user.email;
+
+        // Crea una credencial de Firebase con el token de Google
+        const googleCredential = GoogleAuthProvider.credential(idToken);
+
+        // Inicia sesión en Firebase con la credencial de Google
+        const signInMethods = await fetchSignInMethodsForEmail(
+          auth,
+          googleEmail
+        );
+        await signInWithCredential(auth, googleCredential);
+        if (signInMethods.includes("google.com")) {
+          const uid = auth.currentUser?.uid;
+          const userInfo = await loginUser(uid);
+          setUser(userInfo);
+          router.replace("/home");
+        } else {
+          const firstName = signInData.user.givenName;
+          const lastName = signInData.user.familyName;
+          router.replace({
+            pathname: "/registerDetails",
+            params: { firstName, lastName },
+          });
+        }
+      }
+    } catch (error) {
+      setErrorMessage(`Error al iniciar sesión con Google: ${error}`);
+    } finally {
+      setButtonDisabled(false);
+    }
+  };
+
   return (
     <>
       <View
         style={[
           {
-            backgroundColor: theme.colors.baconPrimarykground,
+            backgroundColor: theme.colors.onPrimary,
             padding: 20,
             flex: 1,
             gap: 20,
@@ -91,11 +144,13 @@ export default function LoginPage() {
             Ingresar
           </Button>
           <Divider />
-          <Button icon="google" mode="outlined">
+          <Button
+            icon="google"
+            mode="outlined"
+            disabled={buttonDisabled}
+            onPress={() => handleGoogleSignIn()}
+          >
             Continuar con Google
-          </Button>
-          <Button icon="microsoft" mode="outlined">
-            Continuar con Microsoft
           </Button>
 
           <View style={{ gap: 20, marginTop: 10, alignItems: "center" }}>

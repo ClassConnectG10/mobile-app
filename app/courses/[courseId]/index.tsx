@@ -51,15 +51,15 @@ export default function CoursePage() {
   const userContext = useUserContext();
 
   const [activitiesOption, setActivitiesOption] = useState(
-    ActivitiesOption.ALL,
+    ActivitiesOption.ALL
   );
 
   const [publishedActivitiesOption, setPublishedActivitiesOption] = useState(
-    TeacherActivityFilter.ALL,
+    TeacherActivityFilter.ALL
   );
 
   const [submitteedActivitiesOption, setSubmitteedActivitiesOption] = useState(
-    StudentActivityFilter.ALL,
+    StudentActivityFilter.ALL
   );
 
   const [isOwner, setIsOwner] = useState(null);
@@ -103,14 +103,14 @@ export default function CoursePage() {
       if (isOwner) {
         const activities = await getCourseTeacherActivities(
           courseId,
-          activitiesOption,
+          activitiesOption
         );
 
         setTeacherActivities(activities);
       } else {
         const activities = await getCourseStudentActivities(
           courseId,
-          activitiesOption,
+          activitiesOption
         );
 
         setStudentActivities(activities);
@@ -180,23 +180,23 @@ export default function CoursePage() {
 
   const handleActivitiesOptionChange = (value: ActivitiesOption) => {
     setActivitiesOption(
-      activitiesOption === value ? ActivitiesOption.ALL : value,
+      activitiesOption === value ? ActivitiesOption.ALL : value
     );
   };
 
   const handleSubmitteedActivitiesOptionChange = (
-    value: StudentActivityFilter,
+    value: StudentActivityFilter
   ) => {
     setSubmitteedActivitiesOption(
-      submitteedActivitiesOption === value ? StudentActivityFilter.ALL : value,
+      submitteedActivitiesOption === value ? StudentActivityFilter.ALL : value
     );
   };
 
   const handlePublishedActivitiesOptionChange = (
-    value: TeacherActivityFilter,
+    value: TeacherActivityFilter
   ) => {
     setPublishedActivitiesOption(
-      publishedActivitiesOption === value ? TeacherActivityFilter.ALL : value,
+      publishedActivitiesOption === value ? TeacherActivityFilter.ALL : value
     );
   };
 
@@ -323,9 +323,14 @@ export default function CoursePage() {
             />
           </View>
         ) : (
-          <View style={{ padding: 16, gap: 16 }}>
+          <View style={{ padding: 16, gap: 16, flex: 1 }}>
             {/* Card de curso */}
-            <ScrollView style={{ gap: 16 }}>
+            <ScrollView
+              style={{
+                gap: 16,
+                flexGrow: 0,
+              }}
+            >
               <CourseCard
                 name={courseContext.course?.courseDetails.title || ""}
                 description={
@@ -393,100 +398,103 @@ export default function CoursePage() {
                 ]}
               />
             )}
-            {/* Lista de actividades */}
-            {isOwner ? (
-              <FlatList
-                data={filteredTeacherActivities}
-                keyExtractor={(item) => item.activity.resourceId.toString()}
-                refreshing={isRefreshing}
-                onRefresh={handleRefresh}
-                renderItem={({ item }) => (
-                  <ActivityCard
-                    activity={item}
-                    onPress={() =>
-                      handleTeacherActivitiesPress(item.activity.resourceId)
-                    }
-                  />
-                )}
-                ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
-                ListEmptyComponent={
-                  isLoading ? (
-                    <View
-                      style={{
-                        flex: 1,
-                        justifyContent: "center",
-                        alignItems: "center",
-                      }}
-                    >
-                      <ActivityIndicator
-                        animating={true}
-                        size="large"
-                        color={theme.colors.primary}
-                      />
-                    </View>
-                  ) : (
-                    <View
-                      style={{
-                        flex: 1,
-                        justifyContent: "center",
-                        alignItems: "center",
-                      }}
-                    >
-                      <Text variant="titleMedium">
-                        No se encontraron actividades
-                      </Text>
-                    </View>
-                  )
-                }
-              />
-            ) : (
-              <FlatList
-                data={filteredStudentActivities}
-                keyExtractor={(item) => item.activity.resourceId.toString()}
-                refreshing={isRefreshing}
-                onRefresh={handleRefresh}
-                renderItem={({ item }) => (
-                  <ActivityCard
-                    activity={item}
-                    onPress={() =>
-                      handleStudentActivitiesPress(item.activity.resourceId)
-                    }
-                  />
-                )}
-                ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
-                ListEmptyComponent={
-                  isLoading ? (
-                    <View
-                      style={{
-                        flex: 1,
-                        justifyContent: "center",
-                        alignItems: "center",
-                      }}
-                    >
-                      <ActivityIndicator
-                        animating={true}
-                        size="large"
-                        color={theme.colors.primary}
-                      />
-                    </View>
-                  ) : (
-                    <View
-                      style={{
-                        flex: 1,
-                        justifyContent: "center",
-                        alignItems: "center",
-                      }}
-                    >
-                      <Text variant="titleMedium">
-                        No se encontraron actividades
-                      </Text>
-                    </View>
-                  )
-                }
-              />
-            )}
+            <View style={{ flex: 1 }}>
+              {/* Lista de actividades */}
+              {isOwner ? (
+                <FlatList
+                  data={filteredTeacherActivities}
+                  keyExtractor={(item) => item.activity.resourceId.toString()}
+                  refreshing={isRefreshing}
+                  onRefresh={handleRefresh}
+                  renderItem={({ item }) => (
+                    <ActivityCard
+                      activity={item}
+                      onPress={() =>
+                        handleTeacherActivitiesPress(item.activity.resourceId)
+                      }
+                    />
+                  )}
+                  ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
+                  ListEmptyComponent={
+                    isLoading ? (
+                      <View
+                        style={{
+                          flex: 1,
+                          justifyContent: "center",
+                          alignItems: "center",
+                        }}
+                      >
+                        <ActivityIndicator
+                          animating={true}
+                          size="large"
+                          color={theme.colors.primary}
+                        />
+                      </View>
+                    ) : (
+                      <View
+                        style={{
+                          flex: 1,
+                          justifyContent: "center",
+                          alignItems: "center",
+                        }}
+                      >
+                        <Text variant="titleMedium">
+                          No se encontraron actividades
+                        </Text>
+                      </View>
+                    )
+                  }
+                />
+              ) : (
+                <FlatList
+                  data={filteredStudentActivities}
+                  keyExtractor={(item) => item.activity.resourceId.toString()}
+                  refreshing={isRefreshing}
+                  onRefresh={handleRefresh}
+                  renderItem={({ item }) => (
+                    <ActivityCard
+                      activity={item}
+                      onPress={() =>
+                        handleStudentActivitiesPress(item.activity.resourceId)
+                      }
+                    />
+                  )}
+                  ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
+                  ListEmptyComponent={
+                    isLoading ? (
+                      <View
+                        style={{
+                          flex: 1,
+                          justifyContent: "center",
+                          alignItems: "center",
+                        }}
+                      >
+                        <ActivityIndicator
+                          animating={true}
+                          size="large"
+                          color={theme.colors.primary}
+                        />
+                      </View>
+                    ) : (
+                      <View
+                        style={{
+                          flex: 1,
+                          justifyContent: "center",
+                          alignItems: "center",
+                        }}
+                      >
+                        <Text variant="titleMedium">
+                          No se encontraron actividades
+                        </Text>
+                      </View>
+                    )
+                  }
+                />
+              )}
+            </View>
           </View>
         )}
+        <View style={{ paddingVertical: 4 }}></View>
       </View>
       {isOwner && (
         <FAB
