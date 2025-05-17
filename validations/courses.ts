@@ -1,7 +1,7 @@
 import {
-  categories,
-  levels,
-  modalities,
+  CATEGORIES,
+  LEVELS,
+  MODALITIES,
 } from "@/utils/constants/courseDetails";
 import { z } from "zod";
 
@@ -23,9 +23,24 @@ export const courseDetailsSchema = z
       .refine((date) => date > new Date(new Date().setHours(0, 0, 0, 0)), {
         message: "End date must be today or in the future",
       }),
-    level: z.enum(levels),
-    modality: z.enum(modalities),
-    category: z.enum(categories),
+    level: z
+      .string()
+      .nonempty("El nivel es obligatorio")
+      .refine((val) => LEVELS.hasBackValue(val), {
+        message: "Nivel inválido",
+      }),
+    modality: z
+      .string()
+      .nonempty("La modalidad es obligatoria")
+      .refine((val) => MODALITIES.hasBackValue(val), {
+        message: "Modalidad inválida",
+      }),
+    category: z
+      .string()
+      .nonempty("La categoría es obligatoria")
+      .refine((val) => CATEGORIES.hasBackValue(val), {
+        message: "Categoría inválida",
+      }),
     dependencies: z.array(z.string().uuid()),
   })
   .refine((data) => data.startDate <= data.endDate, {

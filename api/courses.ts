@@ -66,3 +66,9 @@ export const createFavoriteCourseRequest = (courseId: string) => {
     uri: `courses/${courseId}/favorite`,
   });
 };
+
+export const createStartCourseRequest = (courseId: string) => {
+  return createRequest({
+    uri: `courses/${courseId}/start`,
+  });
+};

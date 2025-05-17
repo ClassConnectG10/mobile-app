@@ -2,6 +2,7 @@ import React from "react";
 import { StyleSheet, ImageBackground, View } from "react-native";
 import { Card, Text } from "react-native-paper";
 import bannerMap from "@/utils/constants/banners";
+import { CATEGORIES } from "@/utils/constants/courseDetails";
 
 interface CourseCardProps {
   name: string;
@@ -16,7 +17,8 @@ const CourseCard: React.FC<CourseCardProps> = ({
   category,
   onPress,
 }) => {
-  const image = bannerMap[category] || bannerMap["default"];
+  const front_category = CATEGORIES.getFrontValue(category);
+  const image = bannerMap[front_category] || bannerMap["default"];
 
   return (
     <Card style={styles.card} onPress={onPress}>
@@ -29,7 +31,7 @@ const CourseCard: React.FC<CourseCardProps> = ({
           {/* Contenedor para el título y la categoría */}
           <View style={styles.topContent}>
             <Text style={styles.title}>{name}</Text>
-            <Text style={styles.subtitle}>{category}</Text>
+            <Text style={styles.subtitle}>{front_category}</Text>
           </View>
 
           {/* Contenedor para la descripción */}

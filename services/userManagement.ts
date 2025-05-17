@@ -124,7 +124,6 @@ export async function getUser(userId: number): Promise<User> {
       response.data.data.name,
       response.data.data.surname,
       response.data.data.email,
-      response.data.data.country,
     );
 
     const user = {

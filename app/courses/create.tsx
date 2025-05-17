@@ -10,9 +10,9 @@ import {
 import { useRouter } from "expo-router";
 import OptionPicker from "@/components/OptionPicker";
 import {
-  levels,
-  modalities,
-  categories,
+  LEVELS,
+  MODALITIES,
+  CATEGORIES,
 } from "@/utils/constants/courseDetails";
 import { useCourseDetails } from "@/hooks/useCourseDetails";
 import { globalStyles } from "@/styles/globalStyles";
@@ -37,7 +37,7 @@ export default function CreateCoursePage() {
   const handleCreateCourse = async () => {
     try {
       courseDetails.dependencies = requiredCourses.map(
-        (course) => course.courseId
+        (course) => course.courseId,
       );
       const createdCourse = await createCourse(courseDetails);
       courseContext.setCourse(createdCourse);
@@ -107,21 +107,21 @@ export default function CreateCoursePage() {
           <OptionPicker
             label="Nivel"
             value={courseDetails.level}
-            items={levels}
+            items={LEVELS}
             setValue={courseDetailsHook.setLevel}
           />
 
           <OptionPicker
             label="Categoría"
             value={courseDetails.category}
-            items={categories}
+            items={CATEGORIES}
             setValue={courseDetailsHook.setCategory}
           />
 
           <OptionPicker
             label="Modalidad"
             value={courseDetails.modality}
-            items={modalities}
+            items={MODALITIES}
             setValue={courseDetailsHook.setModality}
           />
           <View style={{ gap: 10 }}>

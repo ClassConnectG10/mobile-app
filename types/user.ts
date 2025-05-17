@@ -7,6 +7,6 @@ export class UserInformation {
     public firstName: string,
     public lastName: string,
     public email: string,
-    public country: string
+    public country?: string,
   ) {}
 }

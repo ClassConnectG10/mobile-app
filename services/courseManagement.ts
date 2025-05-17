@@ -13,6 +13,7 @@ import {
   createEnrollCourseRequest,
   createFavoriteCourseRequest,
   createSearchCoursesRequest,
+  createStartCourseRequest,
 } from "@/api/courses";
 
 function formatDate(date: Date): string {
@@ -55,6 +56,8 @@ export async function createCourse(
         courseData.category,
         courseDetails.dependencies,
       ),
+      courseData.user_role,
+      courseData.status,
       0,
       false,
     );
@@ -90,6 +93,8 @@ export async function getCourse(courseId: string): Promise<Course> {
         courseData.category,
         courseData.dependencies.map((dep: any) => dep.course_id),
       ),
+      courseData.user_role,
+      courseData.status,
       courseData.students ? courseData.students : 0,
       courseData.is_favorite,
     );
@@ -180,6 +185,8 @@ export async function editCourse(
         courseData.category,
         newCourseDetails.dependencies,
       ),
+      course.currentUserRole,
+      course.courseStatus,
       course.numberOfStudens,
       course.isFavorite,
     );
@@ -215,5 +222,14 @@ export async function removeCourseFromFavorites(
     await request.delete("");
   } catch (error) {
     throw handleError(error, "eliminar el curso de favoritos");
+  }
+}
+
+export async function startCourse(courseId: string): Promise<void> {
+  try {
+    const request = await createStartCourseRequest(courseId);
+    await request.post("");
+  } catch (error) {
+    throw handleError(error, "iniciar el curso");
   }
 }

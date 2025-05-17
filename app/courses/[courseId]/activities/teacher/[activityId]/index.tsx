@@ -1,3 +1,4 @@
+import { AlertText } from "@/components/AlertText";
 import { DatePickerButton } from "@/components/DatePickerButton";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import { ToggleableTextInput } from "@/components/ToggleableTextInput";
@@ -8,7 +9,9 @@ import {
   postActivity,
   updateActivity,
 } from "@/services/activityManagement";
+import { getCourse } from "@/services/courseManagement";
 import { TeacherActivity } from "@/types/activity";
+import { Course, CourseStatus, UserRole } from "@/types/course";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { View } from "react-native";
@@ -37,11 +40,26 @@ export default function TeacherActivityPage() {
     useState<TeacherActivity | null>(null);
 
   const [showConfirmationDelete, setShowConfirmationDelete] = useState(false);
-
   const [showConfirmationPublish, setShowConfirmationPublish] = useState(false);
 
   const activityDetailsHook = useActivityDetails();
   const activityDetails = activityDetailsHook.activityDetails;
+
+  const [course, setCourse] = useState<Course | null>(null);
+
+  async function fetchCourse() {
+    if (!courseId) return;
+    setIsLoading(true);
+
+    try {
+      const fetchedCourse = await getCourse(courseId);
+      setCourse(fetchedCourse);
+    } catch (error) {
+      setErrorMessage((error as Error).message);
+    } finally {
+      setIsLoading(false);
+    }
+  }
 
   async function fetchTeacherActivity() {
     try {
@@ -71,6 +89,7 @@ export default function TeacherActivityPage() {
 
   useEffect(() => {
     fetchTeacherActivity();
+    fetchCourse();
   }, [courseId, activityId]);
 
   const handleViewSubmissions = async () => {
@@ -155,7 +174,7 @@ export default function TeacherActivityPage() {
           onPress={isEditing ? handleEditActivity : () => setIsEditing(true)}
         />
       </Appbar.Header>
-      {isLoading ? (
+      {isLoading || !course ? (
         <View
           style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
         >
@@ -216,12 +235,53 @@ export default function TeacherActivityPage() {
             <Button
               onPress={() => setShowConfirmationPublish(true)}
               mode="contained"
-              disabled={isLoading}
+              disabled={
+                isLoading || course.courseStatus !== CourseStatus.STARTED
+              }
               icon="file-eye"
             >
               Publicar actividad
             </Button>
           )}
+
+          {!isEditing &&
+            course.courseStatus === CourseStatus.NEW &&
+            course.currentUserRole === UserRole.OWNER && (
+              <View style={{ gap: 16 }}>
+                <AlertText
+                  text={
+                    "El curso no ha sido iniciado y la actividad no se puede publicar. Inicia el curso para poder publicar la actividad."
+                  }
+                  error={false}
+                />
+                <Button
+                  onPress={() => {
+                    router.push({
+                      pathname: "/courses/[courseId]/info",
+                      params: {
+                        courseId,
+                      },
+                    });
+                  }}
+                  mode="contained"
+                  icon="cog"
+                  disabled={isLoading}
+                >
+                  Ir a configuración del curso
+                </Button>
+              </View>
+            )}
+
+          {!isEditing &&
+            course.courseStatus === CourseStatus.NEW &&
+            course.currentUserRole === UserRole.ASSISTANT && (
+              <AlertText
+                text={
+                  "El curso no ha sido iniciado. Solicita al propietario del curso que lo Inicia para poder publicar la actividad."
+                }
+                error={false}
+              />
+            )}
 
           {isEditing && (
             <Button

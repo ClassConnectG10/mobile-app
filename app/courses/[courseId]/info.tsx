@@ -11,9 +11,9 @@ import {
 import { useLocalSearchParams, useRouter } from "expo-router";
 import OptionPicker from "@/components/OptionPicker";
 import {
-  levels,
-  modalities,
-  categories,
+  LEVELS,
+  MODALITIES,
+  CATEGORIES,
 } from "@/utils/constants/courseDetails";
 import { useCourseDetails } from "@/hooks/useCourseDetails";
 import { DatePickerButton } from "@/components/DatePickerButton";
@@ -26,6 +26,7 @@ import {
   deleteCourse,
   editCourse,
   getCourse,
+  startCourse,
 } from "@/services/courseManagement";
 import { ToggleableNumberInput } from "@/components/ToggleableNumberInput";
 import { ToggleableTextInput } from "@/components/ToggleableTextInput";
@@ -33,6 +34,7 @@ import { getUser } from "@/services/userManagement";
 import { useUserContext } from "@/utils/storage/userContext";
 import UserCard from "@/components/UserCard";
 import { SeatsField } from "@/components/SeatsField";
+import { CourseStatus } from "@/types/course";
 
 export default function CreateCoursePage() {
   const theme = useTheme();
@@ -45,6 +47,7 @@ export default function CreateCoursePage() {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [showConfirmationDelete, setShowConfirmationDelete] = useState(false);
+  const [showConfirmationStart, setShowConfirmationStart] = useState(false);
   const [isOwner, setIsOwner] = useState(false);
   const [courseOwner, setCourseOwner] = useState(null);
 
@@ -98,8 +101,8 @@ export default function CreateCoursePage() {
   };
 
   const handleDeleteCourse = async () => {
-    setIsLoading(true);
     if (!courseContext.course) return;
+    setIsLoading(true);
 
     try {
       await deleteCourse(courseContext.course.courseId);
@@ -111,6 +114,25 @@ export default function CreateCoursePage() {
     } finally {
       setIsLoading(false);
       setShowConfirmationDelete(false);
+    }
+  };
+
+  const handleStartCourse = async () => {
+    if (!courseContext.course) return;
+    setIsLoading(true);
+
+    try {
+      await startCourse(courseContext.course.courseId);
+      courseContext.setCourse({
+        ...courseContext.course,
+        courseStatus: CourseStatus.STARTED,
+      });
+      router.back();
+    } catch (error) {
+      setErrorMessage((error as Error).message);
+    } finally {
+      setIsLoading(false);
+      setShowConfirmationStart(false);
     }
   };
 
@@ -287,7 +309,7 @@ export default function CreateCoursePage() {
             <OptionPicker
               label="Nivel"
               value={courseDetails.level}
-              items={levels}
+              items={LEVELS}
               editable={isEditing}
               setValue={courseDetailsHook.setLevel}
             />
@@ -295,7 +317,7 @@ export default function CreateCoursePage() {
             <OptionPicker
               label="Categoría"
               value={courseDetails.category}
-              items={categories}
+              items={CATEGORIES}
               editable={isEditing}
               setValue={courseDetailsHook.setCategory}
             />
@@ -303,7 +325,7 @@ export default function CreateCoursePage() {
             <OptionPicker
               label="Modalidad"
               value={courseDetails.modality}
-              items={modalities}
+              items={MODALITIES}
               editable={isEditing}
               setValue={courseDetailsHook.setModality}
             />
@@ -361,9 +383,21 @@ export default function CreateCoursePage() {
                 Eliminar curso
               </Button>
             )}
+
+            {!isEditing &&
+              courseContext.course.courseStatus === CourseStatus.NEW && (
+                <Button
+                  onPress={() => setShowConfirmationStart(true)}
+                  mode="contained"
+                  icon="play"
+                  disabled={isLoading}
+                >
+                  Iniciar curso
+                </Button>
+              )}
           </ScrollView>
         )}
-        {/* Confirmation Dialog */}
+        {/* Delete confirmation Dialog */}
 
         <Dialog
           visible={showConfirmationDelete}
@@ -380,6 +414,26 @@ export default function CreateCoursePage() {
               Cancelar
             </Button>
             <Button onPress={handleDeleteCourse}>Eliminar</Button>
+          </Dialog.Actions>
+        </Dialog>
+
+        {/* Start confirmation Dialog */}
+
+        <Dialog
+          visible={showConfirmationStart}
+          onDismiss={() => setShowConfirmationStart(false)}
+        >
+          <Dialog.Title>Atención</Dialog.Title>
+          <Dialog.Content>
+            <Text variant="bodyMedium">
+              ¿Deseas iniciar el curso '{courseDetails.title}'?
+            </Text>
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button onPress={() => setShowConfirmationStart(false)}>
+              Cancelar
+            </Button>
+            <Button onPress={handleStartCourse}>Iniciar</Button>
           </Dialog.Actions>
         </Dialog>
       </View>

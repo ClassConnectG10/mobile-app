@@ -1,5 +1,5 @@
 import { Avatar, Appbar, Button } from "react-native-paper";
-import { countries } from "@/utils/constants/countries";
+import { COUNTRIES } from "@/utils/constants/countries";
 import { editUserProfile } from "@/services/userManagement";
 import { globalStyles } from "@/styles/globalStyles";
 import { ToggleableTextInput } from "@/components/ToggleableTextInput";
@@ -127,7 +127,7 @@ export default function UserProfilePage() {
             label="País de residencia"
             value={userInformation.country}
             setValue={userInformationHook.setCountry}
-            items={countries}
+            items={COUNTRIES}
             editable={isEditing}
           />
 

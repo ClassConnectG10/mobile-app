@@ -2,11 +2,12 @@ import React, { useState } from "react";
 import { View, Pressable } from "react-native";
 import { Menu, IconButton } from "react-native-paper";
 import { TextField } from "./TextField";
+import { BiMap } from "@/utils/bimap";
 
 interface OptionPickerProps {
   label: string;
   value: string;
-  items: readonly string[];
+  items: BiMap;
   editable?: boolean;
   setValue: (value: string) => void;
 }
@@ -34,7 +35,10 @@ const OptionPicker: React.FC<OptionPickerProps> = ({
                 style={{ flex: 1 }}
                 onPress={() => setMenuVisible(true)}
               >
-                <TextField label={label} value={value} />
+                <TextField
+                  label={label}
+                  value={items.getFrontValue(value) || ""}
+                />
               </Pressable>
               <IconButton
                 icon="close"
@@ -48,19 +52,19 @@ const OptionPicker: React.FC<OptionPickerProps> = ({
             </View>
           }
         >
-          {items.map((item) => (
+          {[...items.values()].map(({ front, back }) => (
             <Menu.Item
-              key={item}
+              key={back}
               onPress={() => {
-                setValue(item);
+                setValue(back);
                 setMenuVisible(false);
               }}
-              title={item}
+              title={front}
             />
           ))}
         </Menu>
       ) : (
-        <TextField label={label} value={value} />
+        <TextField label={label} value={items.getFrontValue(value) || ""} />
       )}
     </View>
   );

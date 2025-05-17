@@ -1,7 +1,7 @@
 import React from "react";
 import { View } from "react-native";
-import { Text, useTheme } from "react-native-paper";
 import { TextField } from "./TextField";
+import { AlertText } from "./AlertText";
 
 interface SeatsFieldProps {
   seats: number;
@@ -36,8 +36,6 @@ export const SeatsField: React.FC<SeatsFieldProps> = ({
   students,
   showAlert,
 }) => {
-  const theme = useTheme();
-
   return (
     <View style={{ gap: 5 }}>
       <TextField
@@ -46,31 +44,11 @@ export const SeatsField: React.FC<SeatsFieldProps> = ({
       />
 
       {hasLimitedSeats(seats, students) && showAlert && (
-        <View
-          style={{
-            backgroundColor: theme.colors.secondaryContainer,
-            padding: 8,
-            borderRadius: 8,
-          }}
-        >
-          <Text style={{ color: theme.colors.onSecondaryContainer }}>
-            ¡Últimos lugares disponibles!
-          </Text>
-        </View>
+        <AlertText text={"¡Últimos lugares disponibles!"} error={false} />
       )}
 
       {hasNoSeats(seats, students) && showAlert && (
-        <View
-          style={{
-            backgroundColor: theme.colors.errorContainer,
-            padding: 8,
-            borderRadius: 8,
-          }}
-        >
-          <Text style={{ color: theme.colors.onErrorContainer }}>
-            No hay más lugares disponibles
-          </Text>
-        </View>
+        <AlertText text="No hay más lugares disponibles" error={true} />
       )}
     </View>
   );

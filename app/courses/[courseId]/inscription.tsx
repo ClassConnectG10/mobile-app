@@ -1,4 +1,4 @@
-import { Course } from "@/types/course";
+import { Course, UserRole } from "@/types/course";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import { ScrollView, View } from "react-native";
@@ -20,6 +20,11 @@ import { getUser } from "@/services/userManagement";
 import { useUserContext } from "@/utils/storage/userContext";
 import { formatDate } from "@/utils/date";
 import { hasNoSeats, SeatsField } from "@/components/SeatsField";
+import {
+  CATEGORIES,
+  LEVELS,
+  MODALITIES,
+} from "@/utils/constants/courseDetails";
 export default function CourseIncriptionDetails() {
   const router = useRouter();
   const theme = useTheme();
@@ -42,8 +47,8 @@ export default function CourseIncriptionDetails() {
 
       const courseDependencies = await Promise.all(
         fetchedCourse.courseDetails.dependencies.map((dependency) =>
-          getCourse(dependency)
-        )
+          getCourse(dependency),
+        ),
       );
 
       setDependencies(courseDependencies);
@@ -76,7 +81,7 @@ export default function CourseIncriptionDetails() {
       });
     } catch (error) {
       setErrorMessage(
-        `Error al inscribirse al curso: ${(error as Error).message}`
+        `Error al inscribirse al curso: ${(error as Error).message}`,
       );
     }
   };
@@ -155,10 +160,22 @@ export default function CourseIncriptionDetails() {
             value={formatDate(course.courseDetails.endDate)}
           />
 
-          <TextField label="Nivel" value={course.courseDetails.level} />
-          <TextField label="Modalidad" value={course.courseDetails.modality} />
-
-          <TextField label="Categoría" value={course.courseDetails.category} />
+          <TextField
+            label="Nivel"
+            value={LEVELS.getFrontValue(course.courseDetails.level) || ""}
+          />
+          <TextField
+            label="Modalidad"
+            value={
+              MODALITIES.getFrontValue(course.courseDetails.modality) || ""
+            }
+          />
+          <TextField
+            label="Categoría"
+            value={
+              CATEGORIES.getFrontValue(course.courseDetails.category) || ""
+            }
+          />
 
           {dependencies.length > 0 && (
             <View
@@ -189,20 +206,28 @@ export default function CourseIncriptionDetails() {
                       name={dependency.courseDetails.title}
                       category={dependency.courseDetails.category}
                       onPress={() =>
-                        false
+                        dependency.currentUserRole === UserRole.NON_PARTICIPANT
                           ? router.push({
-                              pathname: `/courses/[courseId]`,
-                              params: { courseId: dependency.courseId },
-                            })
-                          : router.push({
                               pathname: `/courses/[courseId]/inscription`,
                               params: { courseId: dependency.courseId },
                             })
-                      } //TODO: Cambiar por el estado de completado
+                          : router.push({
+                              pathname: `/courses/[courseId]`,
+                              params: { courseId: dependency.courseId },
+                            })
+                      }
                     />
                     <Icon
-                      source={false ? "check-circle" : "alert-circle"} //TODO: Cambiar por el estado de completado
-                      color={false ? theme.colors.primary : theme.colors.error} //TODO: Cambiar por el estado de completado
+                      source={
+                        dependency.currentUserRole !== UserRole.NON_PARTICIPANT
+                          ? "check-circle"
+                          : "alert-circle"
+                      } //TODO: Cambiar por el estado de completado
+                      color={
+                        dependency.currentUserRole !== UserRole.NON_PARTICIPANT
+                          ? theme.colors.primary
+                          : theme.colors.error
+                      } //TODO: Cambiar por el estado de completado
                       size={30}
                     />
                   </View>

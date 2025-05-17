@@ -3,7 +3,7 @@ import { createRequest } from "./common";
 
 export const createModuleRequest = (courseId: string) => {
   return createRequest({
-    uri: `courses/${courseId}/module`,
+    uri: `courses/${courseId}/modules`,
   });
 };
 
@@ -15,51 +15,51 @@ export const createGetModuleRequest = (courseId: string) => {
 
 export const createTasksRequest = (courseId: string) => {
   return createRequest({
-    uri: `courses/${courseId}/task`,
+    uri: `courses/${courseId}/activities/tasks`,
   });
 };
 
 export const createExamsRequest = (courseId: string) => {
   return createRequest({
-    uri: `courses/${courseId}/exam`,
+    uri: `courses/${courseId}/activities/exams`,
   });
 };
 
 export const createTaskRequest = (courseId: string, taskId: number) => {
   return createRequest({
-    uri: `courses/${courseId}/task/${taskId}`,
+    uri: `courses/${courseId}/activities/tasks/${taskId}`,
   });
 };
 
 export const createExamRequest = (courseId: string, examId: number) => {
   return createRequest({
-    uri: `courses/${courseId}/exam/${examId}`,
+    uri: `courses/${courseId}/activities/exams/${examId}`,
   });
 };
 
 export const createTaskPostRequest = (courseId: string, taskId: number) => {
   return createRequest({
-    uri: `courses/${courseId}/task/${taskId}/post`,
+    uri: `courses/${courseId}/activities/tasks/${taskId}/post`,
   });
 };
 
 export const createExamPostRequest = (courseId: string, examId: number) => {
   return createRequest({
-    uri: `courses/${courseId}/exam/${examId}/post`,
+    uri: `courses/${courseId}/activities/exams/${examId}/post`,
   });
 };
 
 export const createActivitiesRequest = (
   courseId: string,
-  activityType: ActivitiesOption
+  activityType: ActivitiesOption,
 ) => {
   if (activityType === ActivitiesOption.ALL) {
     return createRequest({
-      uri: `courses/${courseId}/activity`,
+      uri: `courses/${courseId}/activities`,
     });
   } else {
     return createRequest({
-      uri: `courses/${courseId}/activity`,
+      uri: `courses/${courseId}/activities`,
       params: {
         activity_type: activityType,
       },
@@ -69,43 +69,43 @@ export const createActivitiesRequest = (
 
 export const createActivityRequest = (courseId: string, activityId: number) => {
   return createRequest({
-    uri: `courses/${courseId}/activity/${activityId}`,
+    uri: `courses/${courseId}/activities/${activityId}`,
   });
 };
 
 export const createActivitySubmissionsRequest = (
   courseId: string,
-  activityId: number
+  activityId: number,
 ) => {
   return createRequest({
-    uri: `courses/${courseId}/activity/${activityId}/submissions`,
+    uri: `courses/${courseId}/activities/${activityId}/submissions`,
   });
 };
 
 export const createActivitySubmissionRequest = (
   courseId: string,
   activityId: number,
-  studentId: number
+  studentId: number,
 ) => {
   return createRequest({
-    uri: `courses/${courseId}/activity/${activityId}/submission/${studentId}`,
+    uri: `courses/${courseId}/activities/${activityId}/submission/${studentId}`, //TODO
   });
 };
 
 export const createTaskSubmissionPostRequest = (
   courseId: string,
-  activityId: number
+  activityId: number,
 ) => {
   return createRequest({
-    uri: `courses/${courseId}/task/${activityId}/submit`,
+    uri: `courses/${courseId}/activities/tasks/${activityId}/submit`,
   });
 };
 
 export const createExamSubmissionPostRequest = (
   courseId: string,
-  activityId: number
+  activityId: number,
 ) => {
   return createRequest({
-    uri: `courses/${courseId}/exam/${activityId}/submit`,
+    uri: `courses/${courseId}/activities/exams/${activityId}/submit`,
   });
 };

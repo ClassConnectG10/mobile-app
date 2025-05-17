@@ -1,7 +1,7 @@
 import {
-  levels,
-  categories,
-  modalities,
+  LEVELS,
+  CATEGORIES,
+  MODALITIES,
 } from "@/utils/constants/courseDetails";
 import { View } from "react-native";
 import { Modal, Divider, Button, Text } from "react-native-paper";
@@ -59,21 +59,21 @@ export const CourseFilterModal: React.FC<CourseFilterModalProps> = ({
       <OptionPicker
         label="Nivel"
         value={searchFilters.level}
-        items={levels}
+        items={LEVELS}
         setValue={setLevel}
       />
 
       <OptionPicker
         label="Categoría"
         value={searchFilters.category}
-        items={categories}
+        items={CATEGORIES}
         setValue={setCategory}
       />
 
       <OptionPicker
         label="Modalidad"
         value={searchFilters.modality}
-        items={modalities}
+        items={MODALITIES}
         setValue={setModality}
       />
 
