@@ -28,7 +28,7 @@ function formatDate(date: Date): string {
 }
 
 export async function createCourse(
-  courseDetails: CourseDetails,
+  courseDetails: CourseDetails
 ): Promise<Course> {
   try {
     courseDetailsSchema.parse(courseDetails);
@@ -44,6 +44,8 @@ export async function createCourse(
       category: courseDetails.category,
       dependencies: courseDetails.dependencies,
     };
+
+    console.log("BODY", body);
 
     const request = await createCoursesRequest();
     const response = await request.post("", body);
@@ -61,12 +63,12 @@ export async function createCourse(
         courseData.level,
         courseData.modality,
         courseData.category,
-        courseDetails.dependencies,
+        courseDetails.dependencies
       ),
       courseData.user_role,
       courseData.status,
       0,
-      false,
+      false
     );
 
     const moduleRequest = await createModuleRequest(course.courseId);
@@ -98,12 +100,12 @@ export async function getCourse(courseId: string): Promise<Course> {
         courseData.level,
         courseData.modality,
         courseData.category,
-        courseData.dependencies.map((dep: any) => dep.course_id),
+        courseData.dependencies.map((dep: any) => dep.course_id)
       ),
       courseData.user_role,
       courseData.status,
       courseData.students ? courseData.students : 0,
-      courseData.is_favorite,
+      courseData.is_favorite
     );
     return course;
   } catch (error) {
@@ -113,14 +115,14 @@ export async function getCourse(courseId: string): Promise<Course> {
 
 export async function searchCourses(
   searchFilters: SearchFilters,
-  searchOption: SearchOption,
+  searchOption: SearchOption
 ): Promise<Course[]> {
   const request = await createSearchCoursesRequest(searchFilters, searchOption);
   const response = await request.get("");
   const coursesData = response.data.data;
 
   const courses: Course[] = await Promise.all(
-    coursesData.map(async (courseData: any) => await getCourse(courseData.id)),
+    coursesData.map(async (courseData: any) => await getCourse(courseData.id))
   ); // TODO: Cambiar esto cuando tengamos el endpoint de cursos bien hecho
 
   // const courses: Course[] = coursesData.map((courseData: any) => {
@@ -156,14 +158,14 @@ export async function enrollCourse(courseId: string) {
 
 export async function editCourse(
   course: Course,
-  newCourseDetails: CourseDetails,
+  newCourseDetails: CourseDetails
 ): Promise<Course> {
   try {
     courseDetailsSchema.parse(newCourseDetails);
 
     if (course.numberOfStudens > newCourseDetails.maxNumberOfStudents) {
       throw new Error(
-        "El nuevo número máximo de estudiantes no puede ser menor que el número actual de estudiantes",
+        "El nuevo número máximo de estudiantes no puede ser menor que el número actual de estudiantes"
       );
     }
 
@@ -195,12 +197,12 @@ export async function editCourse(
         courseData.level,
         courseData.modality,
         courseData.category,
-        newCourseDetails.dependencies,
+        newCourseDetails.dependencies
       ),
       course.currentUserRole,
       course.courseStatus,
       course.numberOfStudens,
-      course.isFavorite,
+      course.isFavorite
     );
     return updatedCourse;
   } catch (error) {
@@ -227,7 +229,7 @@ export async function addCourseToFavorites(courseId: string): Promise<void> {
 }
 
 export async function removeCourseFromFavorites(
-  courseId: string,
+  courseId: string
 ): Promise<void> {
   try {
     const request = await createFavoriteCourseRequest(courseId);
@@ -255,7 +257,7 @@ export async function getCourseAssistants(courseId: string): Promise<User[]> {
     console.log("ASISTENTES1", assistantsData);
 
     const assistants: User[] = await getBulkUsers(
-      assistantsData.map((assistant) => assistant.user_id),
+      assistantsData.map((assistant) => assistant.user_id)
     );
 
     console.log("ASISTENTES2", assistants);
@@ -268,7 +270,7 @@ export async function getCourseAssistants(courseId: string): Promise<User[]> {
 
 export async function addAssistantToCourse(
   courseId: string,
-  assistantId: string,
+  assistantId: string
 ): Promise<void> {
   try {
     const request = await createAddAssistantRequest(courseId, assistantId);
@@ -280,7 +282,7 @@ export async function addAssistantToCourse(
 
 export async function removeAssistantFromCourse(
   courseId: string,
-  assistantId: string,
+  assistantId: string
 ): Promise<void> {
   try {
     const request = await createAssistantRequest(courseId, assistantId);
@@ -297,7 +299,7 @@ export async function getCourseStudents(courseId: string): Promise<User[]> {
     const studentsData = response.data.data;
 
     const students: User[] = await getBulkUsers(
-      studentsData.map((student: any) => student.user_id),
+      studentsData.map((student: any) => student.user_id)
     );
 
     return students;
@@ -308,7 +310,7 @@ export async function getCourseStudents(courseId: string): Promise<User[]> {
 
 export async function removeStudentFromCourse(
   courseId: string,
-  studentId: string,
+  studentId: string
 ): Promise<void> {
   try {
     const request = await createStudentRequest(courseId, studentId);

@@ -3,7 +3,7 @@ import { createRequest, formatDate } from "./common";
 
 export const createCoursesRequest = () => {
   return createRequest({
-    uri: `courses`,
+    uri: `courses/`,
   });
 };
 
@@ -21,7 +21,7 @@ export const createEnrollCourseRequest = (courseId: string) => {
 
 export const createSearchCoursesRequest = (
   searchFilters: SearchFilters,
-  searchOption: SearchOption,
+  searchOption: SearchOption
 ) => {
   const params: Record<string, string> = {
     search_option: searchOption,
@@ -81,7 +81,7 @@ export const createAssistantsRequest = (courseId: string) => {
 
 export const createAddAssistantRequest = (
   courseId: string,
-  assistantId: string,
+  assistantId: string
 ) => {
   return createRequest({
     uri: `courses/${courseId}/instructors/`,
@@ -93,7 +93,7 @@ export const createAddAssistantRequest = (
 
 export const createAssistantRequest = (
   courseId: string,
-  assistantId: string,
+  assistantId: string
 ) => {
   return createRequest({
     uri: `courses/${courseId}/instructors/${assistantId}`,

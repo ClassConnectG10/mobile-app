@@ -20,7 +20,7 @@ import {
  */
 export async function registerUser(
   uid: string,
-  userInformation: UserInformation,
+  userInformation: UserInformation
 ) {
   try {
     userDetailsSchema.parse(userInformation);
@@ -39,8 +39,8 @@ export async function registerUser(
         response.data.data.name,
         response.data.data.surname,
         response.data.data.email,
-        response.data.data.country,
-      ),
+        response.data.data.country
+      )
     );
     return user;
   } catch (error) {
@@ -65,7 +65,7 @@ export async function loginUser(uid: string): Promise<User | null> {
       response.data.data.name,
       response.data.data.surname,
       response.data.data.email,
-      response.data.data.country,
+      response.data.data.country
     );
 
     const user = {
@@ -109,7 +109,7 @@ export async function editUserProfile(user: User) {
       response.data.data.name,
       response.data.data.surname,
       response.data.data.email,
-      response.data.data.country,
+      response.data.data.country
     );
     return updatedUserInfo;
   } catch (error) {
@@ -124,7 +124,7 @@ export async function getUser(userId: number): Promise<User> {
     const userInfo = new UserInformation(
       response.data.data.name,
       response.data.data.surname,
-      response.data.data.email,
+      response.data.data.email
     );
 
     const user = {
@@ -140,7 +140,9 @@ export async function getUser(userId: number): Promise<User> {
 
 export async function getBulkUsers(userIds: number[]): Promise<User[]> {
   try {
-    console.log("IDS", userIds);
+    if (userIds.length === 0) {
+      return [];
+    }
 
     const request = await createBulkUserRequest();
 
@@ -148,12 +150,10 @@ export async function getBulkUsers(userIds: number[]): Promise<User[]> {
       Ids: userIds,
     });
 
-    console.log("USUARIOS", response.data.data);
-
     const users = response.data.data.map((user: any) => {
       return new User(
         user.id,
-        new UserInformation(user.name, user.surname, user.email),
+        new UserInformation(user.name, user.surname, user.email)
       );
     });
     return users;
