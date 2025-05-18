@@ -8,13 +8,20 @@ import { handleError } from "./errorHandling";
 import { courseDetailsSchema } from "@/validations/courses";
 import { createModuleRequest } from "@/api/activities";
 import {
+  createAddAssistantRequest,
+  createAssistantRequest,
+  createAssistantsRequest,
   createCourseRequest,
   createCoursesRequest,
   createEnrollCourseRequest,
   createFavoriteCourseRequest,
   createSearchCoursesRequest,
   createStartCourseRequest,
+  createStudentRequest,
+  createStudentsRequest,
 } from "@/api/courses";
+import { User } from "@/types/user";
+import { getBulkUsers } from "./userManagement";
 
 function formatDate(date: Date): string {
   return date.toISOString().split("T")[0];
@@ -111,24 +118,29 @@ export async function searchCourses(
   const request = await createSearchCoursesRequest(searchFilters, searchOption);
   const response = await request.get("");
   const coursesData = response.data.data;
-  const courses: Course[] = coursesData.map((courseData: any) => {
-    return new Course(
-      courseData.id,
-      courseData.ownerId,
-      new CourseDetails(
-        courseData.title,
-        courseData.description,
-        courseData.capacity,
-        new Date(courseData.start_date),
-        new Date(courseData.end_date),
-        courseData.level,
-        courseData.modality,
-        courseData.category,
-      ),
-      courseData.students ? courseData.students : 0,
-      courseData.is_favorite,
-    );
-  });
+
+  const courses: Course[] = await Promise.all(
+    coursesData.map(async (courseData: any) => await getCourse(courseData.id)),
+  ); // TODO: Cambiar esto cuando tengamos el endpoint de cursos bien hecho
+
+  // const courses: Course[] = coursesData.map((courseData: any) => {
+  //   return new Course(
+  //     courseData.id,
+  //     courseData.ownerId,
+  //     new CourseDetails(
+  //       courseData.title,
+  //       courseData.description,
+  //       courseData.capacity,
+  //       new Date(courseData.start_date),
+  //       new Date(courseData.end_date),
+  //       courseData.level,
+  //       courseData.modality,
+  //       courseData.category,
+  //     ),
+  //     courseData.students ? courseData.students : 0,
+  //     courseData.is_favorite,
+  //   );
+  // });
 
   return courses;
 }
@@ -231,5 +243,77 @@ export async function startCourse(courseId: string): Promise<void> {
     await request.post("");
   } catch (error) {
     throw handleError(error, "iniciar el curso");
+  }
+}
+
+export async function getCourseAssistants(courseId: string): Promise<User[]> {
+  try {
+    const request = await createAssistantsRequest(courseId);
+    const response = await request.get("");
+    const assistantsData = response.data.data;
+
+    console.log("ASISTENTES1", assistantsData);
+
+    const assistants: User[] = await getBulkUsers(
+      assistantsData.map((assistant) => assistant.user_id),
+    );
+
+    console.log("ASISTENTES2", assistants);
+
+    return assistants;
+  } catch (error) {
+    throw handleError(error, "obtener los asistentes del curso");
+  }
+}
+
+export async function addAssistantToCourse(
+  courseId: string,
+  assistantId: string,
+): Promise<void> {
+  try {
+    const request = await createAddAssistantRequest(courseId, assistantId);
+    await request.post("", {});
+  } catch (error) {
+    throw handleError(error, "agregar asistente al curso");
+  }
+}
+
+export async function removeAssistantFromCourse(
+  courseId: string,
+  assistantId: string,
+): Promise<void> {
+  try {
+    const request = await createAssistantRequest(courseId, assistantId);
+    await request.delete("");
+  } catch (error) {
+    throw handleError(error, "eliminar asistente del curso");
+  }
+}
+
+export async function getCourseStudents(courseId: string): Promise<User[]> {
+  try {
+    const request = await createStudentsRequest(courseId);
+    const response = await request.get("");
+    const studentsData = response.data.data;
+
+    const students: User[] = await getBulkUsers(
+      studentsData.map((student: any) => student.user_id),
+    );
+
+    return students;
+  } catch (error) {
+    throw handleError(error, "obtener los estudiantes del curso");
+  }
+}
+
+export async function removeStudentFromCourse(
+  courseId: string,
+  studentId: string,
+): Promise<void> {
+  try {
+    const request = await createStudentRequest(courseId, studentId);
+    await request.delete("");
+  } catch (error) {
+    throw handleError(error, "eliminar estudiante del curso");
   }
 }

@@ -19,3 +19,9 @@ export const createUserRequest = (userId: number) => {
     uri: `users/${userId}`,
   });
 };
+
+export const createBulkUserRequest = () => {
+  return createRequest({
+    uri: `users/bulk`,
+  });
+};

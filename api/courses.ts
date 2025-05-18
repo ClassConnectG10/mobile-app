@@ -72,3 +72,42 @@ export const createStartCourseRequest = (courseId: string) => {
     uri: `courses/${courseId}/start`,
   });
 };
+
+export const createAssistantsRequest = (courseId: string) => {
+  return createRequest({
+    uri: `courses/${courseId}/instructors`,
+  });
+};
+
+export const createAddAssistantRequest = (
+  courseId: string,
+  assistantId: string,
+) => {
+  return createRequest({
+    uri: `courses/${courseId}/instructors/`,
+    params: {
+      user_id: assistantId,
+    },
+  });
+};
+
+export const createAssistantRequest = (
+  courseId: string,
+  assistantId: string,
+) => {
+  return createRequest({
+    uri: `courses/${courseId}/instructors/${assistantId}`,
+  });
+};
+
+export const createStudentsRequest = (courseId: string) => {
+  return createRequest({
+    uri: `courses/${courseId}/students`,
+  });
+};
+
+export const createStudentRequest = (courseId: string, studentId: string) => {
+  return createRequest({
+    uri: `courses/${courseId}/students/${studentId}`,
+  });
+};

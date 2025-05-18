@@ -5,7 +5,7 @@ import {
 } from "@/services/activityManagement";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import { View } from "react-native";
+import { ScrollView, View } from "react-native";
 import { Appbar, Button } from "react-native-paper";
 import {
   ActivitySubmission,
@@ -118,7 +118,7 @@ export default function ActivityDetails() {
           />
         </Appbar.Header>
         {studentActivity && (
-          <View style={{ padding: 16, gap: 16 }}>
+          <ScrollView contentContainerStyle={{ padding: 16, gap: 16 }}>
             {/* <ActivityCard activity={studentActivity} /> */}
             {activitySubmission && (
               <SubmissionCard
@@ -172,7 +172,7 @@ export default function ActivityDetails() {
                 Enviar respuesta
               </Button>
             )}
-          </View>
+          </ScrollView>
         )}
       </View>
       <ErrorMessageSnackbar

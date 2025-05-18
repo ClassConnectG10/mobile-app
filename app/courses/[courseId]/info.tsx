@@ -34,7 +34,7 @@ import { getUser } from "@/services/userManagement";
 import { useUserContext } from "@/utils/storage/userContext";
 import UserCard from "@/components/cards/UserCard";
 import { SeatsField } from "@/components/courses/SeatsField";
-import { CourseStatus } from "@/types/course";
+import { Course, CourseStatus, UserRole } from "@/types/course";
 
 export default function CreateCoursePage() {
   const theme = useTheme();
@@ -197,10 +197,10 @@ export default function CreateCoursePage() {
     }
   }, [courseContext.course]);
 
-  const handleRequiredCoursePress = (requiredCourseId: string) => {
+  const handleRequiredCoursePress = (requiredCourse: Course) => {
     router.push({
-      pathname: "/courses/[courseId]/inscription",
-      params: { courseId: requiredCourseId },
+      pathname: "/courses/[courseId]",
+      params: { courseId: requiredCourse.courseId, role: UserRole.OWNER },
     });
   };
 
@@ -347,7 +347,7 @@ export default function CreateCoursePage() {
                     <CourseCard
                       name={course.courseDetails.title}
                       category={course.courseDetails.category}
-                      onPress={() => handleRequiredCoursePress(course.courseId)}
+                      onPress={() => handleRequiredCoursePress(course)}
                     />
                     {isEditing && (
                       <IconButton

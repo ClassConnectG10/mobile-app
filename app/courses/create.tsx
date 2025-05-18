@@ -22,6 +22,7 @@ import { useRequiredCoursesContext } from "@/utils/storage/requiredCoursesContex
 import CourseCard from "@/components/cards/CourseCard";
 import { ToggleableNumberInput } from "@/components/forms/ToggleableNumberInput";
 import { useCourseContext } from "@/utils/storage/courseContext";
+import { Course, UserRole } from "@/types/course";
 
 export default function CreateCoursePage() {
   const theme = useTheme();
@@ -43,17 +44,17 @@ export default function CreateCoursePage() {
       courseContext.setCourse(createdCourse);
       router.replace({
         pathname: "/courses/[courseId]",
-        params: { courseId: createdCourse.courseId },
+        params: { courseId: createdCourse.courseId, role: UserRole.OWNER },
       });
     } catch (error) {
       console.error("Error al crear el curso:", error);
     }
   };
 
-  const handleRequiredCoursePress = (courseId: string) => {
+  const handleRequiredCoursePress = (course: Course) => {
     router.push({
       pathname: "/courses/[courseId]",
-      params: { courseId },
+      params: { courseId: course.courseId, role: course.currentUserRole },
     });
   };
 
@@ -139,7 +140,7 @@ export default function CreateCoursePage() {
                 <CourseCard
                   name={course.courseDetails.title}
                   category={course.courseDetails.category}
-                  onPress={() => handleRequiredCoursePress(course.courseId)}
+                  onPress={() => handleRequiredCoursePress(course)}
                 />
                 <IconButton
                   icon="delete"

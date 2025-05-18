@@ -40,8 +40,8 @@ export default function SearchCoursesPage() {
 
   const handleSelectCourse = (course: Course) => {
     router.push({
-      pathname: "/courses/[courseId]/inscription",
-      params: { courseId: course.courseId },
+      pathname: "/courses/[courseId]",
+      params: { courseId: course.courseId, role: course.currentUserRole },
     });
   };
 

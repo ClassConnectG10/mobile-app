@@ -176,7 +176,10 @@ export default function HomePage() {
               onPress={() => {
                 router.push({
                   pathname: "/courses/[courseId]",
-                  params: { courseId: item.courseId },
+                  params: {
+                    courseId: item.courseId,
+                    role: item.currentUserRole,
+                  },
                 });
               }}
             />

@@ -77,7 +77,7 @@ export default function CourseIncriptionDetails() {
       await enrollCourse(courseId as string);
       router.replace({
         pathname: "/courses/[courseId]",
-        params: { courseId: courseId },
+        params: { courseId: courseId, role: UserRole.STUDENT },
       });
     } catch (error) {
       setErrorMessage(
@@ -206,15 +206,13 @@ export default function CourseIncriptionDetails() {
                       name={dependency.courseDetails.title}
                       category={dependency.courseDetails.category}
                       onPress={() =>
-                        dependency.currentUserRole === UserRole.NON_PARTICIPANT
-                          ? router.push({
-                              pathname: `/courses/[courseId]/inscription`,
-                              params: { courseId: dependency.courseId },
-                            })
-                          : router.push({
-                              pathname: `/courses/[courseId]`,
-                              params: { courseId: dependency.courseId },
-                            })
+                        router.push({
+                          pathname: `/courses/[courseId]`,
+                          params: {
+                            courseId: dependency.courseId,
+                            role: course.currentUserRole,
+                          },
+                        })
                       }
                     />
                     <Icon

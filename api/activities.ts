@@ -88,7 +88,7 @@ export const createActivitySubmissionRequest = (
   studentId: number,
 ) => {
   return createRequest({
-    uri: `courses/${courseId}/activities/${activityId}/submission/${studentId}`, //TODO
+    uri: `courses/${courseId}/activities/${activityId}/submissions/${studentId}`,
   });
 };
 
