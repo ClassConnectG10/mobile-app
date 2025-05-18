@@ -1,4 +1,4 @@
-import { DatePickerButton } from "@/components/DatePickerButton";
+import { DatePickerButton } from "@/components/forms/DatePickerButton";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import { useActivityDetails } from "@/hooks/useActivityDetails";
 import { createActivity } from "@/services/activityManagement";

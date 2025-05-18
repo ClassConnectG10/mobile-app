@@ -1,6 +1,6 @@
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
-import { TextField } from "@/components/TextField";
-import UserCard from "@/components/UserCard";
+import { TextField } from "@/components/forms/TextField";
+import UserCard from "@/components/cards/UserCard";
 import {
   getActivitySubmission,
   getTeacherActivity,

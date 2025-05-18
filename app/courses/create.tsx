@@ -8,7 +8,7 @@ import {
   useTheme,
 } from "react-native-paper";
 import { useRouter } from "expo-router";
-import OptionPicker from "@/components/OptionPicker";
+import OptionPicker from "@/components/forms/OptionPicker";
 import {
   LEVELS,
   MODALITIES,
@@ -16,11 +16,11 @@ import {
 } from "@/utils/constants/courseDetails";
 import { useCourseDetails } from "@/hooks/useCourseDetails";
 import { globalStyles } from "@/styles/globalStyles";
-import { DatePickerButton } from "@/components/DatePickerButton";
+import { DatePickerButton } from "@/components/forms/DatePickerButton";
 import { createCourse } from "@/services/courseManagement";
 import { useRequiredCoursesContext } from "@/utils/storage/requiredCoursesContext";
-import CourseCard from "@/components/CourseCard";
-import { ToggleableNumberInput } from "@/components/ToggleableNumberInput";
+import CourseCard from "@/components/cards/CourseCard";
+import { ToggleableNumberInput } from "@/components/forms/ToggleableNumberInput";
 import { useCourseContext } from "@/utils/storage/courseContext";
 
 export default function CreateCoursePage() {

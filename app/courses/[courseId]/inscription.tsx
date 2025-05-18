@@ -13,13 +13,13 @@ import {
 } from "react-native-paper";
 import { enrollCourse, getCourse } from "@/services/courseManagement";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
-import { TextField } from "@/components/TextField";
-import CourseCard from "@/components/CourseCard";
-import UserCard from "@/components/UserCard";
+import { TextField } from "@/components/forms/TextField";
+import CourseCard from "@/components/cards/CourseCard";
+import UserCard from "@/components/cards/UserCard";
 import { getUser } from "@/services/userManagement";
 import { useUserContext } from "@/utils/storage/userContext";
 import { formatDate } from "@/utils/date";
-import { hasNoSeats, SeatsField } from "@/components/SeatsField";
+import { hasNoSeats, SeatsField } from "@/components/courses/SeatsField";
 import {
   CATEGORIES,
   LEVELS,

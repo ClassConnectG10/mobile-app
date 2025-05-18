@@ -6,9 +6,9 @@ import { useEffect, useState } from "react";
 import { Course, SearchFilters, SearchOption } from "@/types/course";
 import { searchCourses } from "@/services/courseManagement";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
-import CourseCard from "@/components/CourseCard";
-import { CourseFilterModal } from "@/components/CourseFilterModal";
-import { CoursesSearchBar } from "@/components/CoursesSearchBar";
+import CourseCard from "@/components/cards/CourseCard";
+import { CourseFilterModal } from "@/components/courses/CourseFilterModal";
+import { CoursesSearchBar } from "@/components/courses/CoursesSearchBar";
 
 export default function SearchCoursesPage() {
   const theme = useTheme();

@@ -1,5 +1,5 @@
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
-import SubmissionCard from "@/components/SubmissionCard";
+import SubmissionCard from "@/components/cards/SubmissionCard";
 import {
   getActivitySubmissions,
   getTeacherActivity,

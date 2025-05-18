@@ -8,7 +8,7 @@ import { useUserContext } from "@/utils/storage/userContext";
 import { getAuth } from "@react-native-firebase/auth";
 import { useNavigation, CommonActions } from "@react-navigation/native";
 import { COUNTRIES, defaultCountry } from "@/utils/constants/countries";
-import OptionPicker from "@/components/OptionPicker";
+import OptionPicker from "@/components/forms/OptionPicker";
 import { useLocalSearchParams } from "expo-router";
 
 export default function RegisterDetailsPage() {

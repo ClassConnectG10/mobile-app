@@ -17,9 +17,9 @@ import {
   Button,
 } from "react-native-paper";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
-import CourseCard from "@/components/CourseCard";
+import CourseCard from "@/components/cards/CourseCard";
 import { View, StyleSheet, ScrollView } from "react-native";
-import ActivityCard from "@/components/ActivityCard";
+import ActivityCard from "@/components/cards/ActivityCard";
 
 import {
   ActivitiesOption,

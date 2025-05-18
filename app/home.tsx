@@ -12,15 +12,15 @@ import {
   IconButton,
 } from "react-native-paper";
 import { router } from "expo-router";
-import CourseCard from "@/components/CourseCard";
+import CourseCard from "@/components/cards/CourseCard";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import { useEffect, useState } from "react";
 import { Course, SearchFilters, SearchOption } from "@/types/course";
 import { searchCourses } from "@/services/courseManagement";
 import { useUserContext } from "@/utils/storage/userContext";
 import axios from "axios";
-import { CourseFilterModal } from "@/components/CourseFilterModal";
-import { CoursesSearchBar } from "@/components/CoursesSearchBar";
+import { CourseFilterModal } from "@/components/courses/CourseFilterModal";
+import { CoursesSearchBar } from "@/components/courses/CoursesSearchBar";
 
 export default function HomePage() {
   const theme = useTheme();

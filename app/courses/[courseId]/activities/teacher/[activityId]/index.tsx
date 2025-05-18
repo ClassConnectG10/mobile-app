@@ -1,7 +1,7 @@
 import { AlertText } from "@/components/AlertText";
-import { DatePickerButton } from "@/components/DatePickerButton";
+import { DatePickerButton } from "@/components/forms/DatePickerButton";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
-import { ToggleableTextInput } from "@/components/ToggleableTextInput";
+import { ToggleableTextInput } from "@/components/forms/ToggleableTextInput";
 import { useActivityDetails } from "@/hooks/useActivityDetails";
 import {
   deleteActivity,

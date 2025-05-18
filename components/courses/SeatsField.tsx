@@ -1,7 +1,7 @@
 import React from "react";
 import { View } from "react-native";
-import { TextField } from "./TextField";
-import { AlertText } from "./AlertText";
+import { TextField } from "../forms/TextField";
+import { AlertText } from "../AlertText";
 
 interface SeatsFieldProps {
   seats: number;

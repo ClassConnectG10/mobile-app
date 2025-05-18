@@ -9,16 +9,16 @@ import {
   ActivityIndicator,
 } from "react-native-paper";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import OptionPicker from "@/components/OptionPicker";
+import OptionPicker from "@/components/forms/OptionPicker";
 import {
   LEVELS,
   MODALITIES,
   CATEGORIES,
 } from "@/utils/constants/courseDetails";
 import { useCourseDetails } from "@/hooks/useCourseDetails";
-import { DatePickerButton } from "@/components/DatePickerButton";
+import { DatePickerButton } from "@/components/forms/DatePickerButton";
 import { useRequiredCoursesContext } from "@/utils/storage/requiredCoursesContext";
-import CourseCard from "@/components/CourseCard";
+import CourseCard from "@/components/cards/CourseCard";
 import { useCourseContext } from "@/utils/storage/courseContext";
 import { useEffect, useState } from "react";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
@@ -28,12 +28,12 @@ import {
   getCourse,
   startCourse,
 } from "@/services/courseManagement";
-import { ToggleableNumberInput } from "@/components/ToggleableNumberInput";
-import { ToggleableTextInput } from "@/components/ToggleableTextInput";
+import { ToggleableNumberInput } from "@/components/forms/ToggleableNumberInput";
+import { ToggleableTextInput } from "@/components/forms/ToggleableTextInput";
 import { getUser } from "@/services/userManagement";
 import { useUserContext } from "@/utils/storage/userContext";
-import UserCard from "@/components/UserCard";
-import { SeatsField } from "@/components/SeatsField";
+import UserCard from "@/components/cards/UserCard";
+import { SeatsField } from "@/components/courses/SeatsField";
 import { CourseStatus } from "@/types/course";
 
 export default function CreateCoursePage() {

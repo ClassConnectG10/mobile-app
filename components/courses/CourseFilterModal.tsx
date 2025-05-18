@@ -5,8 +5,8 @@ import {
 } from "@/utils/constants/courseDetails";
 import { View } from "react-native";
 import { Modal, Divider, Button, Text } from "react-native-paper";
-import { DatePickerButton } from "./DatePickerButton";
-import OptionPicker from "./OptionPicker";
+import { DatePickerButton } from "../forms/DatePickerButton";
+import OptionPicker from "../forms/OptionPicker";
 import { useSearchFilters } from "@/hooks/useSearchFilters";
 import { SearchFilters } from "@/types/course";
 import { StyleSheet } from "react-native";

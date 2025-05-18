@@ -6,11 +6,11 @@ import { useEffect, useState } from "react";
 import { Course, SearchFilters, SearchOption } from "@/types/course";
 import { searchCourses } from "@/services/courseManagement";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
-import CourseCard from "@/components/CourseCard";
+import CourseCard from "@/components/cards/CourseCard";
 import { useRequiredCoursesContext } from "@/utils/storage/requiredCoursesContext";
 import { useCourseContext } from "@/utils/storage/courseContext";
-import { CoursesSearchBar } from "@/components/CoursesSearchBar";
-import { CourseFilterModal } from "@/components/CourseFilterModal";
+import { CoursesSearchBar } from "@/components/courses/CoursesSearchBar";
+import { CourseFilterModal } from "@/components/courses/CourseFilterModal";
 
 export default function SearchCoursesPage() {
   const theme = useTheme();

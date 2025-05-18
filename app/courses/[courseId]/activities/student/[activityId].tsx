@@ -13,10 +13,10 @@ import {
   StudentActivity,
 } from "@/types/activity";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
-import { TextField } from "@/components/TextField";
-import { ToggleableTextInput } from "@/components/ToggleableTextInput";
+import { TextField } from "@/components/forms/TextField";
+import { ToggleableTextInput } from "@/components/forms/ToggleableTextInput";
 import { useUserContext } from "@/utils/storage/userContext";
-import SubmissionCard from "@/components/SubmissionCard";
+import SubmissionCard from "@/components/cards/SubmissionCard";
 import { formatDateTime } from "@/utils/date";
 
 export default function ActivityDetails() {

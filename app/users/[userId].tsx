@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { getUser } from "@/services/userManagement";
 import { User } from "@/types/user";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
-import { TextField } from "@/components/TextField"; // Importá tu componente
+import { TextField } from "@/components/forms/TextField";
 
 export default function UserDetailsPage() {
   const theme = useTheme();
