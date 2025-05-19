@@ -6,7 +6,7 @@ import {
   OpenQuestion,
   TrueFalseQuestion,
 } from "@/types/activity";
-import { Button, Card, IconButton, Text } from "react-native-paper";
+import { Button, Card, IconButton, Text, useTheme } from "react-native-paper";
 import { MultipleChoiceQuestionCard } from "./MultipleChoiceQuestionCard";
 import { ToggleableTextInput } from "@/components/forms/ToggleableTextInput";
 import { StyleSheet, View } from "react-native";
@@ -35,8 +35,17 @@ export const ExamItemCard: React.FC<ExamItemCardProps> = ({
   onMoveUp,
   onMoveDown,
 }) => {
+  const theme = useTheme();
+
   return (
-    <Card style={styles.card}>
+    <Card
+      style={[
+        {
+          backgroundColor: theme.colors.onPrimary,
+        },
+        styles.card,
+      ]}
+    >
       <View style={{ flex: 1, gap: 16 }}>
         <View
           style={{

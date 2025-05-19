@@ -42,6 +42,7 @@ export class StudentActivity {
 export class Activity {
   constructor(
     public resourceId: number,
+    public moduleId: number,
     public type: ActivityType,
     public activityDetails: TaskDetails | ExamDetails
   ) {}
@@ -57,6 +58,7 @@ export class TaskDetails {
 
 export class ExamDetails {
   constructor(
+    public moduleId: number,
     public title: string,
     public instructions: string,
     public examItems: ExamItem[],

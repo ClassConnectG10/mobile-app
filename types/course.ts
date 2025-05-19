@@ -56,15 +56,3 @@ export class CourseDetails {
     public dependencies: string[] = []
   ) {}
 }
-
-export class CourseModule {
-  constructor(
-    public moduleId: string,
-    public courseId: string,
-    public courseModuleDetails: CourseModuleDetails
-  ) {}
-}
-
-export class CourseModuleDetails {
-  constructor(public title: string, public description: string) {}
-}

@@ -111,3 +111,18 @@ export const createStudentRequest = (courseId: string, studentId: number) => {
     uri: `courses/${courseId}/students/${studentId}`,
   });
 };
+
+export const createStudentMarkRequest = (
+  courseId: string,
+  studentId: number
+) => {
+  return createRequest({
+    uri: `courses/${courseId}/marks/students/${studentId}`,
+  });
+};
+
+export const createMarksRequest = (courseId: string) => {
+  return createRequest({
+    uri: `courses/${courseId}/marks`,
+  });
+};

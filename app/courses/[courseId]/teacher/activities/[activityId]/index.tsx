@@ -6,7 +6,7 @@ import { useTaskDetails } from "@/hooks/useTaskDetails";
 import {
   deleteActivity,
   getTeacherActivity,
-  postActivity,
+  publishActivity,
   updateActivity,
 } from "@/services/activityManagement";
 import { getCourse } from "@/services/courseManagement";
@@ -129,7 +129,7 @@ export default function TeacherActivityPage() {
 
     try {
       if (teacherActivity) {
-        const updatedActivity = await postActivity(
+        const updatedActivity = await publishActivity(
           courseId,
           teacherActivity.activity
         );

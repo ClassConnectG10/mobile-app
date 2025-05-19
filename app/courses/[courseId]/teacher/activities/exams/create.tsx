@@ -12,7 +12,7 @@ import {
   TrueFalseQuestion,
 } from "@/types/activity";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { View, ScrollView, FlatList } from "react-native";
 import {
   Appbar,
@@ -29,6 +29,10 @@ import { ExamItemCard } from "@/components/cards/examCards/ExamItemCard";
 import { examDetailsSchema } from "@/validations/activities";
 import { ZodError } from "zod";
 import { handleError } from "@/services/errorHandling";
+import OptionPicker from "@/components/forms/OptionPicker";
+import { getCourseModules } from "@/services/resourceManager";
+import { Module } from "@/types/resources";
+import { BiMap } from "@/utils/bimap";
 
 export default function CreateActivity() {
   const router = useRouter();
@@ -38,6 +42,9 @@ export default function CreateActivity() {
 
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [courseModulesBiMap, setCourseModulesBiMap] = useState<BiMap>(
+    new BiMap()
+  );
 
   const courseId = courseIdParam as string;
 
@@ -46,6 +53,28 @@ export default function CreateActivity() {
 
   const [examItemTypeSelectorVisible, setExamItemTypeSelectorVisible] =
     useState(false);
+
+  const fetchCourseModules = async () => {
+    if (!courseId) return;
+    setIsLoading(true);
+    try {
+      const courseModules = await getCourseModules(courseId);
+      console.log("courseModules", courseModules);
+      const bimap = new BiMap(
+        courseModules.map((module) => [
+          module.courseModuleDetails.title,
+          module.moduleId.toString(),
+        ])
+      );
+      console.log("AAAAA", bimap);
+      setCourseModulesBiMap(bimap);
+    } catch (error) {
+      const newError = handleError(error, "cargar los módulos del curso");
+      setErrorMessage(newError.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleCreateExam = async () => {
     setIsLoading(true);
@@ -77,6 +106,10 @@ export default function CreateActivity() {
 
     examDetailsHook.setExamItems([...examDetails.examItems, examItem]);
   };
+
+  useEffect(() => {
+    fetchCourseModules();
+  }, [courseId]);
 
   return (
     <>
@@ -113,6 +146,16 @@ export default function CreateActivity() {
                 value={examDetails.dueDate}
                 onChange={examDetailsHook.setDueDate}
               />
+
+              <OptionPicker
+                label="Módulo"
+                value={examDetails.moduleId?.toString()}
+                items={courseModulesBiMap}
+                setValue={(newValue: string) => {
+                  examDetailsHook.setModuleId(Number(newValue));
+                }}
+              />
+
               <Divider />
             </View>
           }

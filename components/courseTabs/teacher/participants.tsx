@@ -76,17 +76,24 @@ export const ParticipantsTab: React.FC<ParticipantsTabProps> = ({ course }) => {
     }
   }
 
-  const handleUserPress = (user: User) => {
+  const handleTeacherPress = (teacher: User) => {
     if (!userContext.user) return;
 
-    if (user.id === userContext.user.id) {
+    if (teacher.id === userContext.user.id) {
       router.push("/users/me");
     } else {
       router.push({
         pathname: "/users/[userId]",
-        params: { userId: user.id },
+        params: { userId: teacher.id },
       });
     }
+  };
+
+  const handleStudentPress = (student: User) => {
+    router.push({
+      pathname: "/courses/[courseId]/teacher/participants/[studentId]",
+      params: { courseId: course.courseId, studentId: student.id },
+    });
   };
 
   async function fetchAssistants() {
@@ -188,7 +195,7 @@ export const ParticipantsTab: React.FC<ParticipantsTabProps> = ({ course }) => {
                   <UserCard
                     user={item}
                     onPress={() => {
-                      handleUserPress(item);
+                      handleTeacherPress(item);
                     }}
                   />
                 );
@@ -205,7 +212,7 @@ export const ParticipantsTab: React.FC<ParticipantsTabProps> = ({ course }) => {
                     <UserCard
                       user={item}
                       onPress={() => {
-                        handleUserPress(item);
+                        handleTeacherPress(item);
                       }}
                     />
                     {isOwner && (
@@ -235,7 +242,7 @@ export const ParticipantsTab: React.FC<ParticipantsTabProps> = ({ course }) => {
                     <UserCard
                       user={item}
                       onPress={() => {
-                        handleUserPress(item);
+                        handleStudentPress(item);
                       }}
                     />
                     {isOwner && (

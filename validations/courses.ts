@@ -47,7 +47,42 @@ export const courseDetailsSchema = z
     message: "La fecha de inicio debe ser anterior a la fecha de finalización",
   });
 
-export const courseModuleSchema = z.object({
-  title: z.string().min(1, "El título es obligatorio"),
-  description: z.string().min(1, "La descripción es obligatoria"),
-});
+export const courseDetailsUpdateSchema = z
+  .object({
+    title: z.string().min(1, "El título es obligatorio"),
+    description: z.string().min(1, "La descripción es obligatoria"),
+    maxNumberOfStudents: z
+      .number()
+      .min(1, "La cantidad máxima de estudiantes es obligatoria")
+      .max(100, "La cantidad máxima de estudiantes debe ser menor a 100"),
+    startDate: z.date({
+      required_error: "La fecha de inicio es obligatoria",
+      invalid_type_error: "La fecha de inicio es obligatoria",
+    }),
+    endDate: z.date({
+      required_error: "La fecha de fin es obligatoria",
+      invalid_type_error: "La fecha de fin es obligatoria",
+    }),
+    level: z
+      .string()
+      .nonempty("El nivel es obligatorio")
+      .refine((val) => LEVELS.hasBackValue(val), {
+        message: "Nivel inválido",
+      }),
+    modality: z
+      .string()
+      .nonempty("La modalidad es obligatoria")
+      .refine((val) => MODALITIES.hasBackValue(val), {
+        message: "Modalidad inválida",
+      }),
+    category: z
+      .string()
+      .nonempty("La categoría es obligatoria")
+      .refine((val) => CATEGORIES.hasBackValue(val), {
+        message: "Categoría inválida",
+      }),
+    dependencies: z.array(z.string().uuid()),
+  })
+  .refine((data) => data.startDate <= data.endDate, {
+    message: "La fecha de inicio debe ser anterior a la fecha de finalización",
+  });

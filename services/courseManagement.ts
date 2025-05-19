@@ -1,14 +1,14 @@
 import {
   Course,
   CourseDetails,
-  CourseModule,
-  CourseModuleDetails,
   SearchFilters,
   SearchOption,
 } from "@/types/course";
 import { handleError } from "./errorHandling";
-import { courseDetailsSchema, courseModuleSchema } from "@/validations/courses";
-import { createModuleRequest } from "@/api/activities";
+import {
+  courseDetailsSchema,
+  courseDetailsUpdateSchema,
+} from "@/validations/courses";
 import {
   createAddAssistantRequest,
   createAssistantRequest,
@@ -17,8 +17,10 @@ import {
   createCoursesRequest,
   createEnrollCourseRequest,
   createFavoriteCourseRequest,
+  createMarksRequest,
   createSearchCoursesRequest,
   createStartCourseRequest,
+  createStudentMarkRequest,
   createStudentRequest,
   createStudentsRequest,
 } from "@/api/courses";
@@ -71,13 +73,9 @@ export async function createCourse(
       false
     );
 
-    const moduleRequest = await createModuleRequest(course.courseId);
-    await moduleRequest.post("", {
-      title: "Módulo 1",
-      description: "Descripción del módulo 1",
-    }); // TODO: Sacarlo cuando tengamos todo listo
     return course;
   } catch (error) {
+    console.error("Error al crear el curso:", error);
     throw handleError(error, "crear el curso");
   }
 }
@@ -161,7 +159,7 @@ export async function editCourse(
   newCourseDetails: CourseDetails
 ): Promise<Course> {
   try {
-    courseDetailsSchema.parse(newCourseDetails);
+    courseDetailsUpdateSchema.parse(newCourseDetails);
 
     if (course.numberOfStudens > newCourseDetails.maxNumberOfStudents) {
       throw new Error(
@@ -316,52 +314,34 @@ export async function removeStudentFromCourse(
   }
 }
 
-export async function getCourseModules(
-  courseId: string
-): Promise<CourseModule[]> {
+export async function getStudentMark(
+  courseId: string,
+  studentId: number
+): Promise<number | null> {
   try {
-    const request = await createModuleRequest(courseId);
+    const request = await createStudentMarkRequest(courseId, studentId);
     const response = await request.get("");
-    const modulesData = response.data.data;
-
-    const modules: CourseModule[] = modulesData.map(
-      (moduleData: any) =>
-        new CourseModule(
-          moduleData.module_id,
-          moduleData.course_id,
-          new CourseModuleDetails(moduleData.title, moduleData.description)
-        )
-    );
-
-    return modules;
+    return response.data.data.mark;
   } catch (error) {
-    throw handleError(error, "obtener los módulos del curso");
+    if (error.response.status === 404 || error.response.status === 403) {
+      return null; // No se encontró la calificación o no pertenece al curso
+    }
+    throw handleError(error, "obtener la calificación del estudiante");
   }
 }
 
-export async function createCourseModule(
+export async function setStudentMark(
   courseId: string,
-  moduleDetails: CourseModuleDetails
-): Promise<CourseModule> {
+  studentId: number,
+  mark: number
+): Promise<void> {
   try {
-    courseModuleSchema.parse(moduleDetails);
-    const body = {
-      title: moduleDetails.title,
-      description: moduleDetails.description,
-    };
-
-    const request = await createModuleRequest(courseId);
-    const response = await request.post("", body);
-    const moduleData = response.data.data;
-
-    const module = new CourseModule(
-      moduleData.module_id,
-      moduleData.course_id,
-      new CourseModuleDetails(moduleData.title, moduleData.description)
-    );
-
-    return module;
+    const request = await createMarksRequest(courseId);
+    await request.post("", {
+      user_id: studentId,
+      mark: mark,
+    });
   } catch (error) {
-    throw handleError(error, "crear un módulo del curso");
+    throw handleError(error, "establecer la calificación del estudiante");
   }
 }

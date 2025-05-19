@@ -109,13 +109,15 @@ export default function AddAssistant() {
     setIsLoading(true);
     try {
       const users = await getUsers();
-      const nonTeacherUser = users.filter((user) => {
-        return !userIsAnOwner(user);
-        // !userIsAnAssistant(user) &&
-        // !userIsAStudent(user)
+      const posibleTeachers = users.filter((user) => {
+        return (
+          !userIsAnOwner(user) &&
+          !userIsAnAssistant(user) &&
+          !userIsAStudent(user)
+        );
       });
-      setUsers(nonTeacherUser);
-      setFilteredUsers(nonTeacherUser);
+      setUsers(posibleTeachers);
+      setFilteredUsers(posibleTeachers);
     } catch (error) {
       setErrorMessage((error as Error).message);
       setUsers([]);

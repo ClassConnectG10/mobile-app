@@ -1,15 +1,15 @@
 import { Card, Icon, Text, useTheme } from "react-native-paper";
 import { StyleSheet, View } from "react-native";
-import { Module } from "@/types/resources";
+import { Resource, ResourceType } from "@/types/resources";
 
-interface ModuleCardProps {
-  module: Module;
+interface ResourceCardProps {
+  resource: Resource;
   onPress?: () => void;
 }
 
-const ModuleCard: React.FC<ModuleCardProps> = ({ module, onPress }) => {
+const ResourceCard: React.FC<ResourceCardProps> = ({ resource, onPress }) => {
   const theme = useTheme();
-  const { title, description } = module.courseModuleDetails;
+  const { title, type } = resource.ResourceDetails;
 
   return (
     <Card
@@ -22,12 +22,27 @@ const ModuleCard: React.FC<ModuleCardProps> = ({ module, onPress }) => {
       ]}
     >
       <View style={styles.row}>
-        <Icon source="book" size={24} color={theme.colors.primary} />
+        <Icon
+          source={
+            type === ResourceType.IMAGES
+              ? "image"
+              : type === ResourceType.VIDEO
+              ? "video"
+              : type === ResourceType.DOCUMENT
+              ? "file-document"
+              : type === ResourceType.LINK
+              ? "link"
+              : type === ResourceType.TEXT
+              ? "text"
+              : ""
+          }
+          size={24}
+          color={theme.colors.primary}
+        />
         <View style={{ flex: 1 }}>
           <Text style={[styles.title, { color: theme.colors.onSurface }]}>
             {title}
           </Text>
-          <Text style={styles.description}>{description}</Text>
         </View>
       </View>
     </Card>
@@ -58,4 +73,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ModuleCard;
+export default ResourceCard;

@@ -2,8 +2,8 @@ import { View, ScrollView } from "react-native";
 import { Appbar, Button, TextInput, useTheme } from "react-native-paper";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { globalStyles } from "@/styles/globalStyles";
-import { createCourseModule } from "@/services/courseManagement";
-import { CourseModuleDetails } from "@/types/course";
+import { createModule } from "@/services/courseManagement";
+import { ModuleDetails } from "@/types/resources";
 import { useState } from "react";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 

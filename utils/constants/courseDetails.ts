@@ -29,7 +29,7 @@ export const CATEGORIES = new BiMap([
   ["Música", "MUSIC"],
   ["Otros", "OTHER"],
   ["Programación", "COMPUTER_SCIENCE"],
-  ["Química", "CHEMISTRY"],
+  // ["Química", "CHEMISTRY"],
   ["Robótica", "ROBOTICS"],
   ["Tecnología", "TECHNOLOGY"],
 ]);

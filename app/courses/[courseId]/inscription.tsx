@@ -1,4 +1,4 @@
-import { Course, UserRole } from "@/types/course";
+import { Course, CourseStatus, UserRole } from "@/types/course";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import { ScrollView, View } from "react-native";
@@ -11,7 +11,11 @@ import {
   Text,
   Icon,
 } from "react-native-paper";
-import { enrollCourse, getCourse } from "@/services/courseManagement";
+import {
+  enrollCourse,
+  getCourse,
+  getStudentMark,
+} from "@/services/courseManagement";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import { TextField } from "@/components/forms/TextField";
 import CourseCard from "@/components/cards/CourseCard";
@@ -25,22 +29,31 @@ import {
   LEVELS,
   MODALITIES,
 } from "@/utils/constants/courseDetails";
+import { customColors } from "@/utils/constants/colors";
+import { AlertText } from "@/components/AlertText";
+
+const MINIMUM_APPROVAL_MARK = 4;
+
 export default function CourseIncriptionDetails() {
   const router = useRouter();
   const theme = useTheme();
+
   const { courseId: courseIdParam } = useLocalSearchParams();
   const courseId = courseIdParam as string;
 
   const [errorMessage, setErrorMessage] = useState("");
   const [dependencies, setDependencies] = useState<Course[]>([]);
   const [courseOwner, setCourseOwner] = useState(null);
-  const [isOwner, setIsOwner] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [course, setCourse] = useState<Course | null>(null);
+  const [marks, setMarks] = useState<Record<string, number>>(null);
 
   const userContext = useUserContext();
 
   async function fetchCourse() {
+    if (!courseId) return;
+    setIsLoading(true);
+
     try {
       const fetchedCourse = await getCourse(courseId);
       setCourse(fetchedCourse);
@@ -58,12 +71,36 @@ export default function CourseIncriptionDetails() {
     }
   }
 
-  async function fetchCourseOwner() {
+  async function fetchCourseDependenciesMarks() {
+    if (!course) return;
+    setIsLoading(true);
+
     try {
-      setIsLoading(true);
+      const courseDependenciesMarks = await Promise.all(
+        course.courseDetails.dependencies.map(async (dependency) => {
+          const mark = await getStudentMark(dependency, userContext.user?.id);
+          return { courseId: dependency, mark };
+        })
+      );
+      const marks = courseDependenciesMarks.reduce((acc, curr) => {
+        acc[curr.courseId] = curr.mark;
+        return acc;
+      }, {});
+      setMarks(marks);
+    } catch (error) {
+      setErrorMessage((error as Error).message);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  async function fetchCourseOwner() {
+    if (!course) return;
+    setIsLoading(true);
+
+    try {
       if (!course) return;
       const courseOwner = await getUser(course.ownerId);
-      setIsOwner(courseOwner.id === userContext.user?.id);
       setCourseOwner(courseOwner);
     } catch (error) {
       setErrorMessage((error as Error).message);
@@ -73,6 +110,9 @@ export default function CourseIncriptionDetails() {
   }
 
   const handleEnrollCourse = async () => {
+    if (!courseId) return;
+    setIsLoading(true);
+
     try {
       await enrollCourse(courseId as string);
       router.replace({
@@ -83,12 +123,16 @@ export default function CourseIncriptionDetails() {
       setErrorMessage(
         `Error al inscribirse al curso: ${(error as Error).message}`
       );
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleOwnerPress = () => {
+    if (!courseOwner || !userContext.user) return;
+
     if (courseOwner) {
-      if (isOwner) {
+      if (courseOwner.id === userContext.user.id) {
         router.push({
           pathname: "/users/me",
         });
@@ -106,10 +150,15 @@ export default function CourseIncriptionDetails() {
   }, []);
 
   useEffect(() => {
-    if (course) {
-      fetchCourseOwner();
-    }
+    fetchCourseOwner();
+    fetchCourseDependenciesMarks();
   }, [course]);
+
+  function hasDependencyApproval(dependency: string) {
+    if (!marks) return false;
+    const mark = marks[dependency];
+    return mark !== null && mark >= MINIMUM_APPROVAL_MARK;
+  }
 
   return (
     <>
@@ -117,7 +166,7 @@ export default function CourseIncriptionDetails() {
         <Appbar.BackAction onPress={() => router.back()} />
         <Appbar.Content title="Detalles de inscripción" />
       </Appbar.Header>
-      {isLoading || !course || !courseOwner || !dependencies ? (
+      {isLoading || !course || !courseOwner || !dependencies || !marks ? (
         <View
           style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
         >
@@ -197,7 +246,7 @@ export default function CourseIncriptionDetails() {
                     key={dependency.courseId}
                     style={{
                       flexDirection: "row",
-                      gap: 10,
+                      gap: 8,
                       alignItems: "center",
                       justifyContent: "space-between",
                     }}
@@ -210,23 +259,23 @@ export default function CourseIncriptionDetails() {
                           pathname: `/courses/[courseId]`,
                           params: {
                             courseId: dependency.courseId,
-                            role: course.currentUserRole,
+                            role: dependency.currentUserRole,
                           },
                         })
                       }
                     />
                     <Icon
                       source={
-                        dependency.currentUserRole !== UserRole.NON_PARTICIPANT
+                        hasDependencyApproval(dependency.courseId)
                           ? "check-circle"
                           : "alert-circle"
-                      } //TODO: Cambiar por el estado de completado
+                      }
                       color={
-                        dependency.currentUserRole !== UserRole.NON_PARTICIPANT
-                          ? theme.colors.primary
+                        hasDependencyApproval(dependency.courseId)
+                          ? customColors.success
                           : theme.colors.error
-                      } //TODO: Cambiar por el estado de completado
-                      size={30}
+                      }
+                      size={24}
                     />
                   </View>
                 ))}
@@ -240,15 +289,26 @@ export default function CourseIncriptionDetails() {
             icon="notebook-multiple"
             disabled={
               isLoading ||
+              course.courseStatus !== CourseStatus.NEW ||
               hasNoSeats(
                 course.courseDetails.maxNumberOfStudents,
                 course.numberOfStudens || 0
+              ) ||
+              course.courseDetails.dependencies.some(
+                (dependency) => !hasDependencyApproval(dependency)
               )
             }
             onPress={handleEnrollCourse}
           >
             Inscribirse al curso
           </Button>
+
+          {course.courseStatus !== CourseStatus.NEW && (
+            <AlertText
+              text="El curso ha comenzado, no puedes inscribirte."
+              error={true}
+            />
+          )}
         </ScrollView>
       )}
 

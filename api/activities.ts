@@ -1,18 +1,6 @@
 import { ActivitiesOption } from "@/types/activity";
 import { createRequest } from "./common";
 
-export const createModuleRequest = (courseId: string) => {
-  return createRequest({
-    uri: `courses/${courseId}/modules`,
-  });
-};
-
-export const createGetModuleRequest = (courseId: string) => {
-  return createRequest({
-    uri: `courses/${courseId}/modules`,
-  });
-};
-
 export const createTasksRequest = (courseId: string) => {
   return createRequest({
     uri: `courses/${courseId}/activities/tasks`,
@@ -51,7 +39,7 @@ export const createExamPostRequest = (courseId: string, examId: number) => {
 
 export const createActivitiesRequest = (
   courseId: string,
-  activityType: ActivitiesOption,
+  activityType: ActivitiesOption
 ) => {
   if (activityType === ActivitiesOption.ALL) {
     return createRequest({
@@ -75,7 +63,7 @@ export const createActivityRequest = (courseId: string, activityId: number) => {
 
 export const createActivitySubmissionsRequest = (
   courseId: string,
-  activityId: number,
+  activityId: number
 ) => {
   return createRequest({
     uri: `courses/${courseId}/activities/${activityId}/submissions`,
@@ -85,7 +73,7 @@ export const createActivitySubmissionsRequest = (
 export const createActivitySubmissionRequest = (
   courseId: string,
   activityId: number,
-  studentId: number,
+  studentId: number
 ) => {
   return createRequest({
     uri: `courses/${courseId}/activities/${activityId}/submissions/${studentId}`,
@@ -94,7 +82,7 @@ export const createActivitySubmissionRequest = (
 
 export const createTaskSubmissionPostRequest = (
   courseId: string,
-  activityId: number,
+  activityId: number
 ) => {
   return createRequest({
     uri: `courses/${courseId}/activities/tasks/${activityId}/submit`,
@@ -103,7 +91,7 @@ export const createTaskSubmissionPostRequest = (
 
 export const createExamSubmissionPostRequest = (
   courseId: string,
-  activityId: number,
+  activityId: number
 ) => {
   return createRequest({
     uri: `courses/${courseId}/activities/exams/${activityId}/submit`,

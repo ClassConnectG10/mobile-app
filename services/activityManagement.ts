@@ -16,8 +16,6 @@ import {
   createExamsRequest,
   createTasksRequest,
   createActivitiesRequest,
-  createModuleRequest,
-  createGetModuleRequest,
   createExamRequest,
   createTaskRequest,
   createTaskPostRequest,
@@ -30,6 +28,7 @@ import {
   activityDetailsSchemaUpdate,
 } from "@/validations/activities";
 import { getDateFromBackend } from "@/utils/date";
+import { createGetModuleRequest, createModuleRequest } from "@/api/modules";
 
 export async function getCourseTeacherActivities(
   courseId: string,
@@ -46,6 +45,7 @@ export async function getCourseTeacherActivities(
         new TeacherActivity(
           new Activity(
             activityData.resource_id,
+            activityData.module_id,
             activityData.type,
             new TaskDetails(
               activityData.title,
@@ -58,6 +58,43 @@ export async function getCourseTeacherActivities(
     );
 
     return activities;
+  } catch (error) {
+    throw handleError(error, "obtener las actividades del curso");
+  }
+}
+
+export async function getModuleTeacherActivities(
+  courseId: string,
+  moduleId: number
+): Promise<TeacherActivity[]> {
+  try {
+    const request = await createActivitiesRequest(
+      courseId,
+      ActivitiesOption.ALL
+    );
+    const response = await request.get("");
+
+    const activitiesData = response.data.data;
+
+    const activities: TeacherActivity[] = activitiesData.map(
+      (activityData: any) =>
+        new TeacherActivity(
+          new Activity(
+            activityData.resource_id,
+            activityData.module_id,
+            activityData.type,
+            new TaskDetails(
+              activityData.title,
+              activityData.instruction,
+              getDateFromBackend(activityData.due_date)
+            )
+          ),
+          activityData.visible
+        )
+    );
+    return activities.filter(
+      (activity) => activity.activity.moduleId === moduleId
+    );
   } catch (error) {
     throw handleError(error, "obtener las actividades del curso");
   }
@@ -77,6 +114,7 @@ export async function getCourseStudentActivities(
         new StudentActivity(
           new Activity(
             activityData.resource_id,
+            activityData.module_id,
             activityData.type,
             new TaskDetails(
               activityData.title,
@@ -108,6 +146,7 @@ export async function getStudentActivity(
     const activity = new StudentActivity(
       new Activity(
         activityData.resource_id,
+        activityData.module_id,
         activityData.type,
         new TaskDetails(
           activityData.title,
@@ -139,6 +178,7 @@ export async function getTeacherActivity(
     const activity: TeacherActivity = new TeacherActivity(
       new Activity(
         activityData.resource_id,
+        activityData.module_id,
         activityData.type,
         new TaskDetails(
           activityData.title,
@@ -155,7 +195,7 @@ export async function getTeacherActivity(
   }
 }
 
-export async function postActivity(
+export async function publishActivity(
   courseId: string,
   activity: Activity
 ): Promise<TeacherActivity> {
@@ -173,6 +213,7 @@ export async function postActivity(
     const newActivity = new TeacherActivity(
       new Activity(
         activityData.resource_id,
+        activityData.module_id,
         activityData.type,
         new TaskDetails(
           activityData.title,
@@ -216,6 +257,7 @@ export async function updateActivity(
     const updatedActivity = new TeacherActivity(
       new Activity(
         activityData.resource_id,
+        activityData.module_id,
         activityData.type,
         new TaskDetails(
           activityData.title,
@@ -315,7 +357,7 @@ export async function getActivitySubmission(
 
 export async function createActivity(
   courseId: string,
-  moduleId: string,
+  moduleId: number,
   activityType: ActivityType,
   activityDetails: TaskDetails
 ): Promise<TeacherActivity> {
@@ -344,6 +386,7 @@ export async function createActivity(
     const newActivity = new TeacherActivity(
       new Activity(
         activityData.resource_id,
+        activityData.module_id,
         activityData.type,
         new TaskDetails(
           activityData.title,
@@ -360,7 +403,7 @@ export async function createActivity(
   }
 }
 
-export async function getCourseModuleId(courseId: string): Promise<string> {
+export async function getCourseModuleId(courseId: string): Promise<number> {
   try {
     const request = await createGetModuleRequest(courseId);
     const response = await request.get("");

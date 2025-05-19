@@ -1,19 +1,18 @@
-import { getCourseModules } from "@/services/courseManagement";
-import { Course, CourseModule } from "@/types/course";
+import { getCourseModules } from "@/services/resourceManager";
+import { Course } from "@/types/course";
 import { useRouter } from "expo-router";
 import { useState, useEffect } from "react";
-import { FlatList, View, StyleSheet } from "react-native";
+import { FlatList, View } from "react-native";
 import {
   useTheme,
   Text,
   ActivityIndicator,
-  Button,
   IconButton,
-  FAB,
 } from "react-native-paper";
 import ErrorMessageSnackbar from "../../ErrorMessageSnackbar";
 import ModuleCard from "../../cards/ModuleCard";
 import { FloatingActionButton } from "@/components/FloatingActionButton";
+import { Module } from "@/types/resources";
 
 interface ModulesTabProps {
   course: Course;
@@ -25,7 +24,7 @@ export const ModulesTab: React.FC<ModulesTabProps> = ({ course }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
-  const [modules, setModules] = useState<CourseModule[]>([]);
+  const [modules, setModules] = useState<Module[]>([]);
 
   async function fetchModules() {
     if (!course.courseId) return;
@@ -85,7 +84,19 @@ export const ModulesTab: React.FC<ModulesTabProps> = ({ course }) => {
                   gap: 8,
                 }}
               >
-                <ModuleCard module={item} onPress={() => {}} />
+                <ModuleCard
+                  module={item}
+                  onPress={() => {
+                    router.push({
+                      pathname:
+                        "/courses/[courseId]/teacher/modules/[moduleId]",
+                      params: {
+                        courseId: course.courseId,
+                        moduleId: item.moduleId,
+                      },
+                    });
+                  }}
+                />
 
                 <View>
                   {index > 0 && (

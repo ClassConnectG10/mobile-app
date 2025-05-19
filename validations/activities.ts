@@ -3,8 +3,7 @@ import { z } from "zod";
 
 export const activityDetailsSchema = z.object({
   title: z.string().min(1, "El título es requerido"),
-  description: z.string().min(1, "La descripción es requerida"),
-  instruction: z.string().min(1, "La instrucción es requerida"),
+  instructions: z.string().min(1, "La instrucción es requerida"),
   dueDate: z.date().refine((date) => date > new Date(), {
     message: "La fecha de entrega debe ser en el futuro",
   }),
@@ -12,8 +11,7 @@ export const activityDetailsSchema = z.object({
 
 export const activityDetailsSchemaUpdate = z.object({
   title: z.string().min(1, "El título es requerido"),
-  description: z.string().min(1, "La descripción es requerida"),
-  instruction: z.string().min(1, "La instrucción es requerida"),
+  instructions: z.string().min(1, "La instrucción es requerida"),
   dueDate: z.date({ required_error: "La fecha de entrega es requerida" }),
 });
 
@@ -74,6 +72,9 @@ export const examDetailsSchema = z.object({
     required_error: "La fecha de entrega es requerida",
     invalid_type_error: "La fecha de entrega es requerida",
   }),
+  moduleId: z
+    .number({ required_error: "El módulo es requerido" })
+    .int("El módulo debe ser un número entero"),
   examItems: z
     .array(examItemSchema)
     .min(1, "Se requiere al menos un ítem de examen"),

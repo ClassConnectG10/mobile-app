@@ -6,6 +6,7 @@ interface ToggleableNumberInputsProps {
   value: number;
   editable?: boolean;
   onChange: (value: number) => void;
+  maxValue?: number;
 }
 
 export const ToggleableNumberInput: React.FC<ToggleableNumberInputsProps> = ({
@@ -13,6 +14,7 @@ export const ToggleableNumberInput: React.FC<ToggleableNumberInputsProps> = ({
   value,
   editable = true,
   onChange,
+  maxValue,
 }) => {
   const decreaseNumStudents = () => {
     if (value > 1) {
@@ -21,7 +23,9 @@ export const ToggleableNumberInput: React.FC<ToggleableNumberInputsProps> = ({
   };
 
   const increaseNumStudents = () => {
-    onChange(value + 1);
+    if (!maxValue || value < maxValue) {
+      onChange(value + 1);
+    }
   };
 
   return editable ? (

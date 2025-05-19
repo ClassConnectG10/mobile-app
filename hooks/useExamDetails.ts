@@ -3,6 +3,7 @@ import { useState } from "react";
 
 export interface ExamDetailsHook {
   examDetails: ExamDetails;
+  setModuleId: (moduleId: number) => void;
   setExamDetails: (examDetails: ExamDetails) => void;
   setTitle: (title: string) => void;
   setInstructions: (instructions: string) => void;
@@ -12,8 +13,12 @@ export interface ExamDetailsHook {
 
 export function useExamDetails(): ExamDetailsHook {
   const [examDetails, setExamDetails] = useState(
-    new ExamDetails("", "", [], null)
+    new ExamDetails(null, "", "", [], null)
   );
+
+  const setModuleId = (moduleId: number) => {
+    setExamDetails((prev) => ({ ...prev, moduleId }));
+  };
 
   const setTitle = (title: string) => {
     setExamDetails((prev) => ({ ...prev, title }));
@@ -33,6 +38,7 @@ export function useExamDetails(): ExamDetailsHook {
 
   return {
     examDetails,
+    setModuleId,
     setExamDetails,
     setTitle,
     setInstructions,
