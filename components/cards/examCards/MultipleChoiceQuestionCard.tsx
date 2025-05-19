@@ -60,7 +60,17 @@ export const MultipleChoiceQuestionCard: React.FC<
                 onPress={() => {
                   const newOptions = [...multipleChoiceQuestion.options];
                   newOptions.splice(index, 1);
-                  onChange({ ...multipleChoiceQuestion, options: newOptions });
+                  let newCorrectAnswer = multipleChoiceQuestion.correctAnswer;
+                  if (index === multipleChoiceQuestion.correctAnswer) {
+                    newCorrectAnswer = -1;
+                  } else if (index <= multipleChoiceQuestion.correctAnswer) {
+                    newCorrectAnswer = multipleChoiceQuestion.correctAnswer - 1;
+                  }
+                  onChange({
+                    ...multipleChoiceQuestion,
+                    options: newOptions,
+                    correctAnswer: newCorrectAnswer,
+                  });
                 }}
               />
             )}

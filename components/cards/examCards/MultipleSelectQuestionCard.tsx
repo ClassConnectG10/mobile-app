@@ -12,6 +12,24 @@ interface MultipleSelectQuestionCardProps {
 export const MultipleSelectQuestionCard: React.FC<
   MultipleSelectQuestionCardProps
 > = ({ multipleSelectQuestion, editable, onChange }) => {
+  const handleOptionDelete = (index: number) => {
+    const newCorrectAnswers = [];
+    multipleSelectQuestion.correctAnswers.forEach((correctAnswerIndex) => {
+      if (correctAnswerIndex > index) {
+        newCorrectAnswers.push(correctAnswerIndex - 1);
+      } else if (correctAnswerIndex < index) {
+        newCorrectAnswers.push(correctAnswerIndex);
+      }
+    });
+    const newOptions = [...multipleSelectQuestion.options];
+    newOptions.splice(index, 1);
+    onChange({
+      ...multipleSelectQuestion,
+      options: newOptions,
+      correctAnswers: newCorrectAnswers,
+    });
+  };
+
   return (
     <View style={{ gap: multipleSelectQuestion.options.length > 0 ? 16 : 0 }}>
       <View style={{ gap: 8 }}>
@@ -66,9 +84,7 @@ export const MultipleSelectQuestionCard: React.FC<
                 icon="delete"
                 size={20}
                 onPress={() => {
-                  const newOptions = [...multipleSelectQuestion.options];
-                  newOptions.splice(index, 1);
-                  onChange({ ...multipleSelectQuestion, options: newOptions });
+                  handleOptionDelete(index);
                 }}
               />
             )}
