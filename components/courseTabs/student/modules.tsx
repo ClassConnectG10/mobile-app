@@ -2,18 +2,10 @@ import { getCourseModules } from "@/services/courseManagement";
 import { Course, CourseModule } from "@/types/course";
 import { useRouter } from "expo-router";
 import { useState, useEffect } from "react";
-import { FlatList, View, StyleSheet } from "react-native";
-import {
-  useTheme,
-  Text,
-  ActivityIndicator,
-  Button,
-  IconButton,
-  FAB,
-} from "react-native-paper";
+import { FlatList, View } from "react-native";
+import { useTheme, Text, ActivityIndicator } from "react-native-paper";
 import ErrorMessageSnackbar from "../../ErrorMessageSnackbar";
 import ModuleCard from "../../cards/ModuleCard";
-import { FloatingActionButton } from "@/components/FloatingActionButton";
 
 interface ModulesTabProps {
   course: Course;
@@ -44,13 +36,6 @@ export const ModulesTab: React.FC<ModulesTabProps> = ({ course }) => {
     fetchModules();
   }, [course.courseId]);
 
-  const handleCreateModule = () => {
-    router.push({
-      pathname: "/courses/[courseId]/teacher/modules/create",
-      params: { courseId: course.courseId },
-    });
-  };
-
   return (
     <View style={{ paddingHorizontal: 16, flex: 1 }}>
       {isLoading ? (
@@ -77,31 +62,7 @@ export const ModulesTab: React.FC<ModulesTabProps> = ({ course }) => {
             data={modules}
             keyExtractor={(item) => item.moduleId.toString()}
             renderItem={({ item }) => (
-              <View
-                style={{
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  gap: 8,
-                }}
-              >
-                <ModuleCard module={item} onPress={() => {}} />
-
-                <View style={{ gap: 2 }}>
-                  <IconButton
-                    mode="contained"
-                    icon="arrow-up"
-                    size={18}
-                    onPress={() => {}}
-                  />
-                  <IconButton
-                    mode="contained"
-                    icon="arrow-down"
-                    size={18}
-                    onPress={() => {}}
-                  />
-                </View>
-              </View>
+              <ModuleCard module={item} onPress={() => {}} />
             )}
             ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
             ListEmptyComponent={
@@ -118,8 +79,6 @@ export const ModulesTab: React.FC<ModulesTabProps> = ({ course }) => {
           />
         </View>
       )}
-      <FloatingActionButton onPress={handleCreateModule} />
-
       <ErrorMessageSnackbar
         message={errorMessage}
         onDismiss={() => setErrorMessage("")}

@@ -38,7 +38,7 @@ export default function CreateCoursePage() {
   const handleCreateCourse = async () => {
     try {
       courseDetails.dependencies = requiredCourses.map(
-        (course) => course.courseId,
+        (course) => course.courseId
       );
       const createdCourse = await createCourse(courseDetails);
       courseContext.setCourse(createdCourse);
@@ -138,8 +138,8 @@ export default function CreateCoursePage() {
                 }}
               >
                 <CourseCard
-                  name={course.courseDetails.title}
-                  category={course.courseDetails.category}
+                  course={course}
+                  small={true}
                   onPress={() => handleRequiredCoursePress(course)}
                 />
                 <IconButton

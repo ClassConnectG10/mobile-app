@@ -7,8 +7,6 @@ import {
   useTheme,
   Text,
   SegmentedButtons,
-  FAB,
-  Modal,
   Button,
 } from "react-native-paper";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
@@ -24,6 +22,8 @@ import {
 import { useUserContext } from "@/utils/storage/userContext";
 import { getCourseTeacherActivities } from "@/services/activityManagement";
 import { FlatList } from "react-native";
+import { FullScreenModal } from "@/components/FullScreenModal";
+import { FloatingActionButton } from "@/components/FloatingActionButton";
 
 export default function ActivitiesTab() {
   const router = useRouter();
@@ -171,7 +171,7 @@ export default function ActivitiesTab() {
 
   return (
     <>
-      <View style={{ flex: 1, overflow: "hidden", paddingHorizontal: 16 }}>
+      <View style={{ paddingHorizontal: 16, flex: 1 }}>
         {isLoading ||
         !courseContext.course ||
         isOwner === null ||
@@ -281,41 +281,41 @@ export default function ActivitiesTab() {
         )}
         <View style={{ paddingVertical: 4 }}></View>
       </View>
-      {isOwner && (
-        <FAB
-          icon="plus"
-          style={styles.fab}
-          onPress={() => setNewActivityModalVisible(true)}
-        />
-      )}
-      <Modal
+      <FloatingActionButton
+        onPress={() => {
+          setNewActivityModalVisible(true);
+        }}
+      />
+      <FullScreenModal
         visible={newActivityModalVisible}
         onDismiss={() => {
           setNewActivityModalVisible(false);
         }}
-        contentContainerStyle={styles.modalContainer}
-        style={styles.modalContent}
-      >
-        <Button
-          mode="contained"
-          icon="file-document"
-          onPress={() => {
-            handleCreateActivityPress(ActivityType.TASK);
-          }}
-        >
-          Crear una nueva tarea
-        </Button>
+        children={
+          <>
+            <Button
+              mode="contained"
+              icon="file-document"
+              onPress={() => {
+                handleCreateActivityPress(ActivityType.TASK);
+              }}
+            >
+              Crear una nueva tarea
+            </Button>
 
-        <Button
-          mode="contained"
-          icon="test-tube"
-          onPress={() => {
-            handleCreateActivityPress(ActivityType.EXAM);
-          }}
-        >
-          Crear un nuevo examen
-        </Button>
-      </Modal>
+            <Button
+              mode="contained"
+              icon="test-tube"
+              onPress={() => {
+                handleCreateActivityPress(ActivityType.EXAM);
+              }}
+            >
+              Crear un nuevo examen
+            </Button>
+          </>
+        }
+      />
+
       <ErrorMessageSnackbar
         message={errorMessage}
         onDismiss={() => setErrorMessage("")}
@@ -324,28 +324,4 @@ export default function ActivitiesTab() {
   );
 }
 
-const styles = StyleSheet.create({
-  fab: {
-    position: "absolute",
-    right: 16,
-    bottom: 16,
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  modalContainer: {
-    backgroundColor: "white",
-    padding: 20,
-    margin: 20,
-    borderRadius: 8,
-    elevation: 5,
-    gap: 16,
-  },
-  modalContent: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-});
+const styles = StyleSheet.create({});

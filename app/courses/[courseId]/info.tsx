@@ -68,8 +68,8 @@ export default function CreateCoursePage() {
 
     const requiredCourses = await Promise.all(
       courseContext.course.courseDetails.dependencies.map(
-        async (courseId) => await getCourse(courseId),
-      ),
+        async (courseId) => await getCourse(courseId)
+      )
     );
 
     requiredCoursesContext.setRequiredCourses(requiredCourses);
@@ -87,7 +87,7 @@ export default function CreateCoursePage() {
 
       const updatedCourse = await editCourse(
         courseContext.course,
-        newCourseDetails,
+        newCourseDetails
       );
 
       courseContext.setCourse(updatedCourse);
@@ -173,8 +173,8 @@ export default function CreateCoursePage() {
       setIsLoading(true);
       const requiredCourses = await Promise.all(
         courseContext.course.courseDetails.dependencies.map(
-          async (courseId) => await getCourse(courseId),
-        ),
+          async (courseId) => await getCourse(courseId)
+        )
       );
 
       requiredCoursesContext.setRequiredCourses(requiredCourses);
@@ -345,8 +345,8 @@ export default function CreateCoursePage() {
                     }}
                   >
                     <CourseCard
-                      name={course.courseDetails.title}
-                      category={course.courseDetails.category}
+                      course={course}
+                      small={true}
                       onPress={() => handleRequiredCoursePress(course)}
                     />
                     {isEditing && (
@@ -373,7 +373,7 @@ export default function CreateCoursePage() {
               </View>
             )}
 
-            {isEditing && (
+            {isEditing && isOwner && (
               <Button
                 onPress={() => setShowConfirmationDelete(true)}
                 mode="contained"
@@ -385,6 +385,7 @@ export default function CreateCoursePage() {
             )}
 
             {!isEditing &&
+              isOwner &&
               courseContext.course.courseStatus === CourseStatus.NEW && (
                 <Button
                   onPress={() => setShowConfirmationStart(true)}

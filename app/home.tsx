@@ -20,7 +20,9 @@ import { searchCourses } from "@/services/courseManagement";
 import { useUserContext } from "@/utils/storage/userContext";
 import axios from "axios";
 import { CourseFilterModal } from "@/components/courses/CourseFilterModal";
-import { CoursesSearchBar } from "@/components/courses/CoursesSearchBar";
+import { SearchBar } from "@/components/forms/SearchBar";
+import { FullScreenModal } from "@/components/FullScreenModal";
+import { FloatingActionButton } from "@/components/FloatingActionButton";
 
 export default function HomePage() {
   const theme = useTheme();
@@ -33,7 +35,7 @@ export default function HomePage() {
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const [searchOption, setSearchOption] = useState<SearchOption>(
-    SearchOption.RELATED,
+    SearchOption.RELATED
   );
   const [searchFiltersModalVisible, setSearchFiltersModalVisible] =
     useState(false);
@@ -159,20 +161,18 @@ export default function HomePage() {
 
         {/* Searchbar */}
 
-        <CoursesSearchBar onSearch={handleSearch} />
+        <SearchBar placeholder="Buscar cursos" onSearch={handleSearch} />
 
         {/* Main scrollable content */}
         <FlatList
-          style={styles.scrollContainer}
+          style={{ paddingBottom: 100, gap: 16 }}
           data={courses}
           keyExtractor={(item) => item.courseId}
           refreshing={isRefreshing}
           onRefresh={handleRefresh}
           renderItem={({ item }) => (
             <CourseCard
-              name={item.courseDetails.title}
-              description={item.courseDetails.description}
-              category={item.courseDetails.category}
+              course={item}
               onPress={() => {
                 router.push({
                   pathname: "/courses/[courseId]",
@@ -216,44 +216,44 @@ export default function HomePage() {
       </View>
 
       {/* Floating action button */}
-      <FAB
-        icon="plus"
-        style={styles.fab}
-        onPress={() => setNewCourseModalVisible(true)}
+      <FloatingActionButton
+        onPress={() => {
+          setNewCourseModalVisible(true);
+        }}
       />
 
       {/* Modal for course join / creation */}
-
-      <Modal
+      <FullScreenModal
         visible={newCourseModalVisible}
         onDismiss={() => {
           setNewCourseModalVisible(false);
         }}
-        contentContainerStyle={styles.modalContainer}
-        style={styles.modalContent}
-      >
-        <Button
-          mode="contained"
-          icon="magnify"
-          onPress={() => {
-            setNewCourseModalVisible(false);
-            router.push("/courses/search");
-          }}
-        >
-          Buscar un curso existente
-        </Button>
+        children={
+          <>
+            <Button
+              mode="contained"
+              icon="magnify"
+              onPress={() => {
+                setNewCourseModalVisible(false);
+                router.push("/courses/search");
+              }}
+            >
+              Buscar un curso existente
+            </Button>
 
-        <Button
-          mode="contained"
-          icon="plus"
-          onPress={() => {
-            setNewCourseModalVisible(false);
-            router.push("/courses/create");
-          }}
-        >
-          Crear un nuevo curso
-        </Button>
-      </Modal>
+            <Button
+              mode="contained"
+              icon="plus"
+              onPress={() => {
+                setNewCourseModalVisible(false);
+                router.push("/courses/create");
+              }}
+            >
+              Crear un nuevo curso
+            </Button>
+          </>
+        }
+      />
 
       <CourseFilterModal
         visible={searchFiltersModalVisible}
@@ -270,33 +270,3 @@ export default function HomePage() {
     </>
   );
 }
-
-const styles = StyleSheet.create({
-  scrollContainer: {
-    paddingBottom: 100,
-    gap: 16,
-  },
-  fab: {
-    position: "absolute",
-    right: 16,
-    bottom: 16,
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  modalContainer: {
-    backgroundColor: "white",
-    padding: 20,
-    margin: 20,
-    borderRadius: 8,
-    elevation: 5,
-    gap: 16,
-  },
-  modalContent: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-});

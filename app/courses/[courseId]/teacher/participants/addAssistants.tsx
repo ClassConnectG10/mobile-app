@@ -1,9 +1,11 @@
 import UserCard from "@/components/cards/UserCard";
+import { SearchBar } from "@/components/forms/SearchBar";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import {
   addAssistantToCourse,
   getCourse,
   getCourseAssistants,
+  getCourseStudents,
 } from "@/services/courseManagement";
 import { getUsers } from "@/services/userManagement";
 import { Course } from "@/types/course";
@@ -30,21 +32,30 @@ export default function AddAssistant() {
 
   const [course, setCourse] = useState<Course>(null);
   const [assistants, setAssistants] = useState<User[]>(null);
+  const [students, setStudents] = useState<User[]>(null);
+
   const [users, setUsers] = useState<User[]>(null);
+  const [filteredUsers, setFilteredUsers] = useState<User[]>(null);
 
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string>("");
 
   const [showConfirmationAdd, setShowConfirmationAdd] = useState(false);
-  const [showConfirmationRemove, setShowConfirmationRemove] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User>(null);
 
-  const userNotAnAssistant = (user: User): boolean => {
+  const userIsAnOwner = (user: User): boolean => {
+    if (!course) return false;
+    return user.id === course.ownerId;
+  };
+
+  const userIsAnAssistant = (user: User): boolean => {
     if (!assistants || !course) return false;
-    return (
-      !assistants.some((assistant) => assistant.id === user.id) &&
-      user.id !== course.ownerId
-    );
+    return assistants.some((assistant) => assistant.id === user.id);
+  };
+
+  const userIsAStudent = (user: User): boolean => {
+    if (!students) return false;
+    return students.some((student) => student.id === user.id);
   };
 
   async function fetchCourse() {
@@ -54,6 +65,21 @@ export default function AddAssistant() {
     try {
       const course = await getCourse(courseId);
       setCourse(course);
+    } catch (error) {
+      setErrorMessage((error as Error).message);
+      setCourse(null);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  async function fetchStudents() {
+    if (!courseId) return;
+
+    setIsLoading(true);
+    try {
+      const students = await getCourseStudents(courseId);
+      setStudents(students);
     } catch (error) {
       setErrorMessage((error as Error).message);
       setCourse(null);
@@ -78,13 +104,18 @@ export default function AddAssistant() {
   }
 
   async function fetchUsers() {
-    if (!assistants) return;
+    if (!assistants || !students) return;
 
     setIsLoading(true);
     try {
       const users = await getUsers();
-      const filteredUsers = users.filter(userNotAnAssistant);
-      setUsers(filteredUsers);
+      const nonTeacherUser = users.filter((user) => {
+        return !userIsAnOwner(user);
+        // !userIsAnAssistant(user) &&
+        // !userIsAStudent(user)
+      });
+      setUsers(nonTeacherUser);
+      setFilteredUsers(nonTeacherUser);
     } catch (error) {
       setErrorMessage((error as Error).message);
       setUsers([]);
@@ -95,11 +126,12 @@ export default function AddAssistant() {
 
   useEffect(() => {
     fetchUsers();
-  }, [assistants]);
+  }, [assistants, students]);
 
   useEffect(() => {
     fetchCourse();
     fetchAssistants();
+    fetchStudents();
   }, [courseId]);
 
   const handleAddAssistant = async () => {
@@ -118,6 +150,23 @@ export default function AddAssistant() {
     }
   };
 
+  const handleSearch = (query: string) => {
+    if (!users) return;
+
+    const serachQueryFilteredUsers = users.filter((user) => {
+      const fullName = `${user.userInformation.firstName} ${user.userInformation.lastName}`;
+      const revesedFullName = `${user.userInformation.lastName} ${user.userInformation.firstName}`;
+      const email = user.userInformation.email;
+      return (
+        fullName.toLowerCase().includes(query.toLowerCase()) ||
+        revesedFullName.toLowerCase().includes(query.toLowerCase()) ||
+        email.toLowerCase().includes(query.toLowerCase())
+      );
+    });
+
+    setFilteredUsers(serachQueryFilteredUsers);
+  };
+
   return (
     <>
       <View style={{ flex: 1, overflow: "hidden" }}>
@@ -133,7 +182,7 @@ export default function AddAssistant() {
           />
           <Appbar.Content title={"Adminsitrar asistentes"} />
         </Appbar.Header>
-        {isLoading || !course || !assistants || !users ? (
+        {isLoading || !filteredUsers ? (
           <View
             style={{
               flex: 1,
@@ -153,15 +202,19 @@ export default function AddAssistant() {
               style={{
                 padding: 16,
                 gap: 16,
+                flex: 1,
               }}
             >
+              <SearchBar
+                placeholder="Buscar usuarios"
+                onSearch={handleSearch}
+              />
               <FlatList
-                data={users}
+                data={filteredUsers}
                 keyExtractor={(item) => item.id.toString()}
                 renderItem={({ item }) => (
                   <View
                     style={{
-                      backgroundColor: theme.colors.background,
                       flexDirection: "row",
                       alignItems: "center",
                       gap: 8,
@@ -196,7 +249,6 @@ export default function AddAssistant() {
             </View>
           </>
         )}
-        <View style={{ paddingVertical: 4 }}></View>
       </View>
       <ErrorMessageSnackbar
         message={errorMessage}

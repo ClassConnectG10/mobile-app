@@ -9,7 +9,7 @@ import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import CourseCard from "@/components/cards/CourseCard";
 import { useRequiredCoursesContext } from "@/utils/storage/requiredCoursesContext";
 import { useCourseContext } from "@/utils/storage/courseContext";
-import { CoursesSearchBar } from "@/components/courses/CoursesSearchBar";
+import { SearchBar } from "@/components/forms/SearchBar";
 import { CourseFilterModal } from "@/components/courses/CourseFilterModal";
 
 export default function SearchCoursesPage() {
@@ -24,7 +24,7 @@ export default function SearchCoursesPage() {
     useState(false);
 
   const [searchFilters, setSearchFilters] = useState(
-    new SearchFilters("", null, null, "", "", ""),
+    new SearchFilters("", null, null, "", "", "")
   );
 
   const requiredCoursesContext = useRequiredCoursesContext();
@@ -38,13 +38,13 @@ export default function SearchCoursesPage() {
       const filteredCourses = coursesData.filter(
         (course) =>
           !requiredCoursesContext.requiredCourses.some(
-            (selectedCourse) => selectedCourse.courseId === course.courseId,
-          ),
+            (selectedCourse) => selectedCourse.courseId === course.courseId
+          )
       );
 
       if (courseContext.course) {
         const filteredCoursesWithSelected = filteredCourses.filter(
-          (course) => course.courseId !== courseContext.course?.courseId,
+          (course) => course.courseId !== courseContext.course?.courseId
         );
 
         setCourses(filteredCoursesWithSelected);
@@ -88,7 +88,7 @@ export default function SearchCoursesPage() {
       </Appbar.Header>
 
       <View style={[globalStyles.mainContainer, styles.mainContainer]}>
-        <CoursesSearchBar onSearch={handleSearch} />
+        <SearchBar placeholder="Buscar cursos" onSearch={handleSearch} />
 
         <View style={{ marginVertical: 16 }}>
           <FlatList
@@ -96,9 +96,7 @@ export default function SearchCoursesPage() {
             keyExtractor={(item) => item.courseId.toString()}
             renderItem={({ item }) => (
               <CourseCard
-                name={item.courseDetails.title}
-                description={item.courseDetails.description}
-                category={item.courseDetails.category}
+                course={item}
                 onPress={() => handleSelectCourse(item)}
               />
             )}

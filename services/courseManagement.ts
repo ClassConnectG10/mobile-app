@@ -47,8 +47,6 @@ export async function createCourse(
       dependencies: courseDetails.dependencies,
     };
 
-    console.log("BODY", body);
-
     const request = await createCoursesRequest();
     const response = await request.post("", body);
 
@@ -256,13 +254,9 @@ export async function getCourseAssistants(courseId: string): Promise<User[]> {
     const response = await request.get("");
     const assistantsData = response.data.data;
 
-    console.log("ASISTENTES1", assistantsData);
-
     const assistants: User[] = await getBulkUsers(
       assistantsData.map((assistant) => assistant.user_id)
     );
-
-    console.log("ASISTENTES2", assistants);
 
     return assistants;
   } catch (error) {
@@ -312,7 +306,7 @@ export async function getCourseStudents(courseId: string): Promise<User[]> {
 
 export async function removeStudentFromCourse(
   courseId: string,
-  studentId: string
+  studentId: number
 ): Promise<void> {
   try {
     const request = await createStudentRequest(courseId, studentId);

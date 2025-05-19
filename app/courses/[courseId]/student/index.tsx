@@ -9,24 +9,15 @@ import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Appbar,
+  BottomNavigation,
   useTheme,
-  Text,
-  SegmentedButtons,
 } from "react-native-paper";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import CourseCard from "@/components/cards/CourseCard";
 import { View, ScrollView } from "react-native";
-import ActivityCard from "@/components/cards/ActivityCard";
-
-import {
-  ActivitiesOption,
-  ActivityType,
-  StudentActivity,
-  StudentActivityFilter,
-} from "@/types/activity";
-import { useUserContext } from "@/utils/storage/userContext";
-import { getCourseStudentActivities } from "@/services/activityManagement";
-import { FlatList } from "react-native";
+import ActivitiesTab from "../../../../components/courseTabs/student/activities";
+import { ParticipantsTab } from "../../../../components/courseTabs/student/participants";
+import { ModulesTab } from "../../../../components/courseTabs/student/modules";
 
 export default function CoursePage() {
   const router = useRouter();
@@ -36,28 +27,56 @@ export default function CoursePage() {
   const courseId = courseIdParam as string;
 
   const [isLoading, setIsLoading] = useState(false);
-  const [isRefreshing, setIsRefreshing] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
-  const userContext = useUserContext();
-
-  const [activitiesOption, setActivitiesOption] = useState(
-    ActivitiesOption.ALL,
-  );
-  const [submitteedActivitiesOption, setSubmitteedActivitiesOption] = useState(
-    StudentActivityFilter.ALL,
-  );
-
-  const [activities, setActivities] = useState<StudentActivity[]>(null);
-
-  const [filteredActivities, setFilteredActivities] =
-    useState<StudentActivity[]>(null);
-
+  const [tabIndex, setTabIndex] = useState(0);
+  const [routes] = useState([
+    {
+      key: "activities",
+      title: "Actividades",
+      focusedIcon: "clipboard-text",
+      unfocusedIcon: "clipboard-text",
+    },
+    {
+      key: "modules",
+      title: "Módulos",
+      focusedIcon: "bookshelf",
+      unfocusedIcon: "bookshelf",
+    },
+    {
+      key: "participants",
+      title: "Participantes",
+      focusedIcon: "account-multiple",
+      unfocusedIcon: "account-multiple",
+    },
+    {
+      key: "performance",
+      title: "Desempeño",
+      focusedIcon: "chart-bar",
+      unfocusedIcon: "chart-bar",
+    },
+  ]);
   const courseContext = useCourseContext();
   const { setCourse } = courseContext;
 
+  const renderScene = BottomNavigation.SceneMap({
+    activities: ActivitiesTab,
+    participants: () => {
+      if (!courseContext.course) {
+        return null;
+      }
+      return <ParticipantsTab course={courseContext.course} />;
+    },
+    modules: () => {
+      if (!courseContext.course) {
+        return null;
+      }
+      return <ModulesTab course={courseContext.course} />;
+    },
+  });
+
   async function fetchCourse() {
-    if (!courseId || !userContext.user) return;
+    if (!courseId) return;
 
     setIsLoading(true);
     try {
@@ -70,65 +89,6 @@ export default function CoursePage() {
       setIsLoading(false);
     }
   }
-
-  async function fetchActivities() {
-    if (!courseId === null) return;
-    setIsLoading(true);
-    try {
-      const activities = await getCourseStudentActivities(
-        courseId,
-        activitiesOption,
-      );
-
-      setActivities(activities);
-    } catch (error) {
-      setErrorMessage((error as Error).message);
-    } finally {
-      setIsLoading(false);
-    }
-  }
-
-  const filterActivities = async () => {
-    if (!activities) return;
-
-    const filterByType = activities.filter((activity) => {
-      if (activitiesOption === ActivitiesOption.TASKS) {
-        return activity.activity.type === ActivityType.TASK;
-      }
-      if (activitiesOption === ActivitiesOption.EXAMS) {
-        return activity.activity.type === ActivityType.EXAM;
-      }
-      return true;
-    });
-
-    const filterByStatus = filterByType.filter((activity) => {
-      if (submitteedActivitiesOption === StudentActivityFilter.ALL) {
-        return true;
-      }
-      if (submitteedActivitiesOption === StudentActivityFilter.PENDING) {
-        return !activity.submited;
-      }
-      if (submitteedActivitiesOption === StudentActivityFilter.SUBMITTED) {
-        return activity.submited;
-      }
-    });
-
-    setFilteredActivities(filterByStatus);
-  };
-
-  const handleActivitiesOptionChange = (value: ActivitiesOption) => {
-    setActivitiesOption(
-      activitiesOption === value ? ActivitiesOption.ALL : value,
-    );
-  };
-
-  const handleSubmitteedActivitiesOptionChange = (
-    value: StudentActivityFilter,
-  ) => {
-    setSubmitteedActivitiesOption(
-      submitteedActivitiesOption === value ? StudentActivityFilter.ALL : value,
-    );
-  };
 
   const handleFavoritePress = async () => {
     if (!courseContext.course) return;
@@ -159,33 +119,9 @@ export default function CoursePage() {
     });
   };
 
-  const handleActivitiesPress = (activityId: number) => {
-    router.push({
-      pathname: "/courses/[courseId]/student/activities/[activityId]",
-      params: { courseId, activityId },
-    });
-  };
-
-  const handleRefresh = async () => {
-    setIsRefreshing(true);
-    try {
-      await Promise.all([fetchActivities(), fetchCourse()]);
-    } finally {
-      setIsRefreshing(false);
-    }
-  };
-
-  useEffect(() => {
-    filterActivities();
-  }, [activitiesOption, submitteedActivitiesOption, activities]);
-
-  useEffect(() => {
-    fetchActivities();
-  }, [courseId]);
-
   useEffect(() => {
     fetchCourse();
-  }, [courseId, userContext.user]);
+  }, [courseId]);
 
   return (
     <>
@@ -208,7 +144,7 @@ export default function CoursePage() {
           />
           <Appbar.Action icon="information" onPress={handleInfoPress} />
         </Appbar.Header>
-        {isLoading || !courseContext.course || !filteredActivities ? (
+        {isLoading || !courseContext.course ? (
           <View
             style={{
               flex: 1,
@@ -223,110 +159,33 @@ export default function CoursePage() {
             />
           </View>
         ) : (
-          <View style={{ padding: 16, gap: 16, flex: 1 }}>
-            {/* Card de curso */}
-            <ScrollView
+          <>
+            <View
               style={{
+                padding: 16,
                 gap: 16,
-                flexGrow: 0,
               }}
             >
-              <CourseCard
-                name={courseContext.course?.courseDetails.title || ""}
-                description={
-                  courseContext.course?.courseDetails.description || ""
-                }
-                category={courseContext.course?.courseDetails.category || ""}
-              />
-            </ScrollView>
-
-            <SegmentedButtons
-              value={activitiesOption}
-              onValueChange={handleActivitiesOptionChange}
-              buttons={[
-                {
-                  value: ActivitiesOption.TASKS,
-                  label: "Tareas",
-                  icon: "file-document",
-                  disabled: isLoading,
-                },
-                {
-                  value: ActivitiesOption.EXAMS,
-                  label: "Exámenes",
-                  icon: "test-tube",
-                  disabled: isLoading,
-                },
-              ]}
-            />
-
-            <SegmentedButtons
-              value={submitteedActivitiesOption}
-              onValueChange={handleSubmitteedActivitiesOptionChange}
-              buttons={[
-                {
-                  value: StudentActivityFilter.SUBMITTED,
-                  label: "Entregadas",
-                  icon: "check-circle-outline",
-                  disabled: isLoading,
-                },
-                {
-                  value: StudentActivityFilter.PENDING,
-                  label: "No entregadas",
-                  icon: "circle-outline",
-                  disabled: isLoading,
-                },
-              ]}
-            />
-            <View style={{ flex: 1 }}>
-              {/* Lista de actividades */}
-              <FlatList
-                data={filteredActivities}
-                keyExtractor={(item) => item.activity.resourceId.toString()}
-                refreshing={isRefreshing}
-                onRefresh={handleRefresh}
-                renderItem={({ item }) => (
-                  <ActivityCard
-                    activity={item}
-                    onPress={() =>
-                      handleActivitiesPress(item.activity.resourceId)
-                    }
-                  />
-                )}
-                ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
-                ListEmptyComponent={
-                  isLoading ? (
-                    <View
-                      style={{
-                        flex: 1,
-                        justifyContent: "center",
-                        alignItems: "center",
-                      }}
-                    >
-                      <ActivityIndicator
-                        animating={true}
-                        size="large"
-                        color={theme.colors.primary}
-                      />
-                    </View>
-                  ) : (
-                    <View
-                      style={{
-                        flex: 1,
-                        justifyContent: "center",
-                        alignItems: "center",
-                      }}
-                    >
-                      <Text variant="titleMedium">
-                        No se encontraron actividades
-                      </Text>
-                    </View>
-                  )
-                }
-              />
+              {/* Card de curso */}
+              <ScrollView
+                style={{
+                  gap: 16,
+                  flexGrow: 0,
+                }}
+              >
+                <CourseCard
+                  course={courseContext.course}
+                  onPress={handleInfoPress}
+                />
+              </ScrollView>
             </View>
-          </View>
+            <BottomNavigation
+              navigationState={{ index: tabIndex, routes }}
+              onIndexChange={setTabIndex}
+              renderScene={renderScene}
+            />
+          </>
         )}
-        <View style={{ paddingVertical: 4 }}></View>
       </View>
       <ErrorMessageSnackbar
         message={errorMessage}

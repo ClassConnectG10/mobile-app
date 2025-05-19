@@ -8,7 +8,7 @@ import { searchCourses } from "@/services/courseManagement";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import CourseCard from "@/components/cards/CourseCard";
 import { CourseFilterModal } from "@/components/courses/CourseFilterModal";
-import { CoursesSearchBar } from "@/components/courses/CoursesSearchBar";
+import { SearchBar } from "@/components/forms/SearchBar";
 
 export default function SearchCoursesPage() {
   const theme = useTheme();
@@ -20,7 +20,7 @@ export default function SearchCoursesPage() {
   const [searchFiltersModalVisible, setSearchFiltersModalVisible] =
     useState(false);
   const [searchFilters, setSearchFilters] = useState(
-    new SearchFilters("", null, null, "", "", ""),
+    new SearchFilters("", null, null, "", "", "")
   );
 
   const fetchCourses = async () => {
@@ -28,7 +28,7 @@ export default function SearchCoursesPage() {
       setIsLoading(true);
       const coursesData = await searchCourses(
         searchFilters,
-        SearchOption.NOT_RELATED,
+        SearchOption.NOT_RELATED
       );
       setCourses(coursesData);
     } catch (error) {
@@ -79,7 +79,7 @@ export default function SearchCoursesPage() {
       </Appbar.Header>
 
       <View style={[globalStyles.mainContainer, styles.mainContainer]}>
-        <CoursesSearchBar onSearch={handleSearch} />
+        <SearchBar placeholder="Buscar cursos" onSearch={handleSearch} />
 
         <View style={{ marginVertical: 16 }}>
           <FlatList
@@ -87,9 +87,7 @@ export default function SearchCoursesPage() {
             keyExtractor={(item) => item.courseId.toString()}
             renderItem={({ item }) => (
               <CourseCard
-                name={item.courseDetails.title}
-                description={item.courseDetails.description}
-                category={item.courseDetails.category}
+                course={item}
                 onPress={() => handleSelectCourse(item)}
               />
             )}

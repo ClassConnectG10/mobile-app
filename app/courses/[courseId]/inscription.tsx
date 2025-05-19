@@ -47,8 +47,8 @@ export default function CourseIncriptionDetails() {
 
       const courseDependencies = await Promise.all(
         fetchedCourse.courseDetails.dependencies.map((dependency) =>
-          getCourse(dependency),
-        ),
+          getCourse(dependency)
+        )
       );
 
       setDependencies(courseDependencies);
@@ -81,7 +81,7 @@ export default function CourseIncriptionDetails() {
       });
     } catch (error) {
       setErrorMessage(
-        `Error al inscribirse al curso: ${(error as Error).message}`,
+        `Error al inscribirse al curso: ${(error as Error).message}`
       );
     }
   };
@@ -203,8 +203,8 @@ export default function CourseIncriptionDetails() {
                     }}
                   >
                     <CourseCard
-                      name={dependency.courseDetails.title}
-                      category={dependency.courseDetails.category}
+                      course={dependency}
+                      small={true}
                       onPress={() =>
                         router.push({
                           pathname: `/courses/[courseId]`,
@@ -242,7 +242,7 @@ export default function CourseIncriptionDetails() {
               isLoading ||
               hasNoSeats(
                 course.courseDetails.maxNumberOfStudents,
-                course.numberOfStudens || 0,
+                course.numberOfStudens || 0
               )
             }
             onPress={handleEnrollCourse}

@@ -189,25 +189,7 @@ export default function CoursePage() {
 
   return (
     <>
-      <View style={{ flex: 1, overflow: "hidden" }}>
-        <Appbar.Header>
-          <Appbar.BackAction
-            onPress={() => {
-              if (router.canGoBack()) {
-                router.back();
-              } else {
-                router.replace("/home");
-              }
-            }}
-          />
-          <Appbar.Content title={courseContext.course?.courseDetails.title} />
-          <Appbar.Action
-            icon={courseContext.course?.isFavorite ? "heart" : "heart-outline"}
-            onPress={handleFavoritePress}
-            disabled={isLoading || !courseContext.course}
-          />
-          <Appbar.Action icon="information" onPress={handleInfoPress} />
-        </Appbar.Header>
+      <View style={{ paddingHorizontal: 16, flex: 1 }}>
         {isLoading || !courseContext.course || !filteredActivities ? (
           <View
             style={{
@@ -223,20 +205,7 @@ export default function CoursePage() {
             />
           </View>
         ) : (
-          <View style={{ padding: 16, gap: 16, flex: 1 }}>
-            {/* Card de curso */}
-            <ScrollView
-              style={{
-                gap: 16,
-                flexGrow: 0,
-              }}
-            >
-              <CourseCard
-                course={courseContext.course}
-                onPress={handleInfoPress}
-              />
-            </ScrollView>
-
+          <View style={{ gap: 16, flex: 1 }}>
             <SegmentedButtons
               value={activitiesOption}
               onValueChange={handleActivitiesOptionChange}

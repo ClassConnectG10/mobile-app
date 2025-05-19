@@ -3,21 +3,22 @@ import { StyleSheet, ImageBackground, View } from "react-native";
 import { Card, Text } from "react-native-paper";
 import bannerMap from "@/utils/constants/banners";
 import { CATEGORIES } from "@/utils/constants/courseDetails";
+import { Course } from "@/types/course";
 
 interface CourseCardProps {
-  name: string;
-  description?: string;
-  category: string;
+  course: Course;
   onPress?: () => void;
+  small?: boolean;
 }
 
 const CourseCard: React.FC<CourseCardProps> = ({
-  name,
-  description,
-  category,
+  course,
   onPress,
+  small = false,
 }) => {
-  const front_category = CATEGORIES.getFrontValue(category);
+  const front_category = CATEGORIES.getFrontValue(
+    course.courseDetails.category
+  );
   const image = bannerMap[front_category] || bannerMap["default"];
 
   return (
@@ -30,15 +31,15 @@ const CourseCard: React.FC<CourseCardProps> = ({
         <View style={styles.overlay}>
           {/* Contenedor para el título y la categoría */}
           <View style={styles.topContent}>
-            <Text style={styles.title}>{name}</Text>
+            <Text style={styles.title}>{course.courseDetails.title}</Text>
             <Text style={styles.subtitle}>{front_category}</Text>
           </View>
 
           {/* Contenedor para la descripción */}
-          {description && (
+          {!small && (
             <View style={styles.bottomContent}>
               <Text numberOfLines={1} style={styles.subtitle}>
-                {description}
+                {course.courseDetails.description}
               </Text>
             </View>
           )}

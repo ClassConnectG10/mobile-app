@@ -16,7 +16,7 @@ import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import CourseCard from "@/components/cards/CourseCard";
 import { View, ScrollView } from "react-native";
 import ActivitiesTab from "../../../../components/courseTabs/teacher/activities";
-import { ParticipantsTab } from "../../../../components/courseTabs/participants";
+import { ParticipantsTab } from "../../../../components/courseTabs/teacher/participants";
 import { ModulesTab } from "@/components/courseTabs/teacher/modules";
 
 export default function CoursePage() {
@@ -175,11 +175,8 @@ export default function CoursePage() {
                 }}
               >
                 <CourseCard
-                  name={courseContext.course?.courseDetails.title || ""}
-                  description={
-                    courseContext.course?.courseDetails.description || ""
-                  }
-                  category={courseContext.course?.courseDetails.category || ""}
+                  course={courseContext.course}
+                  onPress={handleInfoPress}
                 />
               </ScrollView>
             </View>
@@ -190,7 +187,6 @@ export default function CoursePage() {
             />
           </>
         )}
-        <View style={{ paddingVertical: 4 }}></View>
       </View>
       <ErrorMessageSnackbar
         message={errorMessage}
