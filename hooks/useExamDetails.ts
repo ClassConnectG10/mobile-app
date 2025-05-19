@@ -1,0 +1,42 @@
+import { ExamDetails } from "@/types/activity";
+import { useState } from "react";
+
+export interface ExamDetailsHook {
+  examDetails: ExamDetails;
+  setExamDetails: (examDetails: ExamDetails) => void;
+  setTitle: (title: string) => void;
+  setInstructions: (instructions: string) => void;
+  setExamItems: (examItems: any[]) => void;
+  setDueDate: (dueDate: Date) => void;
+}
+
+export function useExamDetails(): ExamDetailsHook {
+  const [examDetails, setExamDetails] = useState(
+    new ExamDetails("", "", [], null)
+  );
+
+  const setTitle = (title: string) => {
+    setExamDetails((prev) => ({ ...prev, title }));
+  };
+
+  const setInstructions = (instructions: string) => {
+    setExamDetails((prev) => ({ ...prev, instructions }));
+  };
+
+  const setExamItems = (examItems: any[]) => {
+    setExamDetails((prev) => ({ ...prev, examItems }));
+  };
+
+  const setDueDate = (dueDate: Date) => {
+    setExamDetails((prev) => ({ ...prev, dueDate }));
+  };
+
+  return {
+    examDetails,
+    setExamDetails,
+    setTitle,
+    setInstructions,
+    setExamItems,
+    setDueDate,
+  };
+}

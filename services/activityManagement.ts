@@ -1,7 +1,7 @@
 import {
   TeacherActivity,
   Activity,
-  ActivityDetails,
+  TaskDetails,
   StudentActivity,
   ActivitiesOption,
   ActivityType,
@@ -33,7 +33,7 @@ import { getDateFromBackend } from "@/utils/date";
 
 export async function getCourseTeacherActivities(
   courseId: string,
-  activitiesOption: ActivitiesOption,
+  activitiesOption: ActivitiesOption
 ): Promise<TeacherActivity[]> {
   try {
     const request = await createActivitiesRequest(courseId, activitiesOption);
@@ -47,15 +47,14 @@ export async function getCourseTeacherActivities(
           new Activity(
             activityData.resource_id,
             activityData.type,
-            new ActivityDetails(
+            new TaskDetails(
               activityData.title,
-              activityData.description,
               activityData.instruction,
-              getDateFromBackend(activityData.due_date),
-            ),
+              getDateFromBackend(activityData.due_date)
+            )
           ),
-          activityData.visible,
-        ),
+          activityData.visible
+        )
     );
 
     return activities;
@@ -66,7 +65,7 @@ export async function getCourseTeacherActivities(
 
 export async function getCourseStudentActivities(
   courseId: string,
-  activitiesOption: ActivitiesOption,
+  activitiesOption: ActivitiesOption
 ): Promise<StudentActivity[]> {
   try {
     const request = await createActivitiesRequest(courseId, activitiesOption);
@@ -79,18 +78,17 @@ export async function getCourseStudentActivities(
           new Activity(
             activityData.resource_id,
             activityData.type,
-            new ActivityDetails(
+            new TaskDetails(
               activityData.title,
-              activityData.description,
               activityData.instruction,
-              getDateFromBackend(activityData.due_date),
-            ),
+              getDateFromBackend(activityData.due_date)
+            )
           ),
           activityData.delivered,
           activityData.delivered_date
             ? getDateFromBackend(activityData.delivered_date)
-            : null,
-        ),
+            : null
+        )
     );
 
     return activities;
@@ -101,7 +99,7 @@ export async function getCourseStudentActivities(
 
 export async function getStudentActivity(
   courseId: string,
-  activityId: number,
+  activityId: number
 ): Promise<StudentActivity> {
   try {
     const request = await createActivityRequest(courseId, activityId);
@@ -111,17 +109,16 @@ export async function getStudentActivity(
       new Activity(
         activityData.resource_id,
         activityData.type,
-        new ActivityDetails(
+        new TaskDetails(
           activityData.title,
-          activityData.description,
           activityData.instruction,
-          getDateFromBackend(activityData.due_date),
-        ),
+          getDateFromBackend(activityData.due_date)
+        )
       ),
       activityData.delivered,
       activityData.delivered_date
         ? getDateFromBackend(activityData.delivered_date)
-        : null,
+        : null
     );
 
     return activity;
@@ -132,7 +129,7 @@ export async function getStudentActivity(
 
 export async function getTeacherActivity(
   courseId: string,
-  activityId: number,
+  activityId: number
 ): Promise<TeacherActivity> {
   try {
     const request = await createActivityRequest(courseId, activityId);
@@ -143,14 +140,13 @@ export async function getTeacherActivity(
       new Activity(
         activityData.resource_id,
         activityData.type,
-        new ActivityDetails(
+        new TaskDetails(
           activityData.title,
-          activityData.description,
           activityData.instruction,
-          getDateFromBackend(activityData.due_date),
-        ),
+          getDateFromBackend(activityData.due_date)
+        )
       ),
-      activityData.visible,
+      activityData.visible
     );
 
     return activity;
@@ -161,7 +157,7 @@ export async function getTeacherActivity(
 
 export async function postActivity(
   courseId: string,
-  activity: Activity,
+  activity: Activity
 ): Promise<TeacherActivity> {
   try {
     let request: AxiosInstance;
@@ -178,14 +174,13 @@ export async function postActivity(
       new Activity(
         activityData.resource_id,
         activityData.type,
-        new ActivityDetails(
+        new TaskDetails(
           activityData.title,
-          activityData.description,
           activityData.instruction,
-          getDateFromBackend(activityData.due_date),
-        ),
+          getDateFromBackend(activityData.due_date)
+        )
       ),
-      activityData.visible,
+      activityData.visible
     );
 
     return newActivity;
@@ -197,7 +192,7 @@ export async function postActivity(
 export async function updateActivity(
   courseId: string,
   activity: Activity,
-  activityDetails: ActivityDetails,
+  activityDetails: TaskDetails
 ): Promise<TeacherActivity> {
   try {
     activityDetailsSchemaUpdate.parse(activityDetails);
@@ -212,8 +207,7 @@ export async function updateActivity(
 
     const body = {
       title: activityDetails.title,
-      description: activityDetails.description,
-      instruction: activityDetails.instruction,
+      instruction: activityDetails.instructions,
       due_date: activityDetails.dueDate.toISOString(),
     };
 
@@ -223,14 +217,13 @@ export async function updateActivity(
       new Activity(
         activityData.resource_id,
         activityData.type,
-        new ActivityDetails(
+        new TaskDetails(
           activityData.title,
-          activityData.description,
           activityData.instruction,
-          getDateFromBackend(activityData.due_date),
-        ),
+          getDateFromBackend(activityData.due_date)
+        )
       ),
-      activityData.visible,
+      activityData.visible
     );
     return updatedActivity;
   } catch (error) {
@@ -240,7 +233,7 @@ export async function updateActivity(
 
 export async function deleteActivity(
   courseId: string,
-  activity: Activity,
+  activity: Activity
 ): Promise<void> {
   try {
     let request: AxiosInstance;
@@ -259,12 +252,12 @@ export async function deleteActivity(
 
 export async function getActivitySubmissions(
   courseId: string,
-  activity: Activity,
+  activity: Activity
 ): Promise<ActivitySubmission[]> {
   try {
     const request = await createActivitySubmissionsRequest(
       courseId,
-      activity.resourceId,
+      activity.resourceId
     );
     const response = await request.get("");
     const submissionsData = response.data.data;
@@ -279,8 +272,8 @@ export async function getActivitySubmissions(
           getDateFromBackend(activityData.due_date),
           activityData.delivered_date
             ? getDateFromBackend(activityData.delivered_date)
-            : null,
-        ),
+            : null
+        )
     );
     return submissions;
   } catch (error) {
@@ -291,13 +284,13 @@ export async function getActivitySubmissions(
 export async function getActivitySubmission(
   courseId: string,
   activity: Activity,
-  studentId: number,
+  studentId: number
 ): Promise<ActivitySubmission> {
   try {
     const request = await createActivitySubmissionRequest(
       courseId,
       activity.resourceId,
-      studentId,
+      studentId
     );
     const response = await request.get("");
 
@@ -311,7 +304,7 @@ export async function getActivitySubmission(
       getDateFromBackend(submissionData.due_date),
       submissionData.delivered_date
         ? getDateFromBackend(submissionData.delivered_date)
-        : null,
+        : null
     );
 
     return submission;
@@ -324,7 +317,7 @@ export async function createActivity(
   courseId: string,
   moduleId: string,
   activityType: ActivityType,
-  activityDetails: ActivityDetails,
+  activityDetails: TaskDetails
 ): Promise<TeacherActivity> {
   try {
     activityDetailsSchema.parse(activityDetails);
@@ -339,8 +332,7 @@ export async function createActivity(
     const body = {
       type: activityType,
       title: activityDetails.title,
-      description: activityDetails.description,
-      instruction: activityDetails.instruction,
+      instruction: activityDetails.instructions,
       due_date: activityDetails.dueDate.toISOString(),
       module: moduleId,
       visible: false,
@@ -353,14 +345,13 @@ export async function createActivity(
       new Activity(
         activityData.resource_id,
         activityData.type,
-        new ActivityDetails(
+        new TaskDetails(
           activityData.title,
-          activityData.description,
           activityData.instruction,
-          getDateFromBackend(activityData.due_date),
-        ),
+          getDateFromBackend(activityData.due_date)
+        )
       ),
-      activityData.visible,
+      activityData.visible
     );
 
     return newActivity;
@@ -392,7 +383,7 @@ export async function getCourseModuleId(courseId: string): Promise<string> {
 export async function submitActivity(
   courseId: string,
   activity: Activity,
-  response: string,
+  response: string
 ): Promise<void> {
   try {
     let request: AxiosInstance;
@@ -400,12 +391,12 @@ export async function submitActivity(
     if (activity.type === ActivityType.TASK) {
       request = await createTaskSubmissionPostRequest(
         courseId,
-        activity.resourceId,
+        activity.resourceId
       );
     } else if (activity.type === ActivityType.EXAM) {
       request = await createExamSubmissionPostRequest(
         courseId,
-        activity.resourceId,
+        activity.resourceId
       );
     } else {
       throw new Error("Tipo de actividad no soportado");

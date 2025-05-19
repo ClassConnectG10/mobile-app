@@ -142,10 +142,18 @@ export default function ActivitiesTab() {
 
   const handleCreateActivityPress = (activityType: ActivityType) => {
     setNewActivityModalVisible(false);
-    router.push({
-      pathname: "/courses/[courseId]/teacher/activities/create",
-      params: { courseId, activityType },
-    });
+
+    if (activityType === ActivityType.TASK) {
+      router.push({
+        pathname: "/courses/[courseId]/teacher/activities/tasks/create",
+        params: { courseId },
+      });
+    } else if (activityType === ActivityType.EXAM) {
+      router.push({
+        pathname: "/courses/[courseId]/teacher/activities/exams/create",
+        params: { courseId },
+      });
+    }
   };
 
   const handleRefresh = async () => {

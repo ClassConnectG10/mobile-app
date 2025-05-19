@@ -35,7 +35,7 @@ export class StudentActivity {
   constructor(
     public activity: Activity,
     public submited: boolean,
-    public submitedDate?: Date,
+    public submitedDate?: Date
   ) {}
 }
 
@@ -43,17 +43,71 @@ export class Activity {
   constructor(
     public resourceId: number,
     public type: ActivityType,
-    public activityDetails: ActivityDetails,
+    public activityDetails: TaskDetails | ExamDetails
   ) {}
 }
 
-export class ActivityDetails {
+export class TaskDetails {
   constructor(
     public title: string,
-    public description: string,
-    public instruction: string,
-    public dueDate: Date,
+    public instructions: string,
+    public dueDate: Date
   ) {}
+}
+
+export class ExamDetails {
+  constructor(
+    public title: string,
+    public instructions: string,
+    public examItems: ExamItem[],
+    public dueDate: Date
+  ) {}
+}
+
+export enum ExamItemType {
+  OPEN = "OPEN",
+  MULTIPLE_CHOICE = "MULTIPLE_CHOICE",
+  TRUE_FALSE = "TRUE_FALSE",
+  MULTIPLE_SELECT = "MULTIPLE_SELECT",
+}
+export interface ExamItem {
+  question: string;
+  type: ExamItemType;
+}
+
+export class OpenQuestion implements ExamItem {
+  type: ExamItemType;
+  constructor(public question: string, public suggestedAnswer: string) {
+    this.type = ExamItemType.OPEN;
+  }
+}
+
+export class MultipleChoiceQuestion implements ExamItem {
+  type: ExamItemType;
+  constructor(
+    public question: string,
+    public options: string[],
+    public correctAnswer?: number
+  ) {
+    this.type = ExamItemType.MULTIPLE_CHOICE;
+  }
+}
+
+export class TrueFalseQuestion implements ExamItem {
+  type: ExamItemType;
+  constructor(public question: string, public correctAnswer?: boolean) {
+    this.type = ExamItemType.TRUE_FALSE;
+  }
+}
+export class MultipleSelectQuestion implements ExamItem {
+  type: ExamItemType;
+  constructor(
+    public question: string,
+    public options: string[],
+    public correctAnswers: number[]
+  ) {
+    this.type = ExamItemType.MULTIPLE_SELECT;
+  }
 }
 
 export class ActivitySubmission {
@@ -64,6 +118,6 @@ export class ActivitySubmission {
     public response: string,
     public submited: boolean,
     public dueDate: Date,
-    public submissionDate?: Date,
+    public submissionDate?: Date
   ) {}
 }

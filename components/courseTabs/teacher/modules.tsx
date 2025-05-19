@@ -76,7 +76,7 @@ export const ModulesTab: React.FC<ModulesTabProps> = ({ course }) => {
           <FlatList
             data={modules}
             keyExtractor={(item) => item.moduleId.toString()}
-            renderItem={({ item }) => (
+            renderItem={({ item, index }) => (
               <View
                 style={{
                   flexDirection: "row",
@@ -87,19 +87,17 @@ export const ModulesTab: React.FC<ModulesTabProps> = ({ course }) => {
               >
                 <ModuleCard module={item} onPress={() => {}} />
 
-                <View style={{ gap: 2 }}>
-                  <IconButton
-                    mode="contained"
-                    icon="arrow-up"
-                    size={18}
-                    onPress={() => {}}
-                  />
-                  <IconButton
-                    mode="contained"
-                    icon="arrow-down"
-                    size={18}
-                    onPress={() => {}}
-                  />
+                <View>
+                  {index > 0 && (
+                    <IconButton icon="arrow-up" size={18} onPress={() => {}} />
+                  )}
+                  {index < modules.length - 1 && (
+                    <IconButton
+                      icon="arrow-down"
+                      size={18}
+                      onPress={() => {}}
+                    />
+                  )}
                 </View>
               </View>
             )}

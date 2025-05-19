@@ -2,7 +2,7 @@ import { AlertText } from "@/components/AlertText";
 import { DatePickerButton } from "@/components/forms/DatePickerButton";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import { ToggleableTextInput } from "@/components/forms/ToggleableTextInput";
-import { useActivityDetails } from "@/hooks/useActivityDetails";
+import { useTaskDetails } from "@/hooks/useTaskDetails";
 import {
   deleteActivity,
   getTeacherActivity,
@@ -42,7 +42,7 @@ export default function TeacherActivityPage() {
   const [showConfirmationDelete, setShowConfirmationDelete] = useState(false);
   const [showConfirmationPublish, setShowConfirmationPublish] = useState(false);
 
-  const activityDetailsHook = useActivityDetails();
+  const activityDetailsHook = useTaskDetails();
   const activityDetails = activityDetailsHook.activityDetails;
 
   const [course, setCourse] = useState<Course | null>(null);
@@ -200,17 +200,10 @@ export default function TeacherActivityPage() {
             onChange={activityDetailsHook.setTitle}
           />
           <ToggleableTextInput
-            label="Descripción"
-            placeholder="Descripción de la actividad"
-            value={activityDetails.description}
-            onChange={activityDetailsHook.setDescription}
-            editable={isEditing}
-          />
-          <ToggleableTextInput
             label="Instrucciones"
             placeholder="Instrucciones de la actividad"
-            value={activityDetails.instruction}
-            onChange={activityDetailsHook.setInstruction}
+            value={activityDetails.instructions}
+            onChange={activityDetailsHook.setInstructions}
             editable={isEditing}
           />
           <DatePickerButton

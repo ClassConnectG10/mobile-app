@@ -1,6 +1,6 @@
 import { DatePickerButton } from "@/components/forms/DatePickerButton";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
-import { useActivityDetails } from "@/hooks/useActivityDetails";
+import { useExamDetails } from "@/hooks/useExamDetails";
 import { createActivity } from "@/services/activityManagement";
 import { getCourseModuleId } from "@/services/activityManagement";
 import { globalStyles } from "@/styles/globalStyles";
@@ -9,6 +9,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
 import { View, ScrollView } from "react-native";
 import { Appbar, Button, TextInput, useTheme } from "react-native-paper";
+import { useTaskDetails } from "@/hooks/useTaskDetails";
 
 export default function CreateActivity() {
   const router = useRouter();
@@ -22,16 +23,14 @@ export default function CreateActivity() {
   const courseId = courseIdParam as string;
   const activityType = activityTypeParam as ActivityType;
 
-  const activityDetailsHook = useActivityDetails();
+  const activityDetailsHook = useTaskDetails();
   const activityDetails = activityDetailsHook.activityDetails;
 
   const handleCreateActivity = async () => {
     setIsLoading(true);
     try {
-      // Call the function to create the activity
       const moduleId = await getCourseModuleId(courseId);
       await createActivity(courseId, moduleId, activityType, activityDetails);
-      // Navigate to the course details page
       router.back();
     } catch (error) {
       setErrorMessage((error as Error).message);
@@ -44,11 +43,7 @@ export default function CreateActivity() {
     <>
       <Appbar.Header>
         <Appbar.BackAction onPress={() => router.back()} />
-        <Appbar.Content
-          title={
-            activityType === ActivityType.EXAM ? "Nuevo examen" : "Nueva tarea"
-          }
-        />
+        <Appbar.Content title={"Nueva tarea"} />
       </Appbar.Header>
       <View
         style={[
@@ -62,16 +57,11 @@ export default function CreateActivity() {
             value={activityDetails.title}
             onChangeText={activityDetailsHook.setTitle}
           />
-          <TextInput
-            placeholder="Descripción"
-            value={activityDetails.description}
-            onChangeText={activityDetailsHook.setDescription}
-          />
 
           <TextInput
             placeholder="Instrucciones"
-            value={activityDetails.instruction}
-            onChangeText={activityDetailsHook.setInstruction}
+            value={activityDetails.instructions}
+            onChangeText={activityDetailsHook.setInstructions}
           />
 
           <DatePickerButton
@@ -86,9 +76,7 @@ export default function CreateActivity() {
             mode="contained"
             disabled={isLoading}
           >
-            {activityType === ActivityType.EXAM
-              ? "Crear examen"
-              : "Crear tarea"}
+            Crear tarea
           </Button>
         </ScrollView>
       </View>
