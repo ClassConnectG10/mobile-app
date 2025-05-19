@@ -15,8 +15,9 @@ import {
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import CourseCard from "@/components/cards/CourseCard";
 import { View, ScrollView } from "react-native";
-import ActivitiesTab from "./activities";
-import { ParticipantsTab } from "../participants";
+import ActivitiesTab from "../../../../components/courseTabs/teacher/activities";
+import { ParticipantsTab } from "../../../../components/courseTabs/participants";
+import { ModulesTab } from "@/components/courseTabs/teacher/modules";
 
 export default function CoursePage() {
   const router = useRouter();
@@ -38,7 +39,7 @@ export default function CoursePage() {
     },
     {
       key: "modules",
-      title: "Modulos",
+      title: "Módulos",
       focusedIcon: "bookshelf",
       unfocusedIcon: "bookshelf",
     },
@@ -66,6 +67,12 @@ export default function CoursePage() {
       }
       //  return ParticipantsTab({ course: courseContext.course });
       return <ParticipantsTab course={courseContext.course} />;
+    },
+    modules: () => {
+      if (!courseContext.course) {
+        return null;
+      }
+      return <ModulesTab course={courseContext.course} />;
     },
   });
 
@@ -158,7 +165,6 @@ export default function CoursePage() {
               style={{
                 padding: 16,
                 gap: 16,
-                // flex: 1,
               }}
             >
               {/* Card de curso */}

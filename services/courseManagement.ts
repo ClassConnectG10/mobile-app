@@ -1,11 +1,13 @@
 import {
   Course,
   CourseDetails,
+  CourseModule,
+  CourseModuleDetails,
   SearchFilters,
   SearchOption,
 } from "@/types/course";
 import { handleError } from "./errorHandling";
-import { courseDetailsSchema } from "@/validations/courses";
+import { courseDetailsSchema, courseModuleSchema } from "@/validations/courses";
 import { createModuleRequest } from "@/api/activities";
 import {
   createAddAssistantRequest,
@@ -270,7 +272,7 @@ export async function getCourseAssistants(courseId: string): Promise<User[]> {
 
 export async function addAssistantToCourse(
   courseId: string,
-  assistantId: string
+  assistantId: number
 ): Promise<void> {
   try {
     const request = await createAddAssistantRequest(courseId, assistantId);
@@ -282,7 +284,7 @@ export async function addAssistantToCourse(
 
 export async function removeAssistantFromCourse(
   courseId: string,
-  assistantId: string
+  assistantId: number
 ): Promise<void> {
   try {
     const request = await createAssistantRequest(courseId, assistantId);
@@ -317,5 +319,55 @@ export async function removeStudentFromCourse(
     await request.delete("");
   } catch (error) {
     throw handleError(error, "eliminar estudiante del curso");
+  }
+}
+
+export async function getCourseModules(
+  courseId: string
+): Promise<CourseModule[]> {
+  try {
+    const request = await createModuleRequest(courseId);
+    const response = await request.get("");
+    const modulesData = response.data.data;
+
+    const modules: CourseModule[] = modulesData.map(
+      (moduleData: any) =>
+        new CourseModule(
+          moduleData.module_id,
+          moduleData.course_id,
+          new CourseModuleDetails(moduleData.title, moduleData.description)
+        )
+    );
+
+    return modules;
+  } catch (error) {
+    throw handleError(error, "obtener los módulos del curso");
+  }
+}
+
+export async function createCourseModule(
+  courseId: string,
+  moduleDetails: CourseModuleDetails
+): Promise<CourseModule> {
+  try {
+    courseModuleSchema.parse(moduleDetails);
+    const body = {
+      title: moduleDetails.title,
+      description: moduleDetails.description,
+    };
+
+    const request = await createModuleRequest(courseId);
+    const response = await request.post("", body);
+    const moduleData = response.data.data;
+
+    const module = new CourseModule(
+      moduleData.module_id,
+      moduleData.course_id,
+      new CourseModuleDetails(moduleData.title, moduleData.description)
+    );
+
+    return module;
+  } catch (error) {
+    throw handleError(error, "crear un módulo del curso");
   }
 }

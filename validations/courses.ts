@@ -7,21 +7,21 @@ import { z } from "zod";
 
 export const courseDetailsSchema = z
   .object({
-    title: z.string().min(1, "Title is required"),
-    description: z.string().min(1, "Description is required"),
+    title: z.string().min(1, "El título es obligatorio"),
+    description: z.string().min(1, "La descripción es obligatoria"),
     maxNumberOfStudents: z
       .number()
-      .min(1, "Max number of students is required")
-      .max(100, "Max number of students must be less than 100"),
+      .min(1, "La cantidad máxima de estudiantes es obligatoria")
+      .max(100, "La cantidad máxima de estudiantes debe ser menor a 100"),
     startDate: z
       .date()
       .refine((date) => date >= new Date(new Date().setHours(0, 0, 0, 0)), {
-        message: "Start date must be today or in the future",
+        message: "La fecha de inicio debe ser hoy o en el futuro",
       }),
     endDate: z
       .date()
       .refine((date) => date > new Date(new Date().setHours(0, 0, 0, 0)), {
-        message: "End date must be today or in the future",
+        message: "La fecha de finalización debe ser hoy o en el futuro",
       }),
     level: z
       .string()
@@ -44,5 +44,10 @@ export const courseDetailsSchema = z
     dependencies: z.array(z.string().uuid()),
   })
   .refine((data) => data.startDate <= data.endDate, {
-    message: "End date must be after or equal to start date",
+    message: "La fecha de inicio debe ser anterior a la fecha de finalización",
   });
+
+export const courseModuleSchema = z.object({
+  title: z.string().min(1, "El título es obligatorio"),
+  description: z.string().min(1, "La descripción es obligatoria"),
+});

@@ -81,19 +81,19 @@ export const createAssistantsRequest = (courseId: string) => {
 
 export const createAddAssistantRequest = (
   courseId: string,
-  assistantId: string
+  assistantId: number
 ) => {
   return createRequest({
-    uri: `courses/${courseId}/instructors/`,
+    uri: `courses/${courseId}/instructors`,
     params: {
-      user_id: assistantId,
+      user_id: assistantId.toString(),
     },
   });
 };
 
 export const createAssistantRequest = (
   courseId: string,
-  assistantId: string
+  assistantId: number
 ) => {
   return createRequest({
     uri: `courses/${courseId}/instructors/${assistantId}`,

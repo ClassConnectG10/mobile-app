@@ -40,11 +40,11 @@ export default function ActivitiesTab() {
   const userContext = useUserContext();
 
   const [activitiesOption, setActivitiesOption] = useState(
-    ActivitiesOption.ALL,
+    ActivitiesOption.ALL
   );
 
   const [publishedActivitiesOption, setPublishedActivitiesOption] = useState(
-    TeacherActivityFilter.ALL,
+    TeacherActivityFilter.ALL
   );
 
   const [isOwner, setIsOwner] = useState(null);
@@ -80,7 +80,7 @@ export default function ActivitiesTab() {
     try {
       const activities = await getCourseTeacherActivities(
         courseId,
-        activitiesOption,
+        activitiesOption
       );
 
       setActivities(activities);
@@ -121,21 +121,21 @@ export default function ActivitiesTab() {
 
   const handleActivitiesOptionChange = (value: ActivitiesOption) => {
     setActivitiesOption(
-      activitiesOption === value ? ActivitiesOption.ALL : value,
+      activitiesOption === value ? ActivitiesOption.ALL : value
     );
   };
 
   const handlePublishedActivitiesOptionChange = (
-    value: TeacherActivityFilter,
+    value: TeacherActivityFilter
   ) => {
     setPublishedActivitiesOption(
-      publishedActivitiesOption === value ? TeacherActivityFilter.ALL : value,
+      publishedActivitiesOption === value ? TeacherActivityFilter.ALL : value
     );
   };
 
   const handleActivitiesPress = (activityId: number) => {
     router.push({
-      pathname: "/courses/[courseId]/activities/teacher/[activityId]",
+      pathname: "/courses/[courseId]/teacher/activities/[activityId]",
       params: { courseId, activityId },
     });
   };

@@ -27,7 +27,7 @@ export class SearchFilters {
     public level: string,
     public modality: string,
     public category: string,
-    public favorites: boolean = false,
+    public favorites: boolean = false
   ) {}
 }
 
@@ -39,7 +39,7 @@ export class Course {
     public currentUserRole: UserRole,
     public courseStatus: CourseStatus,
     public numberOfStudens?: number,
-    public isFavorite?: boolean,
+    public isFavorite?: boolean
   ) {}
 }
 
@@ -53,6 +53,18 @@ export class CourseDetails {
     public level: string,
     public modality: string,
     public category: string,
-    public dependencies: string[] = [],
+    public dependencies: string[] = []
   ) {}
+}
+
+export class CourseModule {
+  constructor(
+    public moduleId: string,
+    public courseId: string,
+    public courseModuleDetails: CourseModuleDetails
+  ) {}
+}
+
+export class CourseModuleDetails {
+  constructor(public title: string, public description: string) {}
 }

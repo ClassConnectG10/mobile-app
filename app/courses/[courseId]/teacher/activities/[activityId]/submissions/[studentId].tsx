@@ -15,7 +15,7 @@ import { User } from "@/types/user";
 import { formatDateTime } from "@/utils/date";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import { View } from "react-native";
+import { ScrollView, View } from "react-native";
 import { ActivityIndicator, Appbar, Text, useTheme } from "react-native-paper";
 
 export default function TeacherSubmissionPage() {
@@ -61,7 +61,7 @@ export default function TeacherSubmissionPage() {
       const submissionData = await getActivitySubmission(
         courseId,
         teacherActivity.activity,
-        Number(studentId),
+        Number(studentId)
       );
 
       setStudentSubmission(submissionData);
@@ -131,7 +131,7 @@ export default function TeacherSubmissionPage() {
             />
           </View>
         ) : (
-          <View style={{ padding: 16, gap: 16 }}>
+          <ScrollView contentContainerStyle={{ padding: 16, gap: 16 }}>
             <UserCard user={student} onPress={handleStudentPress} />
 
             <TextField
@@ -157,7 +157,7 @@ export default function TeacherSubmissionPage() {
                   : " el examen"}
               </Text>
             )}
-          </View>
+          </ScrollView>
         )}
       </View>
       <ErrorMessageSnackbar

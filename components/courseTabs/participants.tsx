@@ -3,14 +3,23 @@ import { getUser } from "@/services/userManagement";
 import {
   getCourseAssistants,
   getCourseStudents,
+  removeAssistantFromCourse,
 } from "@/services/courseManagement";
 import { Course } from "@/types/course";
 import { User } from "@/types/user";
 import { useUserContext } from "@/utils/storage/userContext";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import { FlatList, View } from "react-native";
-import { ActivityIndicator, Divider, Text, useTheme } from "react-native-paper";
+import { FlatList, ScrollView, View } from "react-native";
+import {
+  ActivityIndicator,
+  Button,
+  Dialog,
+  Divider,
+  IconButton,
+  Text,
+  useTheme,
+} from "react-native-paper";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 
 interface ParticipantsTabProps {
@@ -27,6 +36,9 @@ export const ParticipantsTab: React.FC<ParticipantsTabProps> = ({ course }) => {
   const [courseOwner, setCourseOwner] = useState<User | null>(null);
   const [assistants, setAssistants] = useState<User[]>([]);
   const [students, setStudents] = useState<User[]>([]);
+
+  const [selectedAssistant, setSelectedAssistant] = useState<User | null>(null);
+  const [showConfirmationRemove, setShowConfirmationRemove] = useState(false);
 
   const userContext = useUserContext();
 
@@ -92,6 +104,23 @@ export const ParticipantsTab: React.FC<ParticipantsTabProps> = ({ course }) => {
     fetchStudents();
   }, [course]);
 
+  const handleRemoveAssistant = async () => {
+    if (!selectedAssistant) return;
+
+    setIsLoading(true);
+    try {
+      await removeAssistantFromCourse(course.courseId, selectedAssistant.id);
+      setShowConfirmationRemove(false);
+      setAssistants((prev) =>
+        prev.filter((assistant) => assistant.id !== selectedAssistant.id)
+      );
+    } catch (error) {
+      setErrorMessage((error as Error).message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <View style={{ paddingHorizontal: 20, flex: 1 }}>
       {isLoading || !courseOwner ? (
@@ -114,26 +143,47 @@ export const ParticipantsTab: React.FC<ParticipantsTabProps> = ({ course }) => {
             gap: 16,
           }}
         >
-          <Text variant="titleMedium">Docente titular</Text>
-          <UserCard
-            user={courseOwner}
-            onPress={() => {
-              handleUserPress(courseOwner);
-            }}
-          />
+          <ScrollView>
+            <Text variant="titleMedium">Docente titular</Text>
+            <UserCard
+              user={courseOwner}
+              onPress={() => {
+                handleUserPress(courseOwner);
+              }}
+            />
+          </ScrollView>
 
           <Divider />
-
           <FlatList
             data={assistants}
             keyExtractor={(item) => item.id.toString()}
             renderItem={({ item }) => (
-              <UserCard
-                user={item}
-                onPress={() => {
-                  handleUserPress(item);
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  gap: 8,
                 }}
-              />
+              >
+                <UserCard
+                  user={item}
+                  onPress={() => {
+                    handleUserPress(item);
+                  }}
+                />
+                {isOwner && (
+                  <IconButton
+                    icon="account-minus"
+                    mode="contained"
+                    size={24}
+                    onPress={() => {
+                      setShowConfirmationRemove(true);
+                      setSelectedAssistant(item);
+                    }}
+                  />
+                )}
+              </View>
             )}
             ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
             ListEmptyComponent={
@@ -148,7 +198,28 @@ export const ParticipantsTab: React.FC<ParticipantsTabProps> = ({ course }) => {
               </View>
             }
             ListHeaderComponent={() => (
-              <Text variant="titleMedium">Asistentes</Text>
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <Text variant="titleMedium">Asistentes</Text>
+                {isOwner && (
+                  <IconButton
+                    icon="account-plus"
+                    size={24}
+                    onPress={() => {
+                      router.push({
+                        pathname:
+                          "/courses/[courseId]/teacher/participants/addAssistants",
+                        params: { courseId: course.courseId },
+                      });
+                    }}
+                  />
+                )}
+              </View>
             )}
           />
           <Divider />
@@ -181,6 +252,26 @@ export const ParticipantsTab: React.FC<ParticipantsTabProps> = ({ course }) => {
           />
         </View>
       )}
+
+      <Dialog
+        visible={showConfirmationRemove}
+        onDismiss={() => setShowConfirmationRemove(false)}
+      >
+        <Dialog.Title>Atención</Dialog.Title>
+        <Dialog.Content>
+          <Text variant="bodyMedium">
+            ¿Está seguro que desea quitar a{" "}
+            {selectedAssistant?.userInformation.firstName}{" "}
+            {selectedAssistant?.userInformation.lastName} como asistente?
+          </Text>
+        </Dialog.Content>
+        <Dialog.Actions>
+          <Button onPress={() => setShowConfirmationRemove(false)}>
+            Cancelar
+          </Button>
+          <Button onPress={handleRemoveAssistant}>Quitar</Button>
+        </Dialog.Actions>
+      </Dialog>
       <ErrorMessageSnackbar
         message={errorMessage}
         onDismiss={() => setErrorMessage("")}

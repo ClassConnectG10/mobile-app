@@ -25,3 +25,9 @@ export const createBulkUserRequest = () => {
     uri: `users/bulk`,
   });
 };
+
+export const createUsersRequest = () => {
+  return createRequest({
+    uri: `users`,
+  });
+};

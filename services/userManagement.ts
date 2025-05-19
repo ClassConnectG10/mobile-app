@@ -7,6 +7,7 @@ import {
   createEditUserProfileRequest,
   createUserRequest,
   createBulkUserRequest,
+  createUsersRequest,
 } from "@/api/user";
 
 /**
@@ -158,7 +159,22 @@ export async function getBulkUsers(userIds: number[]): Promise<User[]> {
     });
     return users;
   } catch (error) {
-    console.error("Error al obtener los usuarios:", error);
+    throw handleError(error, "obtener los usuarios");
+  }
+}
+
+export async function getUsers(): Promise<User[]> {
+  try {
+    const request = await createUsersRequest();
+    const response = await request.get("");
+    const users = response.data.data.map((user: any) => {
+      return new User(
+        user.id,
+        new UserInformation(user.name, user.surname, user.email)
+      );
+    });
+    return users;
+  } catch (error) {
     throw handleError(error, "obtener los usuarios");
   }
 }

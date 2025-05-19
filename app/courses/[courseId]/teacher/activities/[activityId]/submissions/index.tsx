@@ -40,7 +40,7 @@ export default function TeacherSubmissionsPage() {
     useState<ActivitySubmission[]>(null);
   const [students, setStudents] = useState<Record<number, User>>(null);
   const [activityStatusOption, setActivityStatusOption] = useState(
-    ActivityStatusOption.ALL,
+    ActivityStatusOption.ALL
   );
   async function fetchTeacherActivity() {
     if (!courseId || !activityId) return;
@@ -63,7 +63,7 @@ export default function TeacherSubmissionsPage() {
     try {
       const submittedActivies = await getActivitySubmissions(
         courseId,
-        teacherActivity.activity,
+        teacherActivity.activity
       );
 
       setStudentSubmissions(submittedActivies);
@@ -84,9 +84,9 @@ export default function TeacherSubmissionsPage() {
         studentSubmissions.map(async (submission) => {
           const student = await getUser(submission.studentId);
           return { [submission.studentId]: student };
-        }),
+        })
       ).then((studentsArray) =>
-        studentsArray.reduce((acc, curr) => ({ ...acc, ...curr }), {}),
+        studentsArray.reduce((acc, curr) => ({ ...acc, ...curr }), {})
       );
 
       setStudents(studentsDict);
@@ -116,7 +116,7 @@ export default function TeacherSubmissionsPage() {
   const handleSelectSubmission = (submission: ActivitySubmission) => {
     router.push({
       pathname:
-        "/courses/[courseId]/activities/teacher/[activityId]/submissions/[studentId]",
+        "/courses/[courseId]/teacher/activities/[activityId]/submissions/[studentId]",
       params: {
         courseId,
         activityId,

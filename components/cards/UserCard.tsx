@@ -42,6 +42,7 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 8,
     elevation: 2,
+    flex: 1,
   },
   row: {
     flexDirection: "row",
