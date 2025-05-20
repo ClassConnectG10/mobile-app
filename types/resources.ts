@@ -1,3 +1,5 @@
+import { File } from "./file";
+
 export enum ResourceType {
   DOCUMENT = "DOCUMENT",
   VIDEO = "VIDEO",
@@ -6,29 +8,10 @@ export enum ResourceType {
   TEXT = "TEXT",
 }
 
-export enum FileType {
-  IMAGE = "IMAGE",
-  VIDEO = "VIDEO",
-  DOCUMENT = "DOCUMENT",
-  TEXT = "TEXT",
-}
-
-export class File {
-  constructor(public fileId?: number, public fileDetails?: FileDetails) {}
-}
-
-export class FileDetails {
-  constructor(
-    public fileName: string,
-    public fileType: FileType,
-    public fileContent: string
-  ) {}
-}
-
 export class Resource {
   constructor(
     public resourceId: number,
-    public ResourceDetails: ResourceDetails
+    public ResourceDetails: ResourceDetails,
   ) {}
 }
 
@@ -43,7 +26,7 @@ export class ResourceDetails {
       | VideoDetails
       | ImagesDetails
       | LinkDetails
-      | TextDetails
+      | TextDetails,
   ) {}
 }
 
@@ -71,7 +54,7 @@ export class Module {
   constructor(
     public moduleId: number,
     public courseId: string,
-    public courseModuleDetails: ModuleDetails
+    public courseModuleDetails: ModuleDetails,
   ) {}
 }
 

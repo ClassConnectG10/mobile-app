@@ -62,8 +62,8 @@ export const MultipleChoiceQuestionCard: React.FC<
                   newOptions.splice(index, 1);
                   let newCorrectAnswer = multipleChoiceQuestion.correctAnswer;
                   if (index === multipleChoiceQuestion.correctAnswer) {
-                    newCorrectAnswer = -1;
-                  } else if (index <= multipleChoiceQuestion.correctAnswer) {
+                    newCorrectAnswer = null;
+                  } else if (index < multipleChoiceQuestion.correctAnswer) {
                     newCorrectAnswer = multipleChoiceQuestion.correctAnswer - 1;
                   }
                   onChange({
