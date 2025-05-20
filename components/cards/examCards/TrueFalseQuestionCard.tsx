@@ -1,18 +1,79 @@
-import { TrueFalseQuestion } from "@/types/activity";
+import { TrueFalseAnswer, TrueFalseQuestion } from "@/types/activity";
 import { View } from "react-native";
-import { RadioButton, Text } from "react-native-paper";
+import { RadioButton, Text, useTheme } from "react-native-paper";
+import { ExamItemMode } from "./examItemMode";
+import { customColors } from "@/utils/constants/colors";
 
 interface TrueFalseQuestionCardProps {
   trueFalseQuestion: TrueFalseQuestion;
-  editable: boolean;
+  mode: ExamItemMode;
   onChange: (newQuestion: TrueFalseQuestion) => void;
+  studentAnswer?: TrueFalseAnswer;
+  setStudentAnswer?: (answer: TrueFalseAnswer) => void;
+  answerOk?: boolean;
+  setAnswerOk?: (ok: boolean) => void;
 }
 
 export const TrueFalseQuestionCard: React.FC<TrueFalseQuestionCardProps> = ({
   trueFalseQuestion,
-  editable,
+  mode,
   onChange,
+  studentAnswer,
+  setStudentAnswer,
+  answerOk,
+  setAnswerOk,
 }) => {
+  const theme = useTheme();
+
+  if (mode === ExamItemMode.REVIEW) {
+    setAnswerOk(trueFalseQuestion.correctAnswer === studentAnswer?.answer);
+  }
+
+  const handleOptionPress = (option: boolean) => {
+    if (mode === ExamItemMode.EDIT) {
+      onChange({
+        ...trueFalseQuestion,
+        correctAnswer: option,
+      });
+    } else if (mode === ExamItemMode.FILL) {
+      setStudentAnswer({ ...studentAnswer, answer: option });
+    }
+  };
+
+  const getRadioButtonStatus = (option: boolean): "checked" | "unchecked" => {
+    let buttonChecked = false;
+    if (mode === ExamItemMode.EDIT || mode === ExamItemMode.VIEW) {
+      buttonChecked =
+        trueFalseQuestion.correctAnswer !== undefined &&
+        trueFalseQuestion.correctAnswer === option;
+    } else if (mode === ExamItemMode.FILL || mode === ExamItemMode.SENT) {
+      buttonChecked =
+        studentAnswer.answer !== undefined && studentAnswer.answer === option;
+    } else if (mode === ExamItemMode.REVIEW || mode === ExamItemMode.MARKED) {
+      buttonChecked =
+        trueFalseQuestion.correctAnswer === option ||
+        studentAnswer.answer === option;
+    }
+    return buttonChecked ? "checked" : "unchecked";
+  };
+
+  const getRadioButtonColor = (option: boolean): string => {
+    if (
+      mode === ExamItemMode.EDIT ||
+      mode === ExamItemMode.VIEW ||
+      mode === ExamItemMode.FILL ||
+      mode === ExamItemMode.SENT
+    ) {
+      return theme.colors.primary;
+    } else if (mode === ExamItemMode.REVIEW || mode === ExamItemMode.MARKED) {
+      if (option === studentAnswer.answer) {
+        return answerOk ? customColors.success : customColors.error;
+      } else if (option === trueFalseQuestion.correctAnswer) {
+        return theme.colors.primary;
+      }
+    }
+  };
+
   return (
     <View
       style={{
@@ -30,19 +91,11 @@ export const TrueFalseQuestionCard: React.FC<TrueFalseQuestionCardProps> = ({
       >
         <RadioButton
           value="Verdadero"
-          disabled={!editable}
-          status={
-            trueFalseQuestion.correctAnswer !== undefined &&
-            trueFalseQuestion.correctAnswer
-              ? "checked"
-              : "unchecked"
-          }
+          status={getRadioButtonStatus(true)}
           onPress={() => {
-            onChange({
-              ...trueFalseQuestion,
-              correctAnswer: true,
-            });
+            handleOptionPress(true);
           }}
+          color={getRadioButtonColor(true)}
         />
         <Text variant="bodyLarge">Verdadero</Text>
       </View>
@@ -57,19 +110,11 @@ export const TrueFalseQuestionCard: React.FC<TrueFalseQuestionCardProps> = ({
       >
         <RadioButton
           value="Falso"
-          disabled={!editable}
-          status={
-            trueFalseQuestion.correctAnswer !== undefined &&
-            !trueFalseQuestion.correctAnswer
-              ? "checked"
-              : "unchecked"
-          }
+          status={getRadioButtonStatus(false)}
           onPress={() => {
-            onChange({
-              ...trueFalseQuestion,
-              correctAnswer: false,
-            });
+            handleOptionPress(false);
           }}
+          color={getRadioButtonColor(false)}
         />
         <Text variant="bodyLarge">Falso</Text>
       </View>

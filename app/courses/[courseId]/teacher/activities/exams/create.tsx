@@ -9,7 +9,7 @@ import {
   TrueFalseQuestion,
 } from "@/types/activity";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useCallback, useState } from "react";
+import { useCallback, useState, useRef } from "react";
 import { View, FlatList } from "react-native";
 import { Appbar, Button, Divider, TextInput, Text } from "react-native-paper";
 import { FloatingActionButton } from "@/components/FloatingActionButton";
@@ -17,15 +17,17 @@ import { FullScreenModal } from "@/components/FullScreenModal";
 import { useExamDetails } from "@/hooks/useExamDetails";
 import { ExamItemCard } from "@/components/cards/examCards/ExamItemCard";
 import { examDetailsSchema } from "@/validations/activities";
-import { handleError } from "@/services/errorHandling";
 import OptionPicker from "@/components/forms/OptionPicker";
 import { getCourseModules } from "@/services/resourceManager";
 import { BiMap } from "@/utils/bimap";
 import { AlertText } from "@/components/AlertText";
 import { useFocusEffect } from "@react-navigation/native";
+import { createExam } from "@/services/activityManagement";
+import { ExamItemMode } from "@/components/cards/examCards/examItemMode";
 
-export default function CreateActivity() {
+export default function CreateExam() {
   const router = useRouter();
+
   const { courseId: courseIdParam } = useLocalSearchParams();
 
   const [errorMessage, setErrorMessage] = useState("");
@@ -42,6 +44,8 @@ export default function CreateActivity() {
   const [examItemTypeSelectorVisible, setExamItemTypeSelectorVisible] =
     useState(false);
 
+  const flatListRef = useRef<FlatList>(null);
+
   const fetchCourseModules = async () => {
     if (!courseId) return;
     setIsLoading(true);
@@ -55,8 +59,7 @@ export default function CreateActivity() {
       );
       setCourseModulesBiMap(bimap);
     } catch (error) {
-      const newError = handleError(error, "cargar los módulos del curso");
-      setErrorMessage(newError.message);
+      setErrorMessage((error as Error).message);
     } finally {
       setIsLoading(false);
     }
@@ -67,12 +70,10 @@ export default function CreateActivity() {
 
     try {
       examDetailsSchema.parse(examDetails);
-      // const moduleId = await getCourseModuleId(courseId);
-      // await createExam(courseId, moduleId, activityDetails);
+      await createExam(courseId, examDetails);
       router.back();
     } catch (error) {
-      const newError = handleError(error, "crear un examen");
-      setErrorMessage(newError.message);
+      setErrorMessage((error as Error).message);
     } finally {
       setIsLoading(false);
     }
@@ -91,11 +92,13 @@ export default function CreateActivity() {
     }
 
     examDetailsHook.setExamItems([...examDetails.examItems, examItem]);
+    setTimeout(() => {
+      flatListRef.current?.scrollToEnd({ animated: true });
+    }, 250);
   };
 
   useFocusEffect(
     useCallback(() => {
-      console.log("JEJEJE");
       fetchCourseModules();
     }, [courseId])
   );
@@ -113,6 +116,7 @@ export default function CreateActivity() {
         }}
       >
         <FlatList
+          ref={flatListRef}
           data={examDetails.examItems}
           keyExtractor={(_item, index) => index.toString()}
           ListHeaderComponent={
@@ -144,7 +148,7 @@ export default function CreateActivity() {
                   examDetailsHook.setModuleId(Number(newValue));
                 }}
               />
-              {courseModulesBiMap.isEmpty() && (
+              {courseModulesBiMap.isEmpty() && !isLoading && (
                 <>
                   <AlertText
                     text="Antes de crear un examen, debe crear un módulo"
@@ -171,7 +175,7 @@ export default function CreateActivity() {
           }
           renderItem={({ item, index }) => (
             <ExamItemCard
-              editable={true}
+              mode={ExamItemMode.EDIT}
               examItem={item}
               onChange={(examItem) => {
                 const newExamItems = [...examDetails.examItems];
@@ -243,7 +247,9 @@ export default function CreateActivity() {
         />
       </View>
       <FloatingActionButton
-        onPress={() => setExamItemTypeSelectorVisible(true)}
+        onPress={() => {
+          setExamItemTypeSelectorVisible(true);
+        }}
       />
 
       <FullScreenModal

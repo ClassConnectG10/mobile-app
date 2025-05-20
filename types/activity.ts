@@ -67,10 +67,10 @@ export class ExamDetails {
 }
 
 export enum ExamItemType {
-  OPEN = "OPEN",
+  OPEN = "QUESTION",
   MULTIPLE_CHOICE = "MULTIPLE_CHOICE",
-  TRUE_FALSE = "TRUE_FALSE",
-  MULTIPLE_SELECT = "MULTIPLE_SELECT",
+  TRUE_FALSE = "TRUE_OR_FALSE",
+  MULTIPLE_SELECT = "MULTISELECTION",
 }
 export interface ExamItem {
   question: string;
@@ -113,6 +113,7 @@ export class MultipleSelectQuestion implements ExamItem {
 }
 
 export class ActivitySubmission {
+  // TODO: Cambiarlo a solo TASK
   constructor(
     public resourceId: number,
     public type: ActivityType,
@@ -122,4 +123,56 @@ export class ActivitySubmission {
     public dueDate: Date,
     public submissionDate?: Date
   ) {}
+}
+
+export class ExamSubmission {
+  constructor(
+    public resourceId: number,
+    public type: ActivityType,
+    public studentId: number,
+    public submittedExamItems: SubmittedExamItem[],
+    public submited: boolean,
+    public dueDate: Date,
+    public submissionDate?: Date
+  ) {}
+}
+
+export class SubmittedExamItem {
+  constructor(
+    public examItem: ExamItem,
+    public answer: ExamItemAnswer,
+    public correct?: boolean
+  ) {}
+}
+
+export interface ExamItemAnswer {
+  type: ExamItemType;
+}
+
+export class OpenAnswer implements ExamItemAnswer {
+  type: ExamItemType;
+  constructor(public answer: string) {
+    this.type = ExamItemType.OPEN;
+  }
+}
+
+export class MultipleChoiceAnswer implements ExamItemAnswer {
+  type: ExamItemType;
+  constructor(public answer: number) {
+    this.type = ExamItemType.MULTIPLE_CHOICE;
+  }
+}
+
+export class TrueFalseAnswer implements ExamItemAnswer {
+  type: ExamItemType;
+  constructor(public answer: boolean) {
+    this.type = ExamItemType.TRUE_FALSE;
+  }
+}
+
+export class MultipleSelectAnswer implements ExamItemAnswer {
+  type: ExamItemType;
+  constructor(public answers: number[]) {
+    this.type = ExamItemType.MULTIPLE_SELECT;
+  }
 }

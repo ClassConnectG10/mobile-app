@@ -1,17 +1,113 @@
 import { ToggleableTextInput } from "@/components/forms/ToggleableTextInput";
-import { MultipleChoiceQuestion } from "@/types/activity";
+import { MultipleChoiceAnswer, MultipleChoiceQuestion } from "@/types/activity";
 import { View } from "react-native";
-import { RadioButton, Button, IconButton } from "react-native-paper";
+import { RadioButton, Button, IconButton, useTheme } from "react-native-paper";
+import { ExamItemMode } from "./examItemMode";
+import { customColors } from "@/utils/constants/colors";
 
 interface MultipleChoiceQuestionCardProps {
   multipleChoiceQuestion: MultipleChoiceQuestion;
-  editable: boolean;
+  mode: ExamItemMode;
   onChange: (newQuestion: MultipleChoiceQuestion) => void;
+  studentAnswer?: MultipleChoiceAnswer;
+  setStudentAnswer?: (answer: MultipleChoiceAnswer) => void;
+  answerOk?: boolean;
+  setAnswerOk?: (ok: boolean) => void;
 }
 
 export const MultipleChoiceQuestionCard: React.FC<
   MultipleChoiceQuestionCardProps
-> = ({ multipleChoiceQuestion, editable, onChange }) => {
+> = ({
+  multipleChoiceQuestion,
+  mode,
+  onChange,
+  studentAnswer,
+  setStudentAnswer,
+  answerOk,
+  setAnswerOk,
+}) => {
+  const theme = useTheme();
+
+  const editableOptions = mode === ExamItemMode.EDIT;
+
+  if (mode === ExamItemMode.REVIEW) {
+    setAnswerOk(multipleChoiceQuestion.correctAnswer === studentAnswer?.answer);
+  }
+
+  const handleOptionPress = (index: number) => {
+    if (mode === ExamItemMode.EDIT) {
+      onChange({
+        ...multipleChoiceQuestion,
+        correctAnswer: index,
+      });
+    } else if (mode === ExamItemMode.FILL) {
+      setStudentAnswer({ ...studentAnswer, answer: index });
+    }
+  };
+
+  const handleOptionTextChange = (index: number, newQuestion: string) => {
+    if (!editableOptions) return;
+
+    const newOptions = [...multipleChoiceQuestion.options];
+    newOptions[index] = newQuestion;
+    onChange({ ...multipleChoiceQuestion, options: newOptions });
+  };
+
+  const handleDeleteQuestion = (index: number) => {
+    if (!editableOptions) return;
+
+    const newOptions = [...multipleChoiceQuestion.options];
+    newOptions.splice(index, 1);
+    let newCorrectAnswer = multipleChoiceQuestion.correctAnswer;
+    if (index === multipleChoiceQuestion.correctAnswer) {
+      newCorrectAnswer = null;
+    } else if (index < multipleChoiceQuestion.correctAnswer) {
+      newCorrectAnswer = multipleChoiceQuestion.correctAnswer - 1;
+    }
+    onChange({
+      ...multipleChoiceQuestion,
+      options: newOptions,
+      correctAnswer: newCorrectAnswer,
+    });
+  };
+
+  const handleOptionAdd = () => {
+    const newOptions = [...multipleChoiceQuestion.options];
+    newOptions.push("");
+    onChange({ ...multipleChoiceQuestion, options: newOptions });
+  };
+
+  const getRadioButtonStatus = (index: number): "checked" | "unchecked" => {
+    let buttonChecked = false;
+    if (mode === ExamItemMode.EDIT || mode === ExamItemMode.VIEW) {
+      buttonChecked = multipleChoiceQuestion.correctAnswer === index;
+    } else if (mode === ExamItemMode.FILL || mode === ExamItemMode.SENT) {
+      buttonChecked = studentAnswer.answer === index;
+    } else if (mode === ExamItemMode.REVIEW || mode === ExamItemMode.MARKED) {
+      buttonChecked =
+        multipleChoiceQuestion.correctAnswer === index ||
+        studentAnswer.answer === index;
+    }
+    return buttonChecked ? "checked" : "unchecked";
+  };
+
+  const getRadioButtonColor = (index: number): string => {
+    if (
+      mode === ExamItemMode.EDIT ||
+      mode === ExamItemMode.VIEW ||
+      mode === ExamItemMode.FILL ||
+      mode === ExamItemMode.SENT
+    ) {
+      return theme.colors.primary;
+    } else if (mode === ExamItemMode.REVIEW || mode === ExamItemMode.MARKED) {
+      if (index === studentAnswer.answer) {
+        return answerOk ? customColors.success : customColors.error;
+      } else if (index === multipleChoiceQuestion.correctAnswer) {
+        return theme.colors.primary;
+      }
+    }
+  };
+
   return (
     <View style={{ gap: multipleChoiceQuestion.options.length > 0 ? 16 : 0 }}>
       <View style={{ gap: 8 }}>
@@ -27,66 +123,37 @@ export const MultipleChoiceQuestionCard: React.FC<
           >
             <RadioButton
               value=""
-              status={
-                multipleChoiceQuestion.correctAnswer === index
-                  ? "checked"
-                  : "unchecked"
-              }
-              disabled={!editable}
+              status={getRadioButtonStatus(index)}
               onPress={() => {
-                onChange({
-                  ...multipleChoiceQuestion,
-                  correctAnswer: index,
-                });
+                handleOptionPress(index);
               }}
+              color={getRadioButtonColor(index)}
             />
             <View style={{ flex: 1 }}>
               <ToggleableTextInput
                 label=""
                 value={option}
                 placeholder=""
-                editable={editable}
+                editable={editableOptions}
                 onChange={(newOption) => {
-                  const newOptions = [...multipleChoiceQuestion.options];
-                  newOptions[index] = newOption;
-                  onChange({ ...multipleChoiceQuestion, options: newOptions });
+                  handleOptionTextChange(index, newOption);
                 }}
               />
             </View>
-            {editable && (
+            {editableOptions && (
               <IconButton
                 icon="delete"
                 size={20}
                 onPress={() => {
-                  const newOptions = [...multipleChoiceQuestion.options];
-                  newOptions.splice(index, 1);
-                  let newCorrectAnswer = multipleChoiceQuestion.correctAnswer;
-                  if (index === multipleChoiceQuestion.correctAnswer) {
-                    newCorrectAnswer = null;
-                  } else if (index < multipleChoiceQuestion.correctAnswer) {
-                    newCorrectAnswer = multipleChoiceQuestion.correctAnswer - 1;
-                  }
-                  onChange({
-                    ...multipleChoiceQuestion,
-                    options: newOptions,
-                    correctAnswer: newCorrectAnswer,
-                  });
+                  handleDeleteQuestion(index);
                 }}
               />
             )}
           </View>
         ))}
       </View>
-      {editable && (
-        <Button
-          icon="plus"
-          mode="outlined"
-          onPress={() => {
-            const newOptions = [...multipleChoiceQuestion.options];
-            newOptions.push("");
-            onChange({ ...multipleChoiceQuestion, options: newOptions });
-          }}
-        >
+      {editableOptions && (
+        <Button icon="plus" mode="outlined" onPress={handleOptionAdd}>
           Agregar opción
         </Button>
       )}

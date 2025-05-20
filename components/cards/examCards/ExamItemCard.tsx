@@ -1,41 +1,89 @@
 import {
   ExamItem,
+  ExamItemAnswer,
   ExamItemType,
+  MultipleChoiceAnswer,
   MultipleChoiceQuestion,
+  MultipleSelectAnswer,
   MultipleSelectQuestion,
+  OpenAnswer,
   OpenQuestion,
+  TrueFalseAnswer,
   TrueFalseQuestion,
 } from "@/types/activity";
-import { Button, Card, IconButton, Text, useTheme } from "react-native-paper";
+import {
+  Button,
+  Card,
+  Icon,
+  IconButton,
+  Text,
+  useTheme,
+} from "react-native-paper";
 import { MultipleChoiceQuestionCard } from "./MultipleChoiceQuestionCard";
 import { ToggleableTextInput } from "@/components/forms/ToggleableTextInput";
 import { StyleSheet, View } from "react-native";
 import { MultipleSelectQuestionCard } from "./MultipleSelectQuestionCard";
 import { TrueFalseQuestionCard } from "./TrueFalseQuestionCard";
 import { OpenQuestionCard } from "./OpenQuestionCard";
+import { ExamItemMode } from "./examItemMode";
+import { customColors } from "@/utils/constants/colors";
 
 interface ExamItemCardProps {
   examItem: ExamItem;
-  editable: boolean;
+  mode: ExamItemMode;
   onChange: (newQuestion: ExamItem) => void;
   onDelete: () => void;
   canMoveUp: boolean;
   canMoveDown: boolean;
   onMoveUp: () => void;
   onMoveDown: () => void;
+  studentAnswer?: ExamItemAnswer;
+  setStudentAnswer?: (answer: ExamItemAnswer) => void;
+  answerOk?: boolean;
+  setAnswerOk?: (ok: boolean) => void;
 }
 
 export const ExamItemCard: React.FC<ExamItemCardProps> = ({
   examItem,
-  editable,
+  mode,
   onChange,
   onDelete,
   canMoveUp,
   canMoveDown,
   onMoveUp,
   onMoveDown,
+  studentAnswer,
+  setStudentAnswer,
+  answerOk,
+  setAnswerOk,
 }) => {
   const theme = useTheme();
+
+  const editableItem = mode === ExamItemMode.EDIT;
+  const showCorrection =
+    mode === ExamItemMode.REVIEW || mode === ExamItemMode.MARKED;
+
+  const handleCorrectionPress = () => {
+    if (mode !== ExamItemMode.REVIEW || examItem.type !== ExamItemType.OPEN)
+      return;
+
+    const newAnwerOk = answerOk === undefined ? true : !answerOk;
+    setAnswerOk(newAnwerOk);
+  };
+
+  const correctionColor =
+    answerOk === undefined
+      ? theme.colors.primary
+      : answerOk
+      ? customColors.success
+      : customColors.error;
+
+  const correctionIcon =
+    answerOk === undefined
+      ? "help-circle-outline"
+      : answerOk
+      ? "check-circle-outline"
+      : "close-circle-outline";
 
   return (
     <Card
@@ -66,11 +114,20 @@ export const ExamItemCard: React.FC<ExamItemCardProps> = ({
           </Text>
 
           <View style={{ flexDirection: "row" }}>
-            {canMoveUp && editable && (
+            {canMoveUp && editableItem && (
               <IconButton icon="arrow-up" size={18} onPress={onMoveUp} />
             )}
-            {canMoveDown && editable && (
+            {canMoveDown && editableItem && (
               <IconButton icon="arrow-down" size={18} onPress={onMoveDown} />
+            )}
+
+            {showCorrection && (
+              <IconButton
+                icon={correctionIcon}
+                size={18}
+                onPress={handleCorrectionPress}
+                iconColor={correctionColor}
+              />
             )}
           </View>
         </View>
@@ -78,7 +135,7 @@ export const ExamItemCard: React.FC<ExamItemCardProps> = ({
           label="Pregunta"
           value={examItem.question}
           placeholder="Escribe la pregunta"
-          editable={editable}
+          editable={mode === ExamItemMode.EDIT}
           onChange={(newQuestion) => {
             onChange({ ...examItem, question: newQuestion });
           }}
@@ -86,31 +143,45 @@ export const ExamItemCard: React.FC<ExamItemCardProps> = ({
         {examItem.type === ExamItemType.OPEN ? (
           <OpenQuestionCard
             openQuestion={examItem as OpenQuestion}
-            editable={editable}
+            mode={mode}
             onChange={onChange}
+            studentAnswer={studentAnswer as OpenAnswer}
+            setStudentAnswer={setStudentAnswer}
           />
         ) : examItem.type === ExamItemType.MULTIPLE_CHOICE ? (
           <MultipleChoiceQuestionCard
             multipleChoiceQuestion={examItem as MultipleChoiceQuestion}
-            editable={editable}
+            mode={mode}
             onChange={onChange}
+            studentAnswer={studentAnswer as MultipleChoiceAnswer}
+            setStudentAnswer={setStudentAnswer}
+            answerOk={answerOk}
+            setAnswerOk={setAnswerOk}
           />
         ) : examItem.type === ExamItemType.TRUE_FALSE ? (
           <TrueFalseQuestionCard
             trueFalseQuestion={examItem as TrueFalseQuestion}
-            editable={editable}
+            mode={mode}
             onChange={onChange}
+            studentAnswer={studentAnswer as TrueFalseAnswer}
+            setStudentAnswer={setStudentAnswer}
+            answerOk={answerOk}
+            setAnswerOk={setAnswerOk}
           />
         ) : (
           examItem.type === ExamItemType.MULTIPLE_SELECT && (
             <MultipleSelectQuestionCard
               multipleSelectQuestion={examItem as MultipleSelectQuestion}
-              editable={editable}
+              mode={mode}
               onChange={onChange}
+              studentAnswer={studentAnswer as MultipleSelectAnswer}
+              setStudentAnswer={setStudentAnswer}
+              answerOk={answerOk}
+              setAnswerOk={setAnswerOk}
             />
           )
         )}
-        {editable && (
+        {editableItem && (
           <Button icon="trash-can" mode="outlined" onPress={onDelete}>
             Borrar pregunta
           </Button>

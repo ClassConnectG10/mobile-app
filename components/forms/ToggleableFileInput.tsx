@@ -34,7 +34,7 @@ export const ToggleableFileInput: React.FC<ToggleableFileInputProps> = ({
     try {
       await viewDocument({
         uri: file.localUri,
-        mimeType: file.fileType,
+        mimeType: file.type,
       });
     } catch (err) {
       console.error("Error al abrir el archivo:", err);
@@ -136,7 +136,7 @@ export const ToggleableFileInput: React.FC<ToggleableFileInputProps> = ({
               }}
             >
               <Icon
-                source={iconByType(file.fileType)}
+                source={iconByType(file.type)}
                 size={24}
                 color={theme.colors.primary}
               />

@@ -1,7 +1,7 @@
 export class File {
   constructor(
     public name: string,
-    public fileType: string,
+    public type: string,
     public localUri?: string,
     public firebaseUrl?: string
   ) {}

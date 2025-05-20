@@ -4,7 +4,7 @@ import {
   SearchFilters,
   SearchOption,
 } from "@/types/course";
-import { handleError } from "./errorHandling";
+import { handleError } from "./common";
 import {
   courseDetailsSchema,
   courseDetailsUpdateSchema,

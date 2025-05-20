@@ -1,6 +1,6 @@
 import { createModuleRequest } from "@/api/modules";
 import { Module, ModuleDetails } from "@/types/resources";
-import { handleError } from "./errorHandling";
+import { handleError } from "./common";
 import { moduleSchema } from "@/validations/resources";
 
 export async function getCourseModules(courseId: string): Promise<Module[]> {

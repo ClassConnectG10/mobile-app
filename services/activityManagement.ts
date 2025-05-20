@@ -6,8 +6,15 @@ import {
   ActivitiesOption,
   ActivityType,
   ActivitySubmission,
+  ExamDetails,
+  ExamItem,
+  ExamItemType,
+  OpenQuestion,
+  MultipleChoiceQuestion,
+  TrueFalseQuestion,
+  MultipleSelectQuestion,
 } from "@/types/activity";
-import { handleError } from "./errorHandling";
+import { handleError } from "./common";
 import { AxiosInstance } from "axios";
 import {
   createActivityRequest,
@@ -26,6 +33,7 @@ import {
 import {
   activityDetailsSchema,
   activityDetailsSchemaUpdate,
+  examDetailsSchema,
 } from "@/validations/activities";
 import { getDateFromBackend } from "@/utils/date";
 import { createGetModuleRequest, createModuleRequest } from "@/api/modules";
@@ -452,5 +460,61 @@ export async function submitActivity(
     await request.post("", body);
   } catch (error) {
     throw handleError(error, "enviar la actividad");
+  }
+}
+
+function examItemToJSON(examItem: ExamItem) {
+  switch (examItem.type) {
+    case ExamItemType.OPEN:
+      return {
+        question: examItem.question,
+        type: examItem.type,
+        answer: (examItem as OpenQuestion).suggestedAnswer,
+      };
+    case ExamItemType.MULTIPLE_CHOICE:
+      return {
+        question: examItem.question,
+        type: examItem.type,
+        options: (examItem as MultipleChoiceQuestion).options,
+        answer: (examItem as MultipleChoiceQuestion).correctAnswer,
+      };
+    case ExamItemType.TRUE_FALSE:
+      return {
+        question: examItem.question,
+        type: examItem.type,
+        answer: (examItem as TrueFalseQuestion).correctAnswer,
+      };
+    case ExamItemType.MULTIPLE_SELECT:
+      return {
+        question: examItem.question,
+        type: examItem.type,
+        options: (examItem as MultipleSelectQuestion).options,
+        answers: (examItem as MultipleSelectQuestion).correctAnswers,
+      };
+    default:
+      throw new Error("Tipo de pregunta no soportado");
+  }
+}
+
+export async function createExam(
+  courseId: string,
+  examDetails: ExamDetails
+): Promise<void> {
+  try {
+    examDetailsSchema.parse(examDetails);
+
+    const request = await createExamsRequest(courseId);
+    const body = {
+      title: examDetails.title,
+      description: "",
+      instruction: examDetails.instructions,
+      due_date: examDetails.dueDate.toISOString(),
+      module: examDetails.moduleId,
+      exam_fields: examDetails.examItems.map((item) => examItemToJSON(item)),
+    };
+
+    await request.post("", body);
+  } catch (error) {
+    throw handleError(error, "crear el examen");
   }
 }

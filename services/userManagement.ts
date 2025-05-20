@@ -1,6 +1,6 @@
 import { userDetailsSchema, userSchema } from "@/validations/users";
 import { User, UserInformation } from "@/types/user";
-import { handleError } from "./errorHandling";
+import { handleError } from "./common";
 import {
   createRegisterUserRequest,
   createLoginUserRequest,
