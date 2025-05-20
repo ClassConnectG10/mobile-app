@@ -2,8 +2,8 @@ import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import UserCard from "@/components/cards/UserCard";
 import { getUser } from "@/services/userManagement";
 import { User } from "@/types/user";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
+import { useCallback, useState } from "react";
 import { ScrollView, View } from "react-native";
 import {
   ActivityIndicator,
@@ -102,10 +102,12 @@ export default function TeacherSubmissionPage() {
     }
   };
 
-  useEffect(() => {
-    fetchStudent();
-    fetchMark();
-  }, [courseId, studentId]);
+  useFocusEffect(
+    useCallback(() => {
+      fetchStudent();
+      fetchMark();
+    }, [courseId, studentId])
+  );
 
   return (
     <>

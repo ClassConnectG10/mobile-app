@@ -1,8 +1,8 @@
 import { Avatar, Appbar, useTheme } from "react-native-paper";
-import { useRouter, useLocalSearchParams } from "expo-router";
+import { useRouter, useLocalSearchParams, useFocusEffect } from "expo-router";
 import { View, ScrollView, ActivityIndicator } from "react-native";
 import { globalStyles } from "@/styles/globalStyles";
-import { useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { getUser } from "@/services/userManagement";
 import { User } from "@/types/user";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
@@ -34,9 +34,11 @@ export default function UserDetailsPage() {
     }
   };
 
-  useEffect(() => {
-    fetchUser();
-  }, [userId]);
+  useFocusEffect(
+    useCallback(() => {
+      fetchUser();
+    }, [userId])
+  );
 
   return (
     <>

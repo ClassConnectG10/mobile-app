@@ -11,8 +11,8 @@ import {
   TeacherActivity,
 } from "@/types/activity";
 import { User } from "@/types/user";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
+import { useCallback, useState } from "react";
 import { FlatList, View, StyleSheet } from "react-native";
 import {
   ActivityIndicator,
@@ -134,17 +134,23 @@ export default function TeacherSubmissionsPage() {
     }
   };
 
-  useEffect(() => {
-    fetchTeacherActivity();
-  }, [courseId, activityId]);
+  useFocusEffect(
+    useCallback(() => {
+      fetchTeacherActivity();
+    }, [courseId, activityId])
+  );
 
-  useEffect(() => {
-    fetchSubmissions();
-  }, [teacherActivity]);
+  useFocusEffect(
+    useCallback(() => {
+      fetchSubmissions();
+    }, [teacherActivity])
+  );
 
-  useEffect(() => {
-    fetchStudents();
-  }, [studentSubmissions]);
+  useFocusEffect(
+    useCallback(() => {
+      fetchStudents();
+    }, [studentSubmissions])
+  );
 
   return (
     <>

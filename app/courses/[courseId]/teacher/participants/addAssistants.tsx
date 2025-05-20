@@ -10,8 +10,8 @@ import {
 import { getUsers } from "@/services/userManagement";
 import { Course } from "@/types/course";
 import { User } from "@/types/user";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
+import { useCallback, useState } from "react";
 import { FlatList, View } from "react-native";
 import {
   ActivityIndicator,
@@ -126,15 +126,19 @@ export default function AddAssistant() {
     }
   }
 
-  useEffect(() => {
-    fetchUsers();
-  }, [assistants, students]);
+  useFocusEffect(
+    useCallback(() => {
+      fetchUsers();
+    }, [assistants, students])
+  );
 
-  useEffect(() => {
-    fetchCourse();
-    fetchAssistants();
-    fetchStudents();
-  }, [courseId]);
+  useFocusEffect(
+    useCallback(() => {
+      fetchCourse();
+      fetchAssistants();
+      fetchStudents();
+    }, [courseId])
+  );
 
   const handleAddAssistant = async () => {
     if (!courseId || !selectedUser) return;

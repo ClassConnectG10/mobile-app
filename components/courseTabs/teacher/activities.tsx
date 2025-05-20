@@ -1,7 +1,7 @@
 import { getCourse } from "@/services/courseManagement";
 import { useCourseContext } from "@/utils/storage/courseContext";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
+import { useCallback, useState } from "react";
 import {
   ActivityIndicator,
   useTheme,
@@ -165,17 +165,23 @@ export default function ActivitiesTab() {
     }
   };
 
-  useEffect(() => {
-    filterActivities();
-  }, [activitiesOption, publishedActivitiesOption, activities, isOwner]);
+  useFocusEffect(
+    useCallback(() => {
+      filterActivities();
+    }, [activitiesOption, publishedActivitiesOption, activities, isOwner])
+  );
 
-  useEffect(() => {
-    fetchActivities();
-  }, [courseId, isOwner]);
+  useFocusEffect(
+    useCallback(() => {
+      fetchActivities();
+    }, [courseId, isOwner])
+  );
 
-  useEffect(() => {
-    fetchCourse();
-  }, [courseId, userContext.user]);
+  useFocusEffect(
+    useCallback(() => {
+      fetchCourse();
+    }, [courseId, userContext.user])
+  );
 
   return (
     <>

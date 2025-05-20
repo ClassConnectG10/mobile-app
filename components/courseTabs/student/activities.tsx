@@ -1,7 +1,7 @@
 import { getCourse } from "@/services/courseManagement";
 import { useCourseContext } from "@/utils/storage/courseContext";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
+import { useCallback, useState } from "react";
 import {
   ActivityIndicator,
   useTheme,
@@ -140,17 +140,23 @@ export default function CoursePage() {
     }
   };
 
-  useEffect(() => {
-    filterActivities();
-  }, [activitiesOption, submitteedActivitiesOption, activities]);
+  useFocusEffect(
+    useCallback(() => {
+      filterActivities();
+    }, [activitiesOption, submitteedActivitiesOption, activities])
+  );
 
-  useEffect(() => {
-    fetchActivities();
-  }, [courseId]);
+  useFocusEffect(
+    useCallback(() => {
+      fetchActivities();
+    }, [courseId])
+  );
 
-  useEffect(() => {
-    fetchCourse();
-  }, [courseId, userContext.user]);
+  useFocusEffect(
+    useCallback(() => {
+      fetchCourse();
+    }, [courseId, userContext.user])
+  );
 
   return (
     <>

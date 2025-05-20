@@ -9,8 +9,8 @@ import {
 import { Course, UserRole } from "@/types/course";
 import { User } from "@/types/user";
 import { useUserContext } from "@/utils/storage/userContext";
-import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useFocusEffect, useRouter } from "expo-router";
+import { useCallback, useState } from "react";
 import { SectionList, View } from "react-native";
 import {
   ActivityIndicator,
@@ -121,12 +121,14 @@ export const ParticipantsTab: React.FC<ParticipantsTabProps> = ({ course }) => {
     }
   }
 
-  useEffect(() => {
-    fetchIsOwner();
-    fetchCourseOwner();
-    fetchAssistants();
-    fetchStudents();
-  }, [course]);
+  useFocusEffect(
+    useCallback(() => {
+      fetchIsOwner();
+      fetchCourseOwner();
+      fetchAssistants();
+      fetchStudents();
+    }, [course])
+  );
 
   const handleRemoveAssistant = async () => {
     if (!selectedUser) return;

@@ -7,8 +7,8 @@ import {
 import { Course } from "@/types/course";
 import { User } from "@/types/user";
 import { useUserContext } from "@/utils/storage/userContext";
-import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useFocusEffect, useRouter } from "expo-router";
+import { useCallback, useState } from "react";
 import { SectionList, View } from "react-native";
 import { ActivityIndicator, Text, useTheme } from "react-native-paper";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
@@ -93,11 +93,13 @@ export const ParticipantsTab: React.FC<ParticipantsTabProps> = ({ course }) => {
     }
   }
 
-  useEffect(() => {
-    fetchCourseOwner();
-    fetchAssistants();
-    fetchStudents();
-  }, [course]);
+  useFocusEffect(
+    useCallback(() => {
+      fetchCourseOwner();
+      fetchAssistants();
+      fetchStudents();
+    }, [course])
+  );
 
   return (
     <View style={{ paddingHorizontal: 16, flex: 1 }}>
