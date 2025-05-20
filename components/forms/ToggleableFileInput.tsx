@@ -1,8 +1,10 @@
 import { File } from "@/types/file";
-import { pick } from "@react-native-documents/picker";
+import { errorCodes, pick } from "@react-native-documents/picker";
 import { viewDocument } from "@react-native-documents/viewer";
 import { Pressable, View } from "react-native";
-// import { storage } from "@/firebase"; // tu instancia de Firebase Storage
+import { getStorage } from "@react-native-firebase/storage";
+import { documentDirectory, downloadAsync } from "expo-file-system";
+
 import {
   Button,
   Card,
@@ -28,38 +30,78 @@ export const ToggleableFileInput: React.FC<ToggleableFileInputProps> = ({
 }) => {
   const theme = useTheme();
 
-  const downLoadFile = async (file: File) => {
-    // TODO: set the localUrl
+  const viewFile = async (file: File) => {
+    try {
+      await viewDocument({
+        uri: file.localUri,
+        mimeType: file.fileType,
+      });
+    } catch (err) {
+      console.error("Error al abrir el archivo:", err);
+    }
   };
 
-  const viewFile = async (file: File) => {
-    if (!file.localUrl) {
-      if (file.firebaseUrl) {
-        await downLoadFile(file);
-      } else {
-        return;
-      }
-    }
+  const downloadAndOpenFile = async (index: number) => {
+    try {
+      const file = files[index];
 
-    await viewDocument({ uri: file.localUrl, mimeType: file.fileType });
+      const firebaseRef = getStorage().ref(file.firebaseUrl);
+      const firebaseUri = await firebaseRef.getDownloadURL();
+
+      const localUri = documentDirectory + file.name;
+      const downloaded = await downloadAsync(firebaseUri, localUri);
+      const newFile = {
+        ...file,
+        localUri: downloaded.uri,
+      };
+      const newFiles = [...files];
+      newFiles[index] = newFile;
+
+      onChange(newFiles);
+      await viewFile(newFile);
+    } catch (err) {
+      console.error("Error al descargar el archivo:", err);
+    }
+  };
+
+  const openFile = async (index: number) => {
+    try {
+      const file = files[index];
+      if (!file.localUri) {
+        if (file.firebaseUrl) {
+          console.log("FIREBASE");
+          await downloadAndOpenFile(index);
+        } else {
+          console.error(
+            "No se puede abrir el archivo, no hay URI local ni URL de Firebase"
+          );
+        }
+      } else {
+        await viewFile(file);
+      }
+    } catch (err) {
+      console.error("Error al abrir el archivo:", err);
+    }
   };
 
   const pickFile = async () => {
     try {
       const results = await pick();
-      if (results && results.length > 0) {
-        const newFiles = results.map(
-          (result: any) => new File(result.name, result.type, result.uri)
-        );
-        if (maxFiles && files.length + newFiles.length > maxFiles) {
-          newFiles.splice(
-            maxFiles - files.length,
-            newFiles.length - (files.length + newFiles.length - maxFiles)
-          );
-        }
-        onChange([...files, ...newFiles]);
+      if (!results || results.length === 0) {
+        return;
       }
+
+      const newFile = results.map(
+        (result: any) => new File(result.name, result.type, result.uri)
+      )[0];
+
+      const newFiles = [...files, newFile];
+      onChange(newFiles);
     } catch (err) {
+      if (err.code && err.code === errorCodes.OPERATION_CANCELED) {
+        return; // El usuario canceló la selección
+      }
+
       console.error("Error al seleccionar documento:", err);
     }
   };
@@ -75,13 +117,15 @@ export const ToggleableFileInput: React.FC<ToggleableFileInputProps> = ({
         <Text style={{ textAlign: "center" }}>No hay archivos adjuntos</Text>
       )}
       {files.map((file, index) => (
-        <Pressable key={index} onPress={() => viewFile(file)}>
+        <Pressable key={index} onPress={() => openFile(index)}>
           <Card
             style={{
               paddingHorizontal: 10,
               paddingVertical: 5,
               borderRadius: 8,
               elevation: 1,
+              height: 50,
+              justifyContent: "center",
             }}
           >
             <View
@@ -98,7 +142,7 @@ export const ToggleableFileInput: React.FC<ToggleableFileInputProps> = ({
               />
 
               <View style={{ flex: 1 }}>
-                <Text numberOfLines={1}>{file.fileName}</Text>
+                <Text numberOfLines={1}>{file.name}</Text>
               </View>
               {editable && (
                 <IconButton
