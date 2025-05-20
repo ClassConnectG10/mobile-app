@@ -98,11 +98,13 @@ export default function CreateCoursePage() {
               label="Fecha de inicio"
               value={courseDetails.startDate}
               onChange={courseDetailsHook.setStartDate}
+              horizontal={true}
             />
             <DatePickerButton
               label="Fecha de finalización"
               value={courseDetails.endDate}
               onChange={courseDetailsHook.setEndDate}
+              horizontal={true}
             />
           </View>
           <OptionPicker

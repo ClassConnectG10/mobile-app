@@ -11,6 +11,7 @@ type DatePickerProps = {
   type?: "date" | "time" | "datetime";
   canReset?: boolean;
   onChange: (date: Date) => void;
+  horizontal?: boolean;
 };
 
 export const DatePickerButton: React.FC<DatePickerProps> = ({
@@ -20,6 +21,7 @@ export const DatePickerButton: React.FC<DatePickerProps> = ({
   type = "date",
   canReset = false,
   onChange,
+  horizontal = false,
 }) => {
   const [showPicker, setShowPicker] = useState<"date" | "time" | null>(null);
 
@@ -84,7 +86,9 @@ export const DatePickerButton: React.FC<DatePickerProps> = ({
           }}
         >
           <Pressable
-            style={{ flex: 1 }}
+            style={{
+              flex: 1,
+            }}
             onPress={() =>
               editable && setShowPicker(type === "time" ? "time" : "date")
             }
@@ -108,10 +112,12 @@ export const DatePickerButton: React.FC<DatePickerProps> = ({
         </View>
       ) : (
         <Pressable
-          style={{ flex: 1 }}
           onPress={() =>
             editable && setShowPicker(type === "time" ? "time" : "date")
           }
+          style={{
+            flex: horizontal ? 1 : undefined,
+          }}
         >
           <TextInput
             label={label}

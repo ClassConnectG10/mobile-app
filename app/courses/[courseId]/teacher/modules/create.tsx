@@ -39,15 +39,19 @@ export default function CreateModulePage() {
         <Appbar.BackAction onPress={() => router.back()} />
         <Appbar.Content title="Crear módulo" />
       </Appbar.Header>
-      <View
-        style={[
-          globalStyles.mainContainer,
-          {
-            backgroundColor: theme.colors.background,
-          },
-        ]}
+      <ScrollView
+        contentContainerStyle={{
+          flex: 1,
+          backgroundColor: theme.colors.background,
+          justifyContent: "space-between",
+          padding: 16,
+        }}
       >
-        <ScrollView contentContainerStyle={globalStyles.courseDetailsContainer}>
+        <View
+          style={{
+            gap: 16,
+          }}
+        >
           <TextInput
             placeholder="Nombre"
             label="Nombre"
@@ -58,15 +62,17 @@ export default function CreateModulePage() {
             label="Descripción"
             onChangeText={setModuleDescription}
           />
-        </ScrollView>
-        <Button
-          mode="contained"
-          disabled={isLoading}
-          onPress={handleCreateModule}
-        >
-          Crear módulo
-        </Button>
-      </View>
+        </View>
+        <View>
+          <Button
+            mode="contained"
+            disabled={isLoading}
+            onPress={handleCreateModule}
+          >
+            Crear módulo
+          </Button>
+        </View>
+      </ScrollView>
       <ErrorMessageSnackbar
         message={errorMessage}
         onDismiss={() => setErrorMessage("")}

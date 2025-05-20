@@ -4,7 +4,11 @@ import ResourceCard from "@/components/cards/ResourceCard";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import { getModuleTeacherActivities } from "@/services/activityManagement";
 import { getCourseModule } from "@/services/resourceManager";
-import { TeacherActivity } from "@/types/activity";
+import {
+  ActivityType,
+  StudentActivity,
+  TeacherActivity,
+} from "@/types/activity";
 import { UserRole } from "@/types/course";
 import { Module, Resource } from "@/types/resources";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
@@ -114,11 +118,20 @@ export default function ModulePage() {
     }
   };
 
-  const handleActivitiesPress = (activityId: number) => {
-    router.push({
-      pathname: "/courses/[courseId]/teacher/activities/[activityId]",
-      params: { courseId, activityId },
-    });
+  const handleActivityPress = (teacherActivity: TeacherActivity) => {
+    const activityId = teacherActivity.activity.resourceId;
+
+    if (teacherActivity.activity.type === ActivityType.TASK) {
+      router.push({
+        pathname: "/courses/[courseId]/teacher/activities/[activityId]",
+        params: { courseId, activityId },
+      });
+    } else if (teacherActivity.activity.type === ActivityType.EXAM) {
+      router.push({
+        pathname: "/courses/[courseId]/teacher/activities/exams/[examId]",
+        params: { courseId, examId: activityId },
+      });
+    }
   };
 
   useFocusEffect(
@@ -186,7 +199,9 @@ export default function ModulePage() {
                     {item.type === ModuleElementType.ACTIVITY ? (
                       <ActivityCard
                         activity={item.element as TeacherActivity}
-                        onPress={() => handleActivitiesPress(item.id)}
+                        onPress={() =>
+                          handleActivityPress(item.element as TeacherActivity)
+                        }
                       />
                     ) : (
                       <ResourceCard

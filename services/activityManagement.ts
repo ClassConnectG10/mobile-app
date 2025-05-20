@@ -7,14 +7,8 @@ import {
   ActivityType,
   ActivitySubmission,
   ExamDetails,
-  ExamItem,
-  ExamItemType,
-  OpenQuestion,
-  MultipleChoiceQuestion,
-  TrueFalseQuestion,
-  MultipleSelectQuestion,
 } from "@/types/activity";
-import { handleError } from "./common";
+import { examItemToJSON, getExamItemFromJSON, handleError } from "./common";
 import { AxiosInstance } from "axios";
 import {
   createActivityRequest,
@@ -463,39 +457,6 @@ export async function submitActivity(
   }
 }
 
-function examItemToJSON(examItem: ExamItem) {
-  switch (examItem.type) {
-    case ExamItemType.OPEN:
-      return {
-        question: examItem.question,
-        type: examItem.type,
-        answer: (examItem as OpenQuestion).suggestedAnswer,
-      };
-    case ExamItemType.MULTIPLE_CHOICE:
-      return {
-        question: examItem.question,
-        type: examItem.type,
-        options: (examItem as MultipleChoiceQuestion).options,
-        answer: (examItem as MultipleChoiceQuestion).correctAnswer,
-      };
-    case ExamItemType.TRUE_FALSE:
-      return {
-        question: examItem.question,
-        type: examItem.type,
-        answer: (examItem as TrueFalseQuestion).correctAnswer,
-      };
-    case ExamItemType.MULTIPLE_SELECT:
-      return {
-        question: examItem.question,
-        type: examItem.type,
-        options: (examItem as MultipleSelectQuestion).options,
-        answers: (examItem as MultipleSelectQuestion).correctAnswers,
-      };
-    default:
-      throw new Error("Tipo de pregunta no soportado");
-  }
-}
-
 export async function createExam(
   courseId: string,
   examDetails: ExamDetails
@@ -516,5 +477,73 @@ export async function createExam(
     await request.post("", body);
   } catch (error) {
     throw handleError(error, "crear el examen");
+  }
+}
+
+export async function getTeacherExam(
+  courseId: string,
+  examId: number
+): Promise<TeacherActivity> {
+  try {
+    const request = await createActivityRequest(courseId, examId);
+    const response = await request.get("");
+
+    const activityData = response.data.data;
+    const activity: TeacherActivity = new TeacherActivity(
+      new Activity(
+        activityData.resource_id,
+        activityData.module_id,
+        ActivityType.EXAM,
+        new ExamDetails(
+          activityData.module_id,
+          activityData.title,
+          activityData.instruction,
+          activityData.exam_fields.map((item: any) =>
+            getExamItemFromJSON(item)
+          ),
+          getDateFromBackend(activityData.due_date)
+        )
+      ),
+      activityData.visible
+    );
+
+    return activity;
+  } catch (error) {
+    throw handleError(error, "obtener la actividad del profesor");
+  }
+}
+
+export async function updateTeacherExam(
+  courseId: string,
+  examId: number,
+  examDetails: ExamDetails
+): Promise<void> {
+  try {
+    examDetailsSchema.parse(examDetails);
+
+    const request = await createExamRequest(courseId, examId);
+    const body = {
+      title: examDetails.title,
+      instruction: examDetails.instructions,
+      due_date: examDetails.dueDate.toISOString(),
+      module: examDetails.moduleId,
+      exam_fields: examDetails.examItems.map((item) => examItemToJSON(item)),
+    };
+
+    await request.patch("", body);
+  } catch (error) {
+    throw handleError(error, "actualizar el examen");
+  }
+}
+
+export async function deleteExam(
+  courseId: string,
+  examId: number
+): Promise<void> {
+  try {
+    const request = await createExamRequest(courseId, examId);
+    await request.delete("");
+  } catch (error) {
+    throw handleError(error, "eliminar el examen");
   }
 }

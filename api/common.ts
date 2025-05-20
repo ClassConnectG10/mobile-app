@@ -1,5 +1,13 @@
 import axios, { AxiosInstance } from "axios";
 import { getAuth } from "@react-native-firebase/auth";
+import {
+  ExamItem,
+  ExamItemType,
+  OpenQuestion,
+  MultipleChoiceQuestion,
+  TrueFalseQuestion,
+  MultipleSelectQuestion,
+} from "@/types/activity";
 
 const BASE_URL = process.env.EXPO_PUBLIC_MIDDLEEND_BASE_URL;
 
