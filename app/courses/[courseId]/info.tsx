@@ -8,7 +8,7 @@ import {
   Dialog,
   ActivityIndicator,
 } from "react-native-paper";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import OptionPicker from "@/components/forms/OptionPicker";
 import {
   LEVELS,
@@ -20,7 +20,7 @@ import { DatePickerButton } from "@/components/forms/DatePickerButton";
 import { useRequiredCoursesContext } from "@/utils/storage/requiredCoursesContext";
 import CourseCard from "@/components/cards/CourseCard";
 import { useCourseContext } from "@/utils/storage/courseContext";
-import { useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import {
   deleteCourse,
@@ -185,17 +185,21 @@ export default function CreateCoursePage() {
     }
   }
 
-  useEffect(() => {
-    fetchCourse();
-  }, [courseId]);
+  useFocusEffect(
+    useCallback(() => {
+      fetchCourse();
+    }, [courseId])
+  );
 
-  useEffect(() => {
-    if (courseContext.course) {
-      setCourseDetails();
-      fetchCourseOwner();
-      fetchRequiredCourses();
-    }
-  }, [courseContext.course]);
+  useFocusEffect(
+    useCallback(() => {
+      if (courseContext.course) {
+        setCourseDetails();
+        fetchCourseOwner();
+        fetchRequiredCourses();
+      }
+    }, [courseContext.course])
+  );
 
   const handleRequiredCoursePress = (requiredCourse: Course) => {
     router.push({

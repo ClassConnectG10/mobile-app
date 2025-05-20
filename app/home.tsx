@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback } from "react";
 import { FlatList, View } from "react-native";
 import {
   ActivityIndicator,
@@ -9,10 +9,10 @@ import {
   Text,
   IconButton,
 } from "react-native-paper";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import CourseCard from "@/components/cards/CourseCard";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Course, SearchFilters, SearchOption } from "@/types/course";
 import { searchCourses } from "@/services/courseManagement";
 import { useUserContext } from "@/utils/storage/userContext";
@@ -86,9 +86,11 @@ export default function HomePage() {
     }
   };
 
-  useEffect(() => {
-    fetchCourses();
-  }, [searchFilters, searchOption]);
+  useFocusEffect(
+    useCallback(() => {
+      fetchCourses();
+    }, [searchFilters, searchOption])
+  );
 
   axios.defaults.headers.common["X-Caller-Id"] =
     userContextHook.user.id.toString();

@@ -13,8 +13,8 @@ import {
 } from "@/types/activity";
 import { User } from "@/types/user";
 import { formatDateTime } from "@/utils/date";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
+import { useCallback, useState } from "react";
 import { ScrollView, View } from "react-native";
 import { ActivityIndicator, Appbar, Text, useTheme } from "react-native-paper";
 
@@ -94,14 +94,18 @@ export default function TeacherSubmissionPage() {
     });
   };
 
-  useEffect(() => {
-    fetchSubmission();
-  }, [teacherActivity]);
+  useFocusEffect(
+    useCallback(() => {
+      fetchSubmission();
+    }, [teacherActivity])
+  );
 
-  useEffect(() => {
-    fetchTeacherActivity();
-    fetchStudent();
-  }, [courseId, activityId, studentId]);
+  useFocusEffect(
+    useCallback(() => {
+      fetchTeacherActivity();
+      fetchStudent();
+    }, [courseId, activityId, studentId])
+  );
 
   return (
     <>

@@ -12,8 +12,8 @@ import {
 import { getCourse } from "@/services/courseManagement";
 import { TeacherActivity } from "@/types/activity";
 import { Course, CourseStatus, UserRole } from "@/types/course";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
+import { useCallback, useState } from "react";
 import { View } from "react-native";
 import {
   ActivityIndicator,
@@ -87,10 +87,12 @@ export default function TeacherActivityPage() {
     setIsEditing(false);
   };
 
-  useEffect(() => {
-    fetchTeacherActivity();
-    fetchCourse();
-  }, [courseId, activityId]);
+  useFocusEffect(
+    useCallback(() => {
+      fetchTeacherActivity();
+      fetchCourse();
+    }, [courseId, activityId])
+  );
 
   const handleViewSubmissions = async () => {
     router.push({

@@ -4,8 +4,8 @@ import {
   removeCourseFromFavorites,
 } from "@/services/courseManagement";
 import { useCourseContext } from "@/utils/storage/courseContext";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
+import { useCallback, useState } from "react";
 import {
   ActivityIndicator,
   Appbar,
@@ -119,9 +119,11 @@ export default function CoursePage() {
     });
   };
 
-  useEffect(() => {
-    fetchCourse();
-  }, [courseId]);
+  useFocusEffect(
+    useCallback(() => {
+      fetchCourse();
+    }, [courseId])
+  );
 
   return (
     <>

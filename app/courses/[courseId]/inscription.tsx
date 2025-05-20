@@ -1,6 +1,6 @@
 import { Course, CourseStatus, UserRole } from "@/types/course";
-import { useRouter, useLocalSearchParams } from "expo-router";
-import { useEffect, useState } from "react";
+import { useRouter, useLocalSearchParams, useFocusEffect } from "expo-router";
+import { useCallback, useEffect, useState } from "react";
 import { ScrollView, View } from "react-native";
 import {
   ActivityIndicator,
@@ -149,10 +149,19 @@ export default function CourseIncriptionDetails() {
     fetchCourse();
   }, []);
 
-  useEffect(() => {
-    fetchCourseOwner();
-    fetchCourseDependenciesMarks();
-  }, [course]);
+  // TODO: Chequear si esto funciona bien y no spammea a lo loco
+  // useFocusEffect(
+  //   useCallback(() => {
+  //     fetchCourse();
+  //   }, [])
+  // );
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchCourseOwner();
+      fetchCourseDependenciesMarks();
+    }, [course])
+  );
 
   function hasDependencyApproval(dependency: string) {
     if (!marks) return false;

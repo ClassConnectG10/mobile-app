@@ -3,8 +3,8 @@ import {
   getStudentActivity,
   submitActivity,
 } from "@/services/activityManagement";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
+import { useCallback, useState } from "react";
 import { ScrollView, View } from "react-native";
 import { Appbar, Button } from "react-native-paper";
 import {
@@ -57,7 +57,7 @@ export default function ActivityDetails() {
       const response = await getActivitySubmission(
         courseId,
         studentActivity.activity,
-        userContext.user.id,
+        userContext.user.id
       );
 
       setActivitySubmission(response);
@@ -78,7 +78,7 @@ export default function ActivityDetails() {
       const submission = await getActivitySubmission(
         courseId,
         studentActivity.activity,
-        userContext.user.id,
+        userContext.user.id
       );
 
       setActivitySubmission(submission);
@@ -94,15 +94,19 @@ export default function ActivityDetails() {
     }
   };
 
-  useEffect(() => {
-    fetchStudentActivity();
-  }, [courseId, activityId]);
+  useFocusEffect(
+    useCallback(() => {
+      fetchStudentActivity();
+    }, [courseId, activityId])
+  );
 
-  useEffect(() => {
-    if (studentActivity) {
-      fetchStudentActivitySubmission();
-    }
-  }, [studentActivity]);
+  useFocusEffect(
+    useCallback(() => {
+      if (studentActivity) {
+        fetchStudentActivitySubmission();
+      }
+    }, [studentActivity])
+  );
 
   return (
     <>
@@ -133,18 +137,14 @@ export default function ActivityDetails() {
             />
 
             <TextField
-              label="Descripción"
-              value={studentActivity.activity.activityDetails.description}
-            />
-            <TextField
               label="Instrucciones"
-              value={studentActivity.activity.activityDetails.instruction}
+              value={studentActivity.activity.activityDetails.instructions}
             />
 
             <TextField
               label="Fecha límite"
               value={formatDateTime(
-                studentActivity.activity.activityDetails.dueDate,
+                studentActivity.activity.activityDetails.dueDate
               )}
             />
 

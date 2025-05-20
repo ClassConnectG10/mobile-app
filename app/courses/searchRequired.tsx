@@ -1,8 +1,8 @@
 import { View, FlatList, StyleSheet } from "react-native";
 import { ActivityIndicator, Appbar, Text, useTheme } from "react-native-paper";
-import { useRouter } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 import { globalStyles } from "@/styles/globalStyles";
-import { useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { Course, SearchFilters, SearchOption } from "@/types/course";
 import { searchCourses } from "@/services/courseManagement";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
@@ -70,9 +70,11 @@ export default function SearchCoursesPage() {
     }));
   };
 
-  useEffect(() => {
-    fetchCourses();
-  }, [searchFilters]);
+  useFocusEffect(
+    useCallback(() => {
+      fetchCourses();
+    }, [searchFilters])
+  );
 
   return (
     <>
