@@ -1,11 +1,9 @@
 import React from "react";
-import { FlatList, StyleSheet, View } from "react-native";
+import { FlatList, View } from "react-native";
 import {
   ActivityIndicator,
   Appbar,
   Button,
-  FAB,
-  Modal,
   SegmentedButtons,
   useTheme,
   Text,
@@ -35,7 +33,7 @@ export default function HomePage() {
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const [searchOption, setSearchOption] = useState<SearchOption>(
-    SearchOption.RELATED
+    SearchOption.RELATED,
   );
   const [searchFiltersModalVisible, setSearchFiltersModalVisible] =
     useState(false);
@@ -101,6 +99,12 @@ export default function HomePage() {
       <Appbar.Header>
         {/* <Appbar.Action icon="menu" /> */}
         <Appbar.Content title="Class Connect" />
+        <Appbar.Action
+          icon="test-tube"
+          onPress={() => {
+            router.push("/test");
+          }}
+        />
         <Appbar.Action
           icon="filter"
           onPress={() => {
