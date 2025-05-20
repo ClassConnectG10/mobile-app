@@ -102,6 +102,12 @@ export default function HomePage() {
         {/* <Appbar.Action icon="menu" /> */}
         <Appbar.Content title="Class Connect" />
         <Appbar.Action
+          icon="test-tube"
+          onPress={() => {
+            router.push("/test");
+          }}
+        />
+        <Appbar.Action
           icon="filter"
           onPress={() => {
             setSearchFiltersModalVisible(true);
