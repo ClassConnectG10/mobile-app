@@ -10,7 +10,7 @@ import {
   Button,
 } from "react-native-paper";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
-import { View, StyleSheet } from "react-native";
+import { View } from "react-native";
 import ActivityCard from "@/components/cards/ActivityCard";
 
 import {
@@ -332,4 +332,4 @@ export default function ActivitiesTab() {
   );
 }
 
-const styles = StyleSheet.create({});
+// const styles = StyleSheet.create({});

@@ -10,6 +10,10 @@ export class BiMap {
     }
   }
 
+  isEmpty(): boolean {
+    return this.frontToBack.size === 0;
+  }
+
   set(frontValue: string, backValue: string): void {
     // Eliminar relaciones previas, si existen
     if (this.frontToBack.has(frontValue)) {

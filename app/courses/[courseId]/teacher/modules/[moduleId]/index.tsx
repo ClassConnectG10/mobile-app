@@ -5,10 +5,11 @@ import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import { getModuleTeacherActivities } from "@/services/activityManagement";
 import { getCourseModule } from "@/services/resourceManager";
 import { TeacherActivity } from "@/types/activity";
+import { UserRole } from "@/types/course";
 import { Module, Resource } from "@/types/resources";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { useEffect, useState } from "react";
-import { FlatList, SectionList, View } from "react-native";
+import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
+import { useCallback, useState } from "react";
+import { SectionList, View } from "react-native";
 import {
   ActivityIndicator,
   Appbar,
@@ -33,10 +34,14 @@ class ModuleElement {
 export default function ModulePage() {
   const router = useRouter();
   const theme = useTheme();
-  const { courseId: courseIdParam, moduleId: moduleIdParam } =
-    useLocalSearchParams();
+  const {
+    courseId: courseIdParam,
+    moduleId: moduleIdParam,
+    userRole: userRoleParam,
+  } = useLocalSearchParams();
   const courseId = courseIdParam as string;
   const moduleId = Number(moduleIdParam);
+  const userRole = userRoleParam as UserRole;
 
   const [module, setModule] = useState<Module>(null);
   const [errorMessage, setErrorMessage] = useState("");
@@ -48,7 +53,7 @@ export default function ModulePage() {
     ModuleElement[]
   >([]);
 
-  const [resources, setResources] = useState<Resource[]>(null);
+  // const [resources, setResources] = useState<Resource[]>(null);
   const [resourcesDisplayElements, setResourcesDisplayElements] = useState<
     ModuleElement[]
   >([]);
@@ -116,13 +121,17 @@ export default function ModulePage() {
     });
   };
 
-  useEffect(() => {
-    fetchCourseModule();
-  }, [courseId, moduleId]);
+  useFocusEffect(
+    useCallback(() => {
+      fetchCourseModule();
+    }, [courseId, moduleId])
+  );
 
-  useEffect(() => {
-    fetchActivities();
-  }, [courseId]);
+  useFocusEffect(
+    useCallback(() => {
+      fetchActivities();
+    }, [courseId])
+  );
 
   return (
     <>
@@ -138,7 +147,15 @@ export default function ModulePage() {
             }}
           />
           <Appbar.Content title="Contenido del módulo" />
-          <Appbar.Action icon="pencil" onPress={() => {}} />
+          <Appbar.Action
+            icon="information"
+            onPress={() => {
+              router.push({
+                pathname: "/courses/[courseId]/teacher/modules/[moduleId]/info",
+                params: { courseId, moduleId, userRole },
+              });
+            }}
+          />
         </Appbar.Header>
         {isLoading || !module ? (
           <View
@@ -158,6 +175,8 @@ export default function ModulePage() {
           <View style={{ padding: 16 }}>
             <SectionList
               sections={moduleSections}
+              refreshing={isRefreshing}
+              onRefresh={handleRefresh}
               keyExtractor={(item, index) => item?.id.toString() + index}
               renderItem={({ item }) => {
                 if (!item) return null;

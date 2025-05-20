@@ -1,18 +1,7 @@
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
-import { TextField } from "@/components/forms/TextField";
 import UserCard from "@/components/cards/UserCard";
-import {
-  getActivitySubmission,
-  getTeacherActivity,
-} from "@/services/activityManagement";
 import { getUser } from "@/services/userManagement";
-import {
-  ActivitySubmission,
-  ActivityType,
-  TeacherActivity,
-} from "@/types/activity";
 import { User } from "@/types/user";
-import { formatDateTime } from "@/utils/date";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { ScrollView, View } from "react-native";
@@ -20,7 +9,6 @@ import {
   ActivityIndicator,
   Appbar,
   Button,
-  Text,
   useTheme,
 } from "react-native-paper";
 import { getStudentMark, setStudentMark } from "@/services/courseManagement";

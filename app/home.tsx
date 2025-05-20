@@ -1,11 +1,9 @@
 import React from "react";
-import { FlatList, StyleSheet, View } from "react-native";
+import { FlatList, View } from "react-native";
 import {
   ActivityIndicator,
   Appbar,
   Button,
-  FAB,
-  Modal,
   SegmentedButtons,
   useTheme,
   Text,

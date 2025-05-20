@@ -64,7 +64,7 @@ export default function RegisterPage() {
     try {
       await GoogleSignin.hasPlayServices(); // Verifica que los servicios de Google Play estén disponibles
       const signInResponse = await GoogleSignin.signIn();
-      if (signInResponse.type == "cancelled") {
+      if (signInResponse.type === "cancelled") {
         setButtonDisabled(false);
         return;
       }

@@ -1,6 +1,5 @@
 import { DatePickerButton } from "@/components/forms/DatePickerButton";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
-import { useExamDetails } from "@/hooks/useExamDetails";
 import { createActivity } from "@/services/activityManagement";
 import { getCourseModuleId } from "@/services/activityManagement";
 import { globalStyles } from "@/styles/globalStyles";

@@ -71,3 +71,43 @@ export async function createCourseModule(
     throw handleError(error, "crear un módulo del curso");
   }
 }
+
+export async function updateCourseModule(
+  courseId: string,
+  moduleId: number,
+  moduleDetails: ModuleDetails
+): Promise<Module> {
+  try {
+    moduleSchema.parse(moduleDetails);
+    const body = {
+      title: moduleDetails.title,
+      description: moduleDetails.description,
+    };
+
+    const request = await createModuleRequest(courseId);
+    const response = await request.patch(`/${moduleId}`, body);
+    const moduleData = response.data.data;
+
+    const module = new Module(
+      moduleData.module_id,
+      moduleData.course_id,
+      new ModuleDetails(moduleData.title, moduleData.description)
+    );
+
+    return module;
+  } catch (error) {
+    throw handleError(error, "actualizar el módulo del curso");
+  }
+}
+
+export async function deleteCourseModule(
+  courseId: string,
+  moduleId: number
+): Promise<void> {
+  try {
+    const request = await createModuleRequest(courseId);
+    await request.delete(`/${moduleId}`);
+  } catch (error) {
+    throw handleError(error, "eliminar el módulo del curso");
+  }
+}

@@ -1,7 +1,7 @@
 import { getCourseModules } from "@/services/resourceManager";
 import { Course } from "@/types/course";
-import { useRouter } from "expo-router";
-import { useState, useEffect } from "react";
+import { useFocusEffect, useRouter } from "expo-router";
+import { useState, useCallback } from "react";
 import { FlatList, View } from "react-native";
 import {
   useTheme,
@@ -22,6 +22,7 @@ export const ModulesTab: React.FC<ModulesTabProps> = ({ course }) => {
   const router = useRouter();
   const theme = useTheme();
   const [isLoading, setIsLoading] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
   const [modules, setModules] = useState<Module[]>([]);
@@ -39,9 +40,21 @@ export const ModulesTab: React.FC<ModulesTabProps> = ({ course }) => {
       setIsLoading(false);
     }
   }
-  useEffect(() => {
-    fetchModules();
-  }, [course.courseId]);
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      await fetchModules();
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchModules();
+    }, [course.courseId])
+  );
 
   const handleCreateModule = () => {
     router.push({
@@ -75,6 +88,8 @@ export const ModulesTab: React.FC<ModulesTabProps> = ({ course }) => {
           <FlatList
             data={modules}
             keyExtractor={(item) => item.moduleId.toString()}
+            refreshing={isRefreshing}
+            onRefresh={handleRefresh}
             renderItem={({ item, index }) => (
               <View
                 style={{
@@ -93,6 +108,7 @@ export const ModulesTab: React.FC<ModulesTabProps> = ({ course }) => {
                       params: {
                         courseId: course.courseId,
                         moduleId: item.moduleId,
+                        userRole: course.currentUserRole,
                       },
                     });
                   }}

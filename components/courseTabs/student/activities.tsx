@@ -1,21 +1,15 @@
-import {
-  addCourseToFavorites,
-  getCourse,
-  removeCourseFromFavorites,
-} from "@/services/courseManagement";
+import { getCourse } from "@/services/courseManagement";
 import { useCourseContext } from "@/utils/storage/courseContext";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
-  Appbar,
   useTheme,
   Text,
   SegmentedButtons,
 } from "react-native-paper";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
-import CourseCard from "@/components/cards/CourseCard";
-import { View, ScrollView } from "react-native";
+import { View } from "react-native";
 import ActivityCard from "@/components/cards/ActivityCard";
 
 import {
@@ -128,35 +122,6 @@ export default function CoursePage() {
     setSubmitteedActivitiesOption(
       submitteedActivitiesOption === value ? StudentActivityFilter.ALL : value
     );
-  };
-
-  const handleFavoritePress = async () => {
-    if (!courseContext.course) return;
-    setIsLoading(true);
-
-    try {
-      if (courseContext.course.isFavorite) {
-        await removeCourseFromFavorites(courseContext.course.courseId);
-      } else {
-        await addCourseToFavorites(courseContext.course.courseId);
-      }
-
-      setCourse({
-        ...courseContext.course,
-        isFavorite: !courseContext.course.isFavorite,
-      });
-    } catch (error) {
-      setErrorMessage((error as Error).message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleInfoPress = () => {
-    router.push({
-      pathname: "/courses/[courseId]/info",
-      params: { courseId },
-    });
   };
 
   const handleActivitiesPress = (activityId: number) => {

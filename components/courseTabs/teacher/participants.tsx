@@ -19,6 +19,7 @@ import {
   useTheme,
 } from "react-native-paper";
 import { AlertDialog } from "@/components/AlertDialog";
+import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 
 interface ParticipantsTabProps {
   course: Course;
@@ -349,6 +350,10 @@ export const ParticipantsTab: React.FC<ParticipantsTabProps> = ({ course }) => {
         }?`}
         dismissText="Cancelar"
         confirmText="Expulsar"
+      />
+      <ErrorMessageSnackbar
+        message={errorMessage}
+        onDismiss={() => setErrorMessage("")}
       />
     </View>
   );

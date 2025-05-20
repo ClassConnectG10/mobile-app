@@ -1,9 +1,6 @@
 import { DatePickerButton } from "@/components/forms/DatePickerButton";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
-import { getCourseModuleId } from "@/services/activityManagement";
-import { globalStyles } from "@/styles/globalStyles";
 import {
-  ActivityType,
   ExamItem,
   ExamItemType,
   MultipleChoiceQuestion,
@@ -12,33 +9,24 @@ import {
   TrueFalseQuestion,
 } from "@/types/activity";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useEffect, useState } from "react";
-import { View, ScrollView, FlatList } from "react-native";
-import {
-  Appbar,
-  Button,
-  Divider,
-  TextInput,
-  useTheme,
-  Text,
-} from "react-native-paper";
+import { useCallback, useState } from "react";
+import { View, FlatList } from "react-native";
+import { Appbar, Button, Divider, TextInput, Text } from "react-native-paper";
 import { FloatingActionButton } from "@/components/FloatingActionButton";
 import { FullScreenModal } from "@/components/FullScreenModal";
 import { useExamDetails } from "@/hooks/useExamDetails";
 import { ExamItemCard } from "@/components/cards/examCards/ExamItemCard";
 import { examDetailsSchema } from "@/validations/activities";
-import { ZodError } from "zod";
 import { handleError } from "@/services/errorHandling";
 import OptionPicker from "@/components/forms/OptionPicker";
 import { getCourseModules } from "@/services/resourceManager";
-import { Module } from "@/types/resources";
 import { BiMap } from "@/utils/bimap";
+import { AlertText } from "@/components/AlertText";
+import { useFocusEffect } from "@react-navigation/native";
 
 export default function CreateActivity() {
   const router = useRouter();
-  const theme = useTheme();
-  const { courseId: courseIdParam, activityType: activityTypeParam } =
-    useLocalSearchParams();
+  const { courseId: courseIdParam } = useLocalSearchParams();
 
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -59,14 +47,12 @@ export default function CreateActivity() {
     setIsLoading(true);
     try {
       const courseModules = await getCourseModules(courseId);
-      console.log("courseModules", courseModules);
       const bimap = new BiMap(
         courseModules.map((module) => [
           module.courseModuleDetails.title,
           module.moduleId.toString(),
         ])
       );
-      console.log("AAAAA", bimap);
       setCourseModulesBiMap(bimap);
     } catch (error) {
       const newError = handleError(error, "cargar los módulos del curso");
@@ -81,7 +67,7 @@ export default function CreateActivity() {
 
     try {
       examDetailsSchema.parse(examDetails);
-      const moduleId = await getCourseModuleId(courseId);
+      // const moduleId = await getCourseModuleId(courseId);
       // await createExam(courseId, moduleId, activityDetails);
       router.back();
     } catch (error) {
@@ -107,9 +93,12 @@ export default function CreateActivity() {
     examDetailsHook.setExamItems([...examDetails.examItems, examItem]);
   };
 
-  useEffect(() => {
-    fetchCourseModules();
-  }, [courseId]);
+  useFocusEffect(
+    useCallback(() => {
+      console.log("JEJEJE");
+      fetchCourseModules();
+    }, [courseId])
+  );
 
   return (
     <>
@@ -155,6 +144,27 @@ export default function CreateActivity() {
                   examDetailsHook.setModuleId(Number(newValue));
                 }}
               />
+              {courseModulesBiMap.isEmpty() && (
+                <>
+                  <AlertText
+                    text="Antes de crear un examen, debe crear un módulo"
+                    error={false}
+                  />
+                  <Button
+                    onPress={() =>
+                      router.push({
+                        pathname: "/courses/[courseId]/teacher/modules/create",
+                        params: { courseId },
+                      })
+                    }
+                    icon="book-plus"
+                    mode="contained"
+                    disabled={isLoading}
+                  >
+                    Crear módulo
+                  </Button>
+                </>
+              )}
 
               <Divider />
             </View>
