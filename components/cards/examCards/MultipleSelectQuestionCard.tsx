@@ -30,22 +30,25 @@ export const MultipleSelectQuestionCard: React.FC<
 
   const editableOptions = mode === ExamItemMode.EDIT;
 
-  if (mode === ExamItemMode.REVIEW) {
-    let newAnswerOk: boolean;
+  // if (
+  //   mode === ExamItemMode.REVIEW &&
+  //   (answerOk === null || answerOk === undefined)
+  // ) {
+  //   let newAnswerOk: boolean;
 
-    if (
-      multipleSelectQuestion.correctAnswers.length !=
-      studentAnswer?.answers.length
-    ) {
-      newAnswerOk = false;
-    } else {
-      newAnswerOk = multipleSelectQuestion.correctAnswers.every((index) =>
-        studentAnswer?.answers.includes(index)
-      );
-    }
+  //   if (
+  //     multipleSelectQuestion.correctAnswers.length !=
+  //     studentAnswer?.answers.length
+  //   ) {
+  //     newAnswerOk = false;
+  //   } else {
+  //     newAnswerOk = multipleSelectQuestion.correctAnswers.every((index) =>
+  //       studentAnswer?.answers.includes(index)
+  //     );
+  //   }
 
-    setAnswerOk(newAnswerOk);
-  }
+  //   setAnswerOk(newAnswerOk);
+  // }
 
   const handleOptionPress = (index: number) => {
     if (mode === ExamItemMode.EDIT) {

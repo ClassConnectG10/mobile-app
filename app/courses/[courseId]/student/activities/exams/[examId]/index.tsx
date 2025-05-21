@@ -1,6 +1,6 @@
 import {
+  getExamSubmission,
   getStudentExam,
-  getStudentExamSubmission,
 } from "@/services/activityManagement";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
@@ -57,7 +57,7 @@ export default function StudentExamPage() {
     setIsLoading(true);
 
     try {
-      const examSubmission = await getStudentExamSubmission(
+      const examSubmission = await getExamSubmission(
         courseId,
         examId,
         studentId,

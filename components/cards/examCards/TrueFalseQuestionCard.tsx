@@ -25,9 +25,12 @@ export const TrueFalseQuestionCard: React.FC<TrueFalseQuestionCardProps> = ({
 }) => {
   const theme = useTheme();
 
-  if (mode === ExamItemMode.REVIEW) {
-    setAnswerOk(trueFalseQuestion.correctAnswer === studentAnswer?.answer);
-  }
+  // if (
+  //   mode === ExamItemMode.REVIEW &&
+  //   (answerOk === null || answerOk === undefined)
+  // ) {
+  //   setAnswerOk(trueFalseQuestion.correctAnswer === studentAnswer?.answer);
+  // }
 
   const handleOptionPress = (option: boolean) => {
     if (mode === ExamItemMode.EDIT) {

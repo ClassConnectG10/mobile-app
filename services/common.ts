@@ -1,7 +1,6 @@
 import { AxiosInstance } from "axios";
 import { ZodError } from "zod";
 import { File } from "@/types/file";
-import Blob from "react-native/Libraries/Blob/Blob";
 import {
   ExamItem,
   ExamItemType,
@@ -14,6 +13,7 @@ import {
   MultipleChoiceAnswer,
   TrueFalseAnswer,
   MultipleSelectAnswer,
+  ExamItemAnswer,
 } from "@/types/activity";
 
 export function handleError(error: any, action: string): Error {
@@ -27,7 +27,6 @@ export function handleError(error: any, action: string): Error {
 
 export function postFile(
   axiosInstance: AxiosInstance,
-  uri: string,
   file: File
 ): Promise<any> {
   const formData = new FormData();
@@ -37,7 +36,7 @@ export function postFile(
     type: file.type,
   } as any);
 
-  return axiosInstance.post(uri, formData, {
+  return axiosInstance.post("", formData, {
     headers: {
       "Content-Type": "multipart/form-data",
     },
@@ -129,5 +128,149 @@ export function submittedExamItemToJSON(submittedItem: SubmittedExamItem) {
       };
     default:
       throw new Error("Tipo de respuesta no soportado");
+  }
+}
+
+export function getExamAnswerFromJSON(
+  examItem: ExamItem,
+  index: number,
+  responseData: any
+): SubmittedExamItem {
+  let examItemAnswer: ExamItemAnswer;
+  let correct: boolean | null = null;
+  const answer = responseData.answers?.[index] ?? null;
+
+  switch (examItem.type) {
+    case ExamItemType.OPEN:
+      examItemAnswer = new OpenAnswer(answer?.answer ?? "");
+      break;
+    case ExamItemType.MULTIPLE_CHOICE:
+      examItemAnswer = new MultipleChoiceAnswer(answer?.answer ?? null);
+      if (
+        answer?.answer !== null &&
+        (examItem as MultipleChoiceQuestion).correctAnswer !== null
+      ) {
+        correct =
+          (examItem as MultipleChoiceQuestion).correctAnswer === answer.answer;
+      }
+      break;
+    case ExamItemType.MULTIPLE_SELECT:
+      examItemAnswer = new MultipleSelectAnswer(answer?.answers ?? []);
+      if (
+        answer?.answers !== null &&
+        (examItem as MultipleSelectQuestion).correctAnswers !== null
+      ) {
+        if (
+          (examItem as MultipleSelectQuestion).correctAnswers.length !=
+          answer?.answers.length
+        ) {
+          correct = false;
+        } else {
+          correct = (examItem as MultipleSelectQuestion).correctAnswers.every(
+            (index) => answer?.answers.includes(index)
+          );
+        }
+      }
+      break;
+    case ExamItemType.TRUE_FALSE:
+      examItemAnswer = new TrueFalseAnswer(answer?.answer ?? null);
+      if (
+        answer?.answer !== null &&
+        (examItem as TrueFalseQuestion).correctAnswer !== null
+      ) {
+        correct =
+          answer.answer === (examItem as TrueFalseQuestion).correctAnswer;
+      }
+      break;
+    default:
+      throw new Error(`Unsupported exam item type: ${examItem.type}`);
+  }
+
+  const submittedExamItem = new SubmittedExamItem(
+    index,
+    examItem.type,
+    examItemAnswer,
+    correct
+  );
+
+  return submittedExamItem;
+}
+
+const STORAGE_FREFIX =
+  "https://storage.googleapis.com/class-connect-g10.firebasestorage.app";
+
+export function getFileFromBackend(fileName: string, backendRef: string): File {
+  const firebaseRef = parseBackendRef(backendRef);
+  const fileType = getFileTypeFromName(fileName);
+  const file = new File(fileName, fileType, null, firebaseRef);
+  return file;
+}
+
+function parseBackendRef(backendRef: string): string {
+  const prefixLength = STORAGE_FREFIX.length;
+  if (backendRef.length <= prefixLength) {
+    throw new Error(
+      `El backendRef no es válido. Debe comenzar con ${STORAGE_FREFIX}`
+    );
+  }
+  const ref = backendRef.substring(prefixLength);
+  return ref;
+}
+
+function getFileTypeFromName(fileName: string): string {
+  const fileExtension = fileName.split(".").pop()?.toLowerCase();
+  switch (fileExtension) {
+    case "pdf":
+      return "application/pdf";
+    case "jpg":
+    case "jpeg":
+      return "image/jpeg";
+    case "png":
+      return "image/png";
+    case "webp":
+      return "image/webp";
+    case "gif":
+      return "image/gif";
+    case "svg":
+      return "image/svg+xml";
+    case "doc":
+      return "application/msword";
+    case "docx":
+      return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+    case "xls":
+      return "application/vnd.ms-excel";
+    case "xlsx":
+      return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+    case "ppt":
+      return "application/vnd.ms-powerpoint";
+    case "pptx":
+      return "application/vnd.openxmlformats-officedocument.presentationml.presentation";
+    case "txt":
+      return "text/plain";
+    case "zip":
+      return "application/zip";
+    case "rar":
+      return "application/x-rar-compressed";
+    case "7z":
+      return "application/x-7z-compressed";
+    case "tar":
+      return "application/x-tar";
+    case "gz":
+    case "gzip":
+      return "application/gzip";
+    case "mp3":
+      return "audio/mpeg";
+    case "wav":
+      return "audio/wav";
+    case "ogg":
+      return "audio/ogg";
+    case "mp4":
+      return "video/mp4";
+    case "avi":
+      return "video/x-msvideo";
+    case "webm":
+      return "video/webm";
+    default:
+      return "application/octet-stream";
   }
 }

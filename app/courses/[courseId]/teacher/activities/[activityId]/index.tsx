@@ -43,7 +43,7 @@ export default function TeacherActivityPage() {
   const [showConfirmationPublish, setShowConfirmationPublish] = useState(false);
 
   const activityDetailsHook = useTaskDetails();
-  const activityDetails = activityDetailsHook.activityDetails;
+  const activityDetails = activityDetailsHook.taskDetails;
 
   const [course, setCourse] = useState<Course | null>(null);
 
@@ -67,9 +67,7 @@ export default function TeacherActivityPage() {
       if (courseId && activityId) {
         const activity = await getTeacherActivity(courseId, Number(activityId));
         setTeacherActivity(activity);
-        activityDetailsHook.setActivityDetails(
-          activity.activity.activityDetails
-        );
+        activityDetailsHook.setTaskDetails(activity.activity.activityDetails);
       }
     } catch (error) {
       setErrorMessage((error as Error).message);
@@ -80,7 +78,7 @@ export default function TeacherActivityPage() {
 
   const handleDiscardChanges = () => {
     if (teacherActivity) {
-      activityDetailsHook.setActivityDetails({
+      activityDetailsHook.setTaskDetails({
         ...teacherActivity.activity.activityDetails,
       });
     }

@@ -69,7 +69,6 @@ export const ToggleableFileInput: React.FC<ToggleableFileInputProps> = ({
       const file = files[index];
       if (!file.localUri) {
         if (file.firebaseUrl) {
-          console.log("FIREBASE");
           await downloadAndOpenFile(index);
         } else {
           console.error(

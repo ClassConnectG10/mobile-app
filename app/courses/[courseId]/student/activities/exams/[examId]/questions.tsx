@@ -1,17 +1,5 @@
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
-import {
-  ActivityType,
-  ExamDetails,
-  ExamItemAnswer,
-  ExamItemType,
-  ExamSubmission,
-  MultipleChoiceAnswer,
-  MultipleSelectAnswer,
-  OpenAnswer,
-  StudentActivity,
-  SubmittedExamItem,
-  TrueFalseAnswer,
-} from "@/types/activity";
+import { ExamDetails, ExamItemAnswer } from "@/types/activity";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useState, useEffect } from "react";
 import { View, FlatList } from "react-native";
@@ -24,13 +12,12 @@ import {
 import { ExamItemCard } from "@/components/cards/examCards/ExamItemCard";
 import { useFocusEffect } from "@react-navigation/native";
 import {
+  getExamSubmission,
   getStudentExam,
-  getStudentExamSubmission,
   submitExam,
 } from "@/services/activityManagement";
 import { ExamItemMode } from "@/components/cards/examCards/examItemMode";
 import { useUserContext } from "@/utils/storage/userContext";
-import { UserRole } from "@/types/course";
 
 export default function StudentFillExam() {
   const router = useRouter();
@@ -71,7 +58,7 @@ export default function StudentFillExam() {
     if (!examDetails) return;
 
     try {
-      const examSubmission = await getStudentExamSubmission(
+      const examSubmission = await getExamSubmission(
         courseId,
         examId,
         studentId,

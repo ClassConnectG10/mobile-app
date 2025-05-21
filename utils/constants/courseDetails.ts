@@ -21,17 +21,17 @@ export const CATEGORIES = new BiMap([
   ["Biología", "NATURAL_SCIENCES"],
   ["Ciencias Sociales", "SOCIAL_SCIENCES"],
   ["Educación Física", "PHYSICAL_EDUCATION"],
-  ["Física", "PHYSICAL_SCIENCES"],
-  ["Geografía", "GEOGRAPHY"],
-  ["Historia", "HISTORY"],
+  // ["Física", "PHYSICAL_SCIENCES"],
+  // ["Geografía", "GEOGRAPHY"],
+  // ["Historia", "HISTORY"],
   ["Idiomas", "LANGUAGES"],
   ["Matemáticas", "MATHEMATICS"],
-  ["Música", "MUSIC"],
+  // ["Música", "MUSIC"],
   ["Otros", "OTHER"],
   ["Programación", "COMPUTER_SCIENCE"],
   // ["Química", "CHEMISTRY"],
-  ["Robótica", "ROBOTICS"],
-  ["Tecnología", "TECHNOLOGY"],
+  // ["Robótica", "ROBOTICS"],
+  // ["Tecnología", "TECHNOLOGY"],
 ]);
 
 export const MODALITIES = new BiMap([

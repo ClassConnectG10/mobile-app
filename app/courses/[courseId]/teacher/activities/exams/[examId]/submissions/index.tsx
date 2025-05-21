@@ -1,13 +1,14 @@
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import SubmissionCard from "@/components/cards/SubmissionCard";
 import {
-  getActivitySubmissions,
-  getTeacherActivity,
+  getExamSubmissions,
+  getTeacherExam,
 } from "@/services/activityManagement";
 import { getUser } from "@/services/userManagement";
 import {
   ActivityStatusOption,
-  ActivitySubmission,
+  ExamDetails,
+  ExamSubmission,
   TeacherActivity,
 } from "@/types/activity";
 import { User } from "@/types/user";
@@ -23,31 +24,31 @@ import {
 
 export default function TeacherSubmissionsPage() {
   const router = useRouter();
-  const { courseId: courseIdParam, activityId: activityIdParam } =
+  const { courseId: courseIdParam, examId: examIdParam } =
     useLocalSearchParams();
 
   const courseId = courseIdParam as string;
-  const activityId = activityIdParam as string;
+  const examId = Number(examIdParam);
 
   const [isLoading, setIsLoading] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [teacherActivity, setTeacherActivity] =
     useState<TeacherActivity | null>(null);
-  const [studentSubmissions, setStudentSubmissions] =
-    useState<ActivitySubmission[]>(null);
+  const [examSubmissions, setExamSubmissions] =
+    useState<ExamSubmission[]>(null);
   const [filteredSubmissions, setFilteredSubmissions] =
-    useState<ActivitySubmission[]>(null);
+    useState<ExamSubmission[]>(null);
   const [students, setStudents] = useState<Record<number, User>>(null);
   const [activityStatusOption, setActivityStatusOption] = useState(
     ActivityStatusOption.ALL
   );
   async function fetchTeacherActivity() {
-    if (!courseId || !activityId) return;
+    if (!courseId || !examId) return;
 
     setIsLoading(true);
     try {
-      const activity = await getTeacherActivity(courseId, Number(activityId));
+      const activity = await getTeacherExam(courseId, examId);
       setTeacherActivity(activity);
     } catch (error) {
       setErrorMessage((error as Error).message);
@@ -58,16 +59,18 @@ export default function TeacherSubmissionsPage() {
 
   async function fetchSubmissions() {
     if (!teacherActivity) return;
-
-    setIsLoading(true);
+    const examDetails = teacherActivity.activity.activityDetails as ExamDetails;
+    const examItems = examDetails.examItems;
+    setIsLoading(examSubmissions === null);
     try {
-      const submittedActivies = await getActivitySubmissions(
+      const fetchedExamSubmissions = await getExamSubmissions(
         courseId,
-        teacherActivity.activity
+        examId,
+        examItems
       );
 
-      setStudentSubmissions(submittedActivies);
-      setFilteredSubmissions(submittedActivies);
+      setExamSubmissions(fetchedExamSubmissions);
+      setFilteredSubmissions(fetchedExamSubmissions);
     } catch (error) {
       setErrorMessage((error as Error).message);
     } finally {
@@ -76,12 +79,11 @@ export default function TeacherSubmissionsPage() {
   }
 
   const fetchStudents = async () => {
-    if (!studentSubmissions) return;
-
-    setIsLoading(true);
+    if (!examSubmissions) return;
+    setIsLoading(students === null);
     try {
       const studentsDict = await Promise.all(
-        studentSubmissions.map(async (submission) => {
+        examSubmissions.map(async (submission) => {
           const student = await getUser(submission.studentId);
           return { [submission.studentId]: student };
         })
@@ -105,22 +107,22 @@ export default function TeacherSubmissionsPage() {
 
     const filteredSubmissions =
       currentActivityStatusOption === ActivityStatusOption.SUBMITTED
-        ? studentSubmissions.filter((submission) => submission.submited)
+        ? examSubmissions.filter((submission) => submission.submited)
         : currentActivityStatusOption === ActivityStatusOption.PENDING
-        ? studentSubmissions.filter((submission) => !submission.submited)
-        : studentSubmissions;
+        ? examSubmissions.filter((submission) => !submission.submited)
+        : examSubmissions;
 
     setFilteredSubmissions(filteredSubmissions);
   };
 
-  const handleSelectSubmission = (submission: ActivitySubmission) => {
+  const handleSelectSubmission = (examSubmission: ExamSubmission) => {
     router.push({
       pathname:
-        "/courses/[courseId]/teacher/activities/[activityId]/submissions/[studentId]",
+        "/courses/[courseId]/teacher/activities/exams/[examId]/submissions/[studentId]",
       params: {
         courseId,
-        activityId,
-        studentId: submission.studentId,
+        examId,
+        studentId: examSubmission.studentId,
       },
     });
   };
@@ -137,7 +139,7 @@ export default function TeacherSubmissionsPage() {
   useFocusEffect(
     useCallback(() => {
       fetchTeacherActivity();
-    }, [courseId, activityId])
+    }, [courseId, examId])
   );
 
   useFocusEffect(
@@ -149,7 +151,7 @@ export default function TeacherSubmissionsPage() {
   useFocusEffect(
     useCallback(() => {
       fetchStudents();
-    }, [studentSubmissions])
+    }, [examSubmissions])
   );
 
   return (
@@ -159,7 +161,7 @@ export default function TeacherSubmissionsPage() {
           <Appbar.BackAction onPress={() => router.back()} />
           <Appbar.Content title="Entregas" />
         </Appbar.Header>
-        {isLoading || !studentSubmissions || !students || !teacherActivity ? (
+        {isLoading || !examSubmissions || !students || !teacherActivity ? (
           <ActivityIndicator
             animating={true}
             size="large"
@@ -172,10 +174,10 @@ export default function TeacherSubmissionsPage() {
             </Text>
             <Text variant="bodyMedium">
               {
-                studentSubmissions.filter((submission) => submission.submited)
+                examSubmissions.filter((submission) => submission.submited)
                   .length
               }{" "}
-              de {studentSubmissions.length} entregas recibidas
+              de {examSubmissions.length} entregas recibidas
             </Text>
             <SegmentedButtons
               value={activityStatusOption}

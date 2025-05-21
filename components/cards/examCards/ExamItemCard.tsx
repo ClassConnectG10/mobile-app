@@ -124,7 +124,8 @@ export const ExamItemCard: React.FC<ExamItemCardProps> = ({
             {showCorrection && (
               <IconButton
                 icon={correctionIcon}
-                size={18}
+                size={24}
+                mode="contained"
                 onPress={handleCorrectionPress}
                 iconColor={correctionColor}
               />

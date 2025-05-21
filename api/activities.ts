@@ -25,13 +25,13 @@ export const createExamRequest = (courseId: string, examId: number) => {
   });
 };
 
-export const createTaskPostRequest = (courseId: string, taskId: number) => {
+export const createPublishTaskRequest = (courseId: string, taskId: number) => {
   return createRequest({
     uri: `courses/${courseId}/activities/tasks/${taskId}/post`,
   });
 };
 
-export const createExamPostRequest = (courseId: string, examId: number) => {
+export const createPublishExamRequest = (courseId: string, examId: number) => {
   return createRequest({
     uri: `courses/${courseId}/activities/exams/${examId}/post`,
   });
@@ -80,20 +80,26 @@ export const createActivitySubmissionRequest = (
   });
 };
 
-export const createTaskSubmissionPostRequest = (
-  courseId: string,
-  activityId: number
-) => {
+export const createSubmitTaskRequest = (courseId: string, taskId: number) => {
   return createRequest({
-    uri: `courses/${courseId}/activities/tasks/${activityId}/submit`,
+    uri: `courses/${courseId}/activities/tasks/${taskId}/submit`,
   });
 };
 
-export const createExamSubmissionPostRequest = (
+export const createSubmitExamRequest = (
   courseId: string,
   activityId: number
 ) => {
   return createRequest({
     uri: `courses/${courseId}/activities/exams/${activityId}/submit-answers`,
+  });
+};
+
+export const createUploadTaskFileRequest = (
+  courseId: string,
+  taskId: number
+) => {
+  return createRequest({
+    uri: `courses/${courseId}/activities/tasks/${taskId}/upload`,
   });
 };

@@ -4,12 +4,17 @@ import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import { ToggleableTextInput } from "@/components/forms/ToggleableTextInput";
 import {
   deleteExam,
+  deleteTask,
   getTeacherExam,
+  getTeacherTask,
   publishExam,
+  publishTask,
   updateExam,
+  updateTask,
+  uploadTaskFile,
 } from "@/services/activityManagement";
 import { getCourse } from "@/services/courseManagement";
-import { ExamDetails, TeacherActivity } from "@/types/activity";
+import { ExamDetails, TaskDetails, TeacherActivity } from "@/types/activity";
 import { Course, CourseStatus, UserRole } from "@/types/course";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
@@ -22,29 +27,33 @@ import {
   Button,
   Dialog,
 } from "react-native-paper";
-import { useExamDetails } from "@/hooks/useExamDetails";
+import { useTaskDetails } from "@/hooks/useTaskDetails";
+import { ToggleableFileInput } from "@/components/forms/ToggleableFileInput";
+import { File } from "@/types/file";
 
 export default function TeacherExamPage() {
   const router = useRouter();
   const theme = useTheme();
-  const { courseId: courseIdParam, examId: examIdParam } =
+  const { courseId: courseIdParam, taskId: taskIdParam } =
     useLocalSearchParams();
 
   const courseId = courseIdParam as string;
-  const examId = examIdParam as string;
+  const taskId = taskIdParam as string;
 
   const [isLoading, setIsLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const [teacherExam, setTeacherExam] = useState<TeacherActivity | null>(null);
+  const [teacherTask, setTeacherTask] = useState<TeacherActivity | null>(null);
+  const [taskFiles, setTaskFiles] = useState<File[]>([]);
+  const [taskFilesChanged, setTaskFilesChanged] = useState(false);
 
   const [showConfirmationDelete, setShowConfirmationDelete] = useState(false);
   const [showConfirmationPublish, setShowConfirmationPublish] = useState(false);
 
-  const examDetailsHook = useExamDetails();
-  const examDetails = examDetailsHook.examDetails;
-
   const [course, setCourse] = useState<Course | null>(null);
+
+  const taskDetailsHook = useTaskDetails();
+  const taskDetails = taskDetailsHook.taskDetails;
 
   async function fetchCourse() {
     if (!courseId) return;
@@ -60,15 +69,19 @@ export default function TeacherExamPage() {
     }
   }
 
-  async function fetchTeacherExam() {
+  async function fetchTeacherTask() {
     try {
       setIsLoading(true);
-      if (courseId && examId) {
-        const teacherExam = await getTeacherExam(courseId, Number(examId));
-        setTeacherExam(teacherExam);
-        examDetailsHook.setExamDetails(
-          teacherExam.activity.activityDetails as ExamDetails
+      if (courseId && taskId) {
+        const teacherTask = await getTeacherTask(courseId, Number(taskId));
+        setTeacherTask(teacherTask);
+        taskDetailsHook.setTaskDetails(
+          teacherTask.activity.activityDetails as TaskDetails
         );
+        setTaskFiles([
+          (teacherTask.activity.activityDetails as TaskDetails)
+            .instructionsFile,
+        ]);
       }
     } catch (error) {
       setErrorMessage((error as Error).message);
@@ -77,47 +90,61 @@ export default function TeacherExamPage() {
     }
   }
 
+  const handleTaskFilesChange = (files: File[]) => {
+    setTaskFiles(files);
+    setTaskFilesChanged(true);
+  };
+
   const handleDiscardChanges = () => {
-    if (teacherExam) {
-      examDetailsHook.setExamDetails({
-        ...(teacherExam.activity.activityDetails as ExamDetails),
-      });
+    if (teacherTask) {
+      taskDetailsHook.setTaskDetails(
+        teacherTask.activity.activityDetails as TaskDetails
+      );
     }
     setIsEditing(false);
+    setTaskFiles([
+      (teacherTask?.activity.activityDetails as TaskDetails)
+        .instructionsFile as File,
+    ]);
+    setTaskFilesChanged(false);
   };
 
   useFocusEffect(
     useCallback(() => {
-      fetchTeacherExam();
+      fetchTeacherTask();
       fetchCourse();
-    }, [courseId, examId])
+    }, [courseId, taskId])
   );
 
   const handleViewSubmissions = async () => {
     router.push({
       pathname:
-        "/courses/[courseId]/teacher/activities/exams/[examId]/submissions",
+        "/courses/[courseId]/teacher/activities/tasks/[taskId]/submissions",
       params: {
         courseId: courseId,
-        examId: examId,
+        taskId: taskId,
       },
     });
   };
 
-  const handleEditExam = async () => {
+  const handleEditTask = async () => {
     setIsLoading(true);
 
     try {
-      if (teacherExam) {
-        await updateExam(courseId, Number(examId), examDetails);
-        setTeacherExam({
-          ...teacherExam,
+      if (teacherTask) {
+        await updateTask(courseId, Number(taskId), taskDetails);
+        setTeacherTask({
+          ...teacherTask,
           activity: {
-            ...teacherExam.activity,
-            activityDetails: examDetails,
+            ...teacherTask.activity,
+            activityDetails: taskDetails,
           },
         });
         setIsEditing(false);
+        if (taskFilesChanged) {
+          await uploadTaskFile(courseId, Number(taskId), taskFiles[0]);
+          setTaskFilesChanged(false);
+        }
       }
     } catch (error) {
       setErrorMessage((error as Error).message);
@@ -127,25 +154,14 @@ export default function TeacherExamPage() {
     }
   };
 
-  const handleViewQuestions = async () => {
-    router.push({
-      pathname:
-        "/courses/[courseId]/teacher/activities/exams/[examId]/questions",
-      params: {
-        courseId: courseId,
-        examId: examId,
-      },
-    });
-  };
-
-  const handlePublishExam = async () => {
+  const handlePublishTask = async () => {
     setIsLoading(true);
 
     try {
-      if (teacherExam) {
-        await publishExam(courseId, Number(examId));
-        setTeacherExam({
-          ...teacherExam,
+      if (teacherTask) {
+        await publishTask(courseId, Number(taskId));
+        setTeacherTask({
+          ...teacherTask,
           visible: true,
         });
       }
@@ -157,13 +173,13 @@ export default function TeacherExamPage() {
     }
   };
 
-  const handleDeleteExam = async () => {
+  const handleDeleteTask = async () => {
     setIsLoading(true);
 
     try {
-      if (teacherExam) {
-        await deleteExam(courseId, Number(examId));
-        setTeacherExam(null);
+      if (teacherTask) {
+        await deleteTask(courseId, Number(taskId));
+        setTeacherTask(null);
         router.back();
       }
     } catch (error) {
@@ -183,12 +199,12 @@ export default function TeacherExamPage() {
           }
         />
         <Appbar.Content
-          title={isEditing ? "Editando examen" : "Información del examen"}
+          title={isEditing ? "Editado tarea" : "Información de la tarea"}
         />
-        {teacherExam && !teacherExam.visible && (
+        {teacherTask && !teacherTask.visible && (
           <Appbar.Action
             icon={isEditing ? "check" : "pencil"}
-            onPress={isEditing ? handleEditExam : () => setIsEditing(true)}
+            onPress={isEditing ? handleEditTask : () => setIsEditing(true)}
           />
         )}
       </Appbar.Header>
@@ -218,35 +234,32 @@ export default function TeacherExamPage() {
           >
             <ToggleableTextInput
               label="Nombre"
-              placeholder="Nombre del examen"
-              value={examDetails.title}
+              placeholder="Nombre de la tarea"
+              value={taskDetails.title}
               editable={isEditing}
-              onChange={examDetailsHook.setTitle}
+              onChange={taskDetailsHook.setTitle}
             />
             <ToggleableTextInput
               label="Instrucciones"
               placeholder="Instrucciones del examen"
-              value={examDetails.instructions}
-              onChange={examDetailsHook.setInstructions}
+              value={taskDetails.instructions}
+              onChange={taskDetailsHook.setInstructions}
               editable={isEditing}
             />
             <DatePickerButton
               label="Fecha límite"
               type="datetime"
-              value={examDetails.dueDate}
+              value={taskDetails.dueDate}
               editable={isEditing}
-              onChange={examDetailsHook.setDueDate}
+              onChange={taskDetailsHook.setDueDate}
             />
 
-            {!isEditing && (
-              <Button
-                onPress={handleViewQuestions}
-                mode="contained"
-                icon="help-circle-outline"
-              >
-                Ver Preguntas
-              </Button>
-            )}
+            <ToggleableFileInput
+              files={taskFiles}
+              editable={isEditing}
+              onChange={handleTaskFilesChange}
+              maxFiles={1}
+            />
           </View>
 
           <View
@@ -254,7 +267,7 @@ export default function TeacherExamPage() {
               gap: 16,
             }}
           >
-            {!isEditing && teacherExam && teacherExam.visible && (
+            {!isEditing && teacherTask && teacherTask.visible && (
               <Button
                 onPress={handleViewSubmissions}
                 mode="contained"
@@ -264,7 +277,7 @@ export default function TeacherExamPage() {
               </Button>
             )}
 
-            {!isEditing && teacherExam && !teacherExam.visible && (
+            {!isEditing && teacherTask && !teacherTask.visible && (
               <Button
                 onPress={() => setShowConfirmationPublish(true)}
                 mode="contained"
@@ -273,7 +286,7 @@ export default function TeacherExamPage() {
                 }
                 icon="file-eye"
               >
-                Publicar examen
+                Publicar tarea
               </Button>
             )}
 
@@ -283,7 +296,7 @@ export default function TeacherExamPage() {
                 <View style={{ gap: 16 }}>
                   <AlertText
                     text={
-                      "El curso no ha sido iniciado y el examen no se puede publicar. Inicia el curso para poder publicar el examen."
+                      "El curso no ha sido iniciado y la tarea no se puede publicar. Inicia el curso para poder publicar la tarea."
                     }
                     error={false}
                   />
@@ -310,7 +323,7 @@ export default function TeacherExamPage() {
               course.currentUserRole === UserRole.ASSISTANT && (
                 <AlertText
                   text={
-                    "El curso no ha sido iniciado. Solicita al propietario del curso que lo Inicia para poder publicar el examen."
+                    "El curso no ha sido iniciado. Solicita al propietario del curso que lo Inicia para poder publicar la tarea."
                   }
                   error={false}
                 />
@@ -323,7 +336,7 @@ export default function TeacherExamPage() {
                 disabled={isLoading}
                 icon="delete"
               >
-                Borrar examen
+                Borrar tarea
               </Button>
             )}
           </View>
@@ -336,14 +349,14 @@ export default function TeacherExamPage() {
         <Dialog.Title>Atención</Dialog.Title>
         <Dialog.Content>
           <Text variant="bodyMedium">
-            El examen '{examDetails.title}' será publicado.
+            La tarea '{taskDetails.title}' será publicada.
           </Text>
         </Dialog.Content>
         <Dialog.Actions>
           <Button onPress={() => setShowConfirmationPublish(false)}>
             Cancelar
           </Button>
-          <Button onPress={handlePublishExam}>Publicar</Button>
+          <Button onPress={handlePublishTask}>Publicar</Button>
         </Dialog.Actions>
       </Dialog>
 
@@ -354,14 +367,14 @@ export default function TeacherExamPage() {
         <Dialog.Title>Atención</Dialog.Title>
         <Dialog.Content>
           <Text variant="bodyMedium">
-            El examen '{examDetails.title}' será eliminado.
+            la tarea '{taskDetails.title}' será eliminada.
           </Text>
         </Dialog.Content>
         <Dialog.Actions>
           <Button onPress={() => setShowConfirmationDelete(false)}>
             Cancelar
           </Button>
-          <Button onPress={handleDeleteExam}>Eliminar</Button>
+          <Button onPress={handleDeleteTask}>Eliminar</Button>
         </Dialog.Actions>
       </Dialog>
       <ErrorMessageSnackbar

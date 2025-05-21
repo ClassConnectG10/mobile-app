@@ -7,6 +7,12 @@ export const activityDetailsSchema = z.object({
   dueDate: z.date().refine((date) => date > new Date(), {
     message: "La fecha de entrega debe ser en el futuro",
   }),
+  moduleId: z
+    .number({
+      required_error: "El módulo es requerido",
+      invalid_type_error: "El módulo es requerido",
+    })
+    .int("El módulo debe ser un número entero"),
 });
 
 export const activityDetailsSchemaUpdate = z.object({

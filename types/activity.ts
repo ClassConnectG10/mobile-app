@@ -1,3 +1,5 @@
+import { File } from "@/types/file";
+
 export enum ActivityType {
   TASK = "TASK",
   EXAM = "EXAM",
@@ -50,8 +52,10 @@ export class Activity {
 
 export class TaskDetails {
   constructor(
+    public moduleId: number,
     public title: string,
     public instructions: string,
+    public instructionsFile: File,
     public dueDate: Date
   ) {}
 }
@@ -121,9 +125,20 @@ export interface ActivitySubmission {
   submissionDate?: Date;
 }
 
-// export class TaskSubmission {
-
-// }
+export class TaskSubmission implements ActivitySubmission {
+  type: ActivityType;
+  constructor(
+    public resourceId: number,
+    public studentId: number,
+    // public response: string,
+    public submited: boolean,
+    public dueDate: Date,
+    public responseFile?: File,
+    public submissionDate?: Date
+  ) {
+    this.type = ActivityType.TASK;
+  }
+}
 
 export class ExamSubmission implements ActivitySubmission {
   type: ActivityType;

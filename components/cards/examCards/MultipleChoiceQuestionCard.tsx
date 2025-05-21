@@ -30,9 +30,13 @@ export const MultipleChoiceQuestionCard: React.FC<
 
   const editableOptions = mode === ExamItemMode.EDIT;
 
-  if (mode === ExamItemMode.REVIEW) {
-    setAnswerOk(multipleChoiceQuestion.correctAnswer === studentAnswer?.answer);
-  }
+  // if (
+  //   mode === ExamItemMode.REVIEW &&
+  //   (answerOk === null || answerOk === undefined)
+  // ) {
+  //   setAnswerOk(multipleChoiceQuestion.correctAnswer === studentAnswer.answer);
+  //   setAnswerOk(true);
+  // }
 
   const handleOptionPress = (index: number) => {
     if (mode === ExamItemMode.EDIT) {

@@ -1,16 +1,21 @@
 import { DatePickerButton } from "@/components/forms/DatePickerButton";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
-import { createActivity } from "@/services/activityManagement";
-import { getCourseModuleId } from "@/services/activityManagement";
+import { createTask, uploadTaskFile } from "@/services/activityManagement";
 import { globalStyles } from "@/styles/globalStyles";
 import { ActivityType } from "@/types/activity";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { useState } from "react";
+import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
+import { useCallback, useState } from "react";
 import { View, ScrollView } from "react-native";
 import { Appbar, Button, TextInput, useTheme } from "react-native-paper";
 import { useTaskDetails } from "@/hooks/useTaskDetails";
+import OptionPicker from "@/components/forms/OptionPicker";
+import { BiMap } from "@/utils/bimap";
+import { getCourseModules } from "@/services/resourceManager";
+import { AlertText } from "@/components/AlertText";
+import { ToggleableFileInput } from "@/components/forms/ToggleableFileInput";
+import { File } from "@/types/file";
 
-export default function CreateActivity() {
+export default function CreateTaskPage() {
   const router = useRouter();
   const theme = useTheme();
   const { courseId: courseIdParam, activityType: activityTypeParam } =
@@ -18,19 +23,46 @@ export default function CreateActivity() {
 
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [courseModulesBiMap, setCourseModulesBiMap] = useState<BiMap>(
+    new BiMap()
+  );
+  const [taskFiles, setTaskFiles] = useState<File[]>([]);
 
   const courseId = courseIdParam as string;
-  const activityType = activityTypeParam as ActivityType;
 
-  const activityDetailsHook = useTaskDetails();
-  const activityDetails = activityDetailsHook.activityDetails;
+  // const activityDetailsHook = useTaskDetails();
+  // const activityDetails = activityDetailsHook.taskDetails;
 
-  const handleCreateActivity = async () => {
+  const taskDetailsHook = useTaskDetails();
+  const taskDetails = taskDetailsHook.taskDetails;
+
+  const fetchCourseModules = async () => {
+    if (!courseId) return;
     setIsLoading(true);
     try {
-      // TODO: Elegir modulo al crear en vez de usar uno por defecto
-      const moduleId = await getCourseModuleId(courseId);
-      await createActivity(courseId, moduleId, activityType, activityDetails);
+      const courseModules = await getCourseModules(courseId);
+      const bimap = new BiMap(
+        courseModules.map((module) => [
+          module.courseModuleDetails.title,
+          module.moduleId.toString(),
+        ])
+      );
+      setCourseModulesBiMap(bimap);
+    } catch (error) {
+      setErrorMessage((error as Error).message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleCreateTask = async () => {
+    setIsLoading(true);
+    try {
+      const createdTaskId = await createTask(courseId, taskDetails);
+      if (taskFiles.length > 0) {
+        await uploadTaskFile(courseId, createdTaskId, taskFiles[0]);
+      }
+
       router.back();
     } catch (error) {
       setErrorMessage((error as Error).message);
@@ -38,6 +70,12 @@ export default function CreateActivity() {
       setIsLoading(false);
     }
   };
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchCourseModules();
+    }, [courseId])
+  );
 
   return (
     <>
@@ -54,25 +92,62 @@ export default function CreateActivity() {
         <ScrollView contentContainerStyle={globalStyles.courseDetailsContainer}>
           <TextInput
             placeholder="Nombre"
-            value={activityDetails.title}
-            onChangeText={activityDetailsHook.setTitle}
+            value={taskDetails.title}
+            onChangeText={taskDetailsHook.setTitle}
           />
 
           <TextInput
             placeholder="Instrucciones"
-            value={activityDetails.instructions}
-            onChangeText={activityDetailsHook.setInstructions}
+            value={taskDetails.instructions}
+            onChangeText={taskDetailsHook.setInstructions}
           />
 
           <DatePickerButton
             label="Fecha límite"
             type="datetime"
-            value={activityDetails.dueDate}
-            onChange={activityDetailsHook.setDueDate}
+            value={taskDetails.dueDate}
+            onChange={taskDetailsHook.setDueDate}
+          />
+
+          <OptionPicker
+            label="Módulo"
+            value={taskDetails.moduleId?.toString()}
+            items={courseModulesBiMap}
+            setValue={(newValue: string) => {
+              taskDetailsHook.setModuleId(Number(newValue));
+            }}
+          />
+          {courseModulesBiMap.isEmpty() && !isLoading && (
+            <>
+              <AlertText
+                text="Antes de crear un examen, debe crear un módulo"
+                error={false}
+              />
+              <Button
+                onPress={() =>
+                  router.push({
+                    pathname: "/courses/[courseId]/teacher/modules/create",
+                    params: { courseId },
+                  })
+                }
+                icon="book-plus"
+                mode="contained"
+                disabled={isLoading}
+              >
+                Crear módulo
+              </Button>
+            </>
+          )}
+
+          <ToggleableFileInput
+            files={taskFiles}
+            editable={true}
+            onChange={setTaskFiles}
+            maxFiles={1}
           />
 
           <Button
-            onPress={handleCreateActivity}
+            onPress={handleCreateTask}
             mode="contained"
             disabled={isLoading}
           >

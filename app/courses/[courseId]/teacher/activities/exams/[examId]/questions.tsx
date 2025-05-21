@@ -24,10 +24,7 @@ import { useExamDetails } from "@/hooks/useExamDetails";
 import { ExamItemCard } from "@/components/cards/examCards/ExamItemCard";
 import { examDetailsSchema } from "@/validations/activities";
 import { useFocusEffect } from "@react-navigation/native";
-import {
-  getTeacherExam,
-  updateTeacherExam,
-} from "@/services/activityManagement";
+import { getTeacherExam, updateExam } from "@/services/activityManagement";
 import { ExamItemMode } from "@/components/cards/examCards/examItemMode";
 
 export default function CreateExam() {
@@ -75,7 +72,7 @@ export default function CreateExam() {
 
     try {
       examDetailsSchema.parse(examDetails);
-      await updateTeacherExam(courseId, Number(examId), examDetails);
+      await updateExam(courseId, Number(examId), examDetails);
 
       setTeacherExam({
         ...teacherExam,
