@@ -123,7 +123,6 @@ export default function ActivityDetails() {
         </Appbar.Header>
         {studentActivity && (
           <ScrollView contentContainerStyle={{ padding: 16, gap: 16 }}>
-            {/* <ActivityCard activity={studentActivity} /> */}
             {activitySubmission && (
               <SubmissionCard
                 student={userContext.user}

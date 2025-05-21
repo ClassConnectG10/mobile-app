@@ -547,3 +547,38 @@ export async function deleteExam(
     throw handleError(error, "eliminar el examen");
   }
 }
+
+export async function getStudentExam(
+  courseId: string,
+  examId: number
+): Promise<StudentActivity> {
+  try {
+    const request = await createActivityRequest(courseId, examId);
+    const response = await request.get("");
+    const activityData = response.data.data;
+    const activity = new StudentActivity(
+      new Activity(
+        activityData.resource_id,
+        activityData.module_id,
+        ActivityType.EXAM,
+        new ExamDetails(
+          activityData.module_id,
+          activityData.title,
+          activityData.instruction,
+          activityData.exam_fields.map((item: any) =>
+            getExamItemFromJSON(item)
+          ),
+          getDateFromBackend(activityData.due_date)
+        )
+      ),
+      activityData.delivered,
+      activityData.delivered_date
+        ? getDateFromBackend(activityData.delivered_date)
+        : null
+    );
+
+    return activity;
+  } catch (error) {
+    throw handleError(error, "obtener la actividad del estudiante");
+  }
+}

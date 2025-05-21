@@ -124,11 +124,19 @@ export default function CoursePage() {
     );
   };
 
-  const handleActivitiesPress = (activityId: number) => {
-    router.push({
-      pathname: "/courses/[courseId]/student/activities/[activityId]",
-      params: { courseId, activityId },
-    });
+  const handleActivitiesPress = (teacherActivity: StudentActivity) => {
+    const activityId = teacherActivity.activity.resourceId;
+    if (teacherActivity.activity.type === ActivityType.TASK) {
+      router.push({
+        pathname: "/courses/[courseId]/student/activities/[activityId]",
+        params: { courseId, activityId },
+      });
+    } else if (teacherActivity.activity.type === ActivityType.EXAM) {
+      router.push({
+        pathname: "/courses/[courseId]/student/activities/exams/[examId]",
+        params: { courseId, examId: activityId },
+      });
+    }
   };
 
   const handleRefresh = async () => {
@@ -224,9 +232,7 @@ export default function CoursePage() {
                 renderItem={({ item }) => (
                   <ActivityCard
                     activity={item}
-                    onPress={() =>
-                      handleActivitiesPress(item.activity.resourceId)
-                    }
+                    onPress={() => handleActivitiesPress(item)}
                   />
                 )}
                 ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
