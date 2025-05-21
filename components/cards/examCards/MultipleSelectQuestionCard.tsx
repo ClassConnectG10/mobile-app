@@ -114,7 +114,8 @@ export const MultipleSelectQuestionCard: React.FC<
     if (mode === ExamItemMode.EDIT || mode === ExamItemMode.VIEW) {
       buttonChecked = multipleSelectQuestion.correctAnswers.includes(index);
     } else if (mode === ExamItemMode.FILL || mode === ExamItemMode.SENT) {
-      buttonChecked = studentAnswer.answers.includes(index);
+      buttonChecked =
+        studentAnswer.answers !== null && studentAnswer.answers.includes(index);
     } else if (mode === ExamItemMode.REVIEW || mode === ExamItemMode.MARKED) {
       buttonChecked =
         multipleSelectQuestion.correctAnswers.includes(index) ||

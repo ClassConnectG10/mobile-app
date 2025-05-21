@@ -44,11 +44,11 @@ export const TrueFalseQuestionCard: React.FC<TrueFalseQuestionCardProps> = ({
     let buttonChecked = false;
     if (mode === ExamItemMode.EDIT || mode === ExamItemMode.VIEW) {
       buttonChecked =
-        trueFalseQuestion.correctAnswer !== undefined &&
+        trueFalseQuestion.correctAnswer !== null &&
         trueFalseQuestion.correctAnswer === option;
     } else if (mode === ExamItemMode.FILL || mode === ExamItemMode.SENT) {
       buttonChecked =
-        studentAnswer.answer !== undefined && studentAnswer.answer === option;
+        studentAnswer.answer !== null && studentAnswer.answer === option;
     } else if (mode === ExamItemMode.REVIEW || mode === ExamItemMode.MARKED) {
       buttonChecked =
         trueFalseQuestion.correctAnswer === option ||

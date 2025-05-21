@@ -9,6 +9,11 @@ import {
   MultipleChoiceQuestion,
   TrueFalseQuestion,
   MultipleSelectQuestion,
+  SubmittedExamItem,
+  OpenAnswer,
+  MultipleChoiceAnswer,
+  TrueFalseAnswer,
+  MultipleSelectAnswer,
 } from "@/types/activity";
 
 export function handleError(error: any, action: string): Error {
@@ -92,5 +97,37 @@ export function getExamItemFromJSON(examItemJSON: any): ExamItem {
       );
     default:
       throw new Error("Tipo de pregunta no soportado");
+  }
+}
+
+// TODO: Cambiar question por índice de question
+export function submittedExamItemToJSON(submittedItem: SubmittedExamItem) {
+  switch (submittedItem.type) {
+    case ExamItemType.OPEN:
+      return {
+        question: "",
+        type: submittedItem.type,
+        answer: (submittedItem.answer as OpenAnswer).answer,
+      };
+    case ExamItemType.MULTIPLE_CHOICE:
+      return {
+        question: "",
+        type: submittedItem.type,
+        answer: (submittedItem.answer as MultipleChoiceAnswer).answer,
+      };
+    case ExamItemType.TRUE_FALSE:
+      return {
+        question: "",
+        type: submittedItem.type,
+        answer: (submittedItem.answer as TrueFalseAnswer).answer,
+      };
+    case ExamItemType.MULTIPLE_SELECT:
+      return {
+        question: "",
+        type: submittedItem.type,
+        answers: (submittedItem.answer as MultipleSelectAnswer).answers,
+      };
+    default:
+      throw new Error("Tipo de respuesta no soportado");
   }
 }

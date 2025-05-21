@@ -31,12 +31,12 @@ import { customColors } from "@/utils/constants/colors";
 interface ExamItemCardProps {
   examItem: ExamItem;
   mode: ExamItemMode;
-  onChange: (newQuestion: ExamItem) => void;
-  onDelete: () => void;
-  canMoveUp: boolean;
-  canMoveDown: boolean;
-  onMoveUp: () => void;
-  onMoveDown: () => void;
+  onChange?: (newQuestion: ExamItem) => void;
+  onDelete?: () => void;
+  canMoveUp?: boolean;
+  canMoveDown?: boolean;
+  onMoveUp?: () => void;
+  onMoveDown?: () => void;
   studentAnswer?: ExamItemAnswer;
   setStudentAnswer?: (answer: ExamItemAnswer) => void;
   answerOk?: boolean;
@@ -67,19 +67,19 @@ export const ExamItemCard: React.FC<ExamItemCardProps> = ({
     if (mode !== ExamItemMode.REVIEW || examItem.type !== ExamItemType.OPEN)
       return;
 
-    const newAnwerOk = answerOk === undefined ? true : !answerOk;
+    const newAnwerOk = answerOk === null ? true : !answerOk;
     setAnswerOk(newAnwerOk);
   };
 
   const correctionColor =
-    answerOk === undefined
+    answerOk === null
       ? theme.colors.primary
       : answerOk
       ? customColors.success
       : customColors.error;
 
   const correctionIcon =
-    answerOk === undefined
+    answerOk === null
       ? "help-circle-outline"
       : answerOk
       ? "check-circle-outline"
@@ -114,10 +114,10 @@ export const ExamItemCard: React.FC<ExamItemCardProps> = ({
           </Text>
 
           <View style={{ flexDirection: "row" }}>
-            {canMoveUp && editableItem && (
+            {editableItem && canMoveUp && editableItem && (
               <IconButton icon="arrow-up" size={18} onPress={onMoveUp} />
             )}
-            {canMoveDown && editableItem && (
+            {editableItem && canMoveDown && editableItem && (
               <IconButton icon="arrow-down" size={18} onPress={onMoveDown} />
             )}
 

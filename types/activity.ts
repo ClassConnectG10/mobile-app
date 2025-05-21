@@ -113,7 +113,7 @@ export class MultipleSelectQuestion implements ExamItem {
 }
 
 export class ActivitySubmission {
-  // TODO: Cambiarlo a solo TASK
+  // TODO: Refactorizar esto
   constructor(
     public resourceId: number,
     public type: ActivityType,
@@ -124,6 +124,10 @@ export class ActivitySubmission {
     public submissionDate?: Date
   ) {}
 }
+
+// export class TaskSubmission {
+
+// }
 
 export class ExamSubmission {
   constructor(
@@ -139,7 +143,8 @@ export class ExamSubmission {
 
 export class SubmittedExamItem {
   constructor(
-    public examItem: ExamItem,
+    public questionIndex: number,
+    public type: ExamItemType,
     public answer: ExamItemAnswer,
     public correct?: boolean
   ) {}

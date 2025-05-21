@@ -28,6 +28,7 @@ export default function CreateActivity() {
   const handleCreateActivity = async () => {
     setIsLoading(true);
     try {
+      // TODO: Elegir modulo al crear en vez de usar uno por defecto
       const moduleId = await getCourseModuleId(courseId);
       await createActivity(courseId, moduleId, activityType, activityDetails);
       router.back();

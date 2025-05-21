@@ -1,4 +1,4 @@
-import { ExamItemType } from "@/types/activity";
+import { ActivityType, ExamItemType } from "@/types/activity";
 import { z } from "zod";
 
 export const activityDetailsSchema = z.object({
@@ -58,7 +58,7 @@ const multipleSelectSchema = z.object({
     .min(1, "Debe seleccionar al menos una opción correcta"),
 });
 
-export const examItemSchema = z.discriminatedUnion("type", [
+const examItemSchema = z.discriminatedUnion("type", [
   openQuestionSchema,
   multipleChoiceSchema,
   trueFalseSchema,
@@ -79,3 +79,49 @@ export const examDetailsSchema = z.object({
     .array(examItemSchema)
     .min(1, "Se requiere al menos un ítem de examen"),
 });
+
+const openAnswerSchema = z.object({
+  type: z.literal(ExamItemType.OPEN),
+  answer: z.string(),
+});
+
+const multipleChoiceAnswerSchema = z.object({
+  type: z.literal(ExamItemType.MULTIPLE_CHOICE),
+  answer: z.number(),
+});
+
+const trueFalseAnswerSchema = z.object({
+  type: z.literal(ExamItemType.TRUE_FALSE),
+  answer: z.boolean(),
+});
+
+const multipleSelectAnswerSchema = z.object({
+  type: z.literal(ExamItemType.MULTIPLE_SELECT),
+  answers: z.array(z.number()).min(1, "Debe seleccionar al menos una opción"),
+});
+
+export const examItemAnswerSchema = z.discriminatedUnion("type", [
+  openAnswerSchema,
+  multipleChoiceAnswerSchema,
+  trueFalseAnswerSchema,
+  multipleSelectAnswerSchema,
+]);
+
+export const submittedExamItemSchema = z.object({
+  questionIndex: z.number().int().min(0, "Índice de pregunta inválido"),
+  type: z.nativeEnum(ExamItemType),
+  answer: examItemAnswerSchema,
+  correct: z.boolean().optional(),
+});
+
+// export const examSubmissionSchema = z.object({
+//   resourceId: z.number({ required_error: "El examen es requerido" }).int(),
+//   type: z.nativeEnum(ActivityType),
+//   studentId: z.number({ required_error: "El estudiante es requerido" }).int(),
+//   submittedExamItems: z
+//     .array(submittedExamItemSchema)
+//     .min(1, "Debe haber al menos una respuesta"),
+//   submited: z.boolean(),
+//   dueDate: z.date(),
+//   submissionDate: z.date().optional().nullable(),
+// });

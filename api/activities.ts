@@ -94,6 +94,6 @@ export const createExamSubmissionPostRequest = (
   activityId: number
 ) => {
   return createRequest({
-    uri: `courses/${courseId}/activities/exams/${activityId}/submit`,
+    uri: `courses/${courseId}/activities/exams/${activityId}/submit-answers`,
   });
 };

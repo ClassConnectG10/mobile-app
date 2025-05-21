@@ -7,8 +7,22 @@ import {
   ActivityType,
   ActivitySubmission,
   ExamDetails,
+  ExamSubmission,
+  SubmittedExamItem,
+  ExamItem,
+  ExamItemAnswer,
+  ExamItemType,
+  MultipleChoiceAnswer,
+  MultipleSelectAnswer,
+  OpenAnswer,
+  TrueFalseAnswer,
 } from "@/types/activity";
-import { examItemToJSON, getExamItemFromJSON, handleError } from "./common";
+import {
+  examItemToJSON,
+  getExamItemFromJSON,
+  handleError,
+  submittedExamItemToJSON,
+} from "./common";
 import { AxiosInstance } from "axios";
 import {
   createActivityRequest,
@@ -28,6 +42,7 @@ import {
   activityDetailsSchema,
   activityDetailsSchemaUpdate,
   examDetailsSchema,
+  submittedExamItemSchema,
 } from "@/validations/activities";
 import { getDateFromBackend } from "@/utils/date";
 import { createGetModuleRequest, createModuleRequest } from "@/api/modules";
@@ -406,6 +421,7 @@ export async function createActivity(
 }
 
 export async function getCourseModuleId(courseId: string): Promise<number> {
+  // TODO: Borrar
   try {
     const request = await createGetModuleRequest(courseId);
     const response = await request.get("");
@@ -555,6 +571,7 @@ export async function getStudentExam(
   try {
     const request = await createActivityRequest(courseId, examId);
     const response = await request.get("");
+    console.log("FETCHED DATA", response.data);
     const activityData = response.data.data;
     const activity = new StudentActivity(
       new Activity(
@@ -576,9 +593,107 @@ export async function getStudentExam(
         ? getDateFromBackend(activityData.delivered_date)
         : null
     );
-
+    console.log("STUDENT EXAM", activity);
+    console.log(
+      "EXAM ITEMS",
+      (activity.activity.activityDetails as ExamDetails).examItems
+    );
     return activity;
   } catch (error) {
     throw handleError(error, "obtener la actividad del estudiante");
+  }
+}
+
+function getExamAnswerFromJSON(
+  examItem: ExamItem,
+  index: number,
+  responseData: any
+): SubmittedExamItem {
+  let examItemAnswer: ExamItemAnswer;
+
+  const answer = responseData.answers?.[index] ?? null;
+  switch (examItem.type) {
+    case ExamItemType.OPEN:
+      examItemAnswer = new OpenAnswer(answer?.answer ?? "");
+      break;
+    case ExamItemType.MULTIPLE_CHOICE:
+      examItemAnswer = new MultipleChoiceAnswer(answer?.answer ?? null);
+      break;
+    case ExamItemType.MULTIPLE_SELECT:
+      examItemAnswer = new MultipleSelectAnswer(answer?.answers ?? []);
+      break;
+    case ExamItemType.TRUE_FALSE:
+      examItemAnswer = new TrueFalseAnswer(answer?.answer ?? null);
+      break;
+    default:
+      throw new Error(`Unsupported exam item type: ${examItem.type}`);
+  }
+
+  const submittedExamItem = new SubmittedExamItem(
+    index,
+    examItem.type,
+    examItemAnswer,
+    false // TODO: Veremos cuando llege el backend si es correcto o no
+  );
+
+  return submittedExamItem;
+}
+
+export async function getStudentExamSubmission(
+  courseId: string,
+  examId: number,
+  studentId: number,
+  examItems: ExamItem[]
+): Promise<ExamSubmission> {
+  try {
+    const request = await createActivitySubmissionRequest(
+      courseId,
+      examId,
+      studentId
+    );
+
+    const response = await request.get("");
+    const responseData = response.data.data;
+
+    const examSubmission = new ExamSubmission(
+      examId,
+      ActivityType.EXAM,
+      studentId,
+      examItems.map((item, index) =>
+        getExamAnswerFromJSON(item, index, responseData)
+      ),
+      responseData.delivered,
+      getDateFromBackend(responseData.due_date),
+      responseData.delivered_date
+        ? getDateFromBackend(responseData.delivered_date)
+        : null
+    );
+
+    return examSubmission;
+
+    return;
+  } catch (error) {
+    throw handleError(error, "obtener la entrega del examen");
+  }
+}
+
+export async function submitExam(
+  courseId: string,
+  examId: number,
+  examItems: SubmittedExamItem[]
+): Promise<void> {
+  try {
+    examItems.forEach((item) => {
+      submittedExamItemSchema.parse(item);
+    });
+    const request = await createExamSubmissionPostRequest(courseId, examId);
+
+    const body = {
+      answers: examItems.map((item) => submittedExamItemToJSON(item)),
+    };
+
+    await request.post("", body);
+  } catch (error) {
+    throw handleError(error, "enviar el examen");
   }
 }
