@@ -112,33 +112,31 @@ export class MultipleSelectQuestion implements ExamItem {
   }
 }
 
-export class ActivitySubmission {
-  // TODO: Refactorizar esto
-  constructor(
-    public resourceId: number,
-    public type: ActivityType,
-    public studentId: number,
-    public response: string,
-    public submited: boolean,
-    public dueDate: Date,
-    public submissionDate?: Date
-  ) {}
+export interface ActivitySubmission {
+  resourceId: number;
+  type: ActivityType;
+  studentId: number;
+  submited: boolean;
+  dueDate: Date;
+  submissionDate?: Date;
 }
 
 // export class TaskSubmission {
 
 // }
 
-export class ExamSubmission {
+export class ExamSubmission implements ActivitySubmission {
+  type: ActivityType;
   constructor(
     public resourceId: number,
-    public type: ActivityType,
     public studentId: number,
     public submittedExamItems: SubmittedExamItem[],
     public submited: boolean,
     public dueDate: Date,
     public submissionDate?: Date
-  ) {}
+  ) {
+    this.type = ActivityType.EXAM;
+  }
 }
 
 export class SubmittedExamItem {

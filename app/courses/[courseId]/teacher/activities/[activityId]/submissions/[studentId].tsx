@@ -4,19 +4,24 @@ import UserCard from "@/components/cards/UserCard";
 import {
   getActivitySubmission,
   getTeacherActivity,
+  getTeacherExam,
 } from "@/services/activityManagement";
 import { getUser } from "@/services/userManagement";
 import {
   ActivitySubmission,
   ActivityType,
+  ExamDetails,
+  ExamSubmission,
   TeacherActivity,
 } from "@/types/activity";
 import { User } from "@/types/user";
 import { formatDateTime } from "@/utils/date";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
-import { ScrollView, View } from "react-native";
+import { FlatList, ScrollView, View } from "react-native";
 import { ActivityIndicator, Appbar, Text, useTheme } from "react-native-paper";
+import { ExamItemCard } from "@/components/cards/examCards/ExamItemCard";
+import { ExamItemMode } from "@/components/cards/examCards/examItemMode";
 
 export default function TeacherSubmissionPage() {
   const theme = useTheme();
@@ -44,7 +49,7 @@ export default function TeacherSubmissionPage() {
 
     setIsLoading(true);
     try {
-      const activity = await getTeacherActivity(courseId, Number(activityId));
+      const activity = await getTeacherExam(courseId, Number(activityId));
       setTeacherActivity(activity);
     } catch (error) {
       setErrorMessage((error as Error).message);
@@ -63,7 +68,6 @@ export default function TeacherSubmissionPage() {
         teacherActivity.activity,
         Number(studentId)
       );
-
       setStudentSubmission(submissionData);
     } catch (error) {
       setErrorMessage((error as Error).message);
@@ -109,61 +113,87 @@ export default function TeacherSubmissionPage() {
 
   return (
     <>
-      <View style={{ flex: 1 }}>
-        <Appbar.Header>
-          <Appbar.BackAction onPress={() => router.back()} />
-          <Appbar.Content
-            title={
-              teacherActivity?.activity.type === ActivityType.TASK
-                ? "Entrega de la tarea"
-                : "Entrega del examen"
-            }
+      <Appbar.Header>
+        <Appbar.BackAction onPress={() => router.back()} />
+        <Appbar.Content
+          title={
+            teacherActivity?.activity.type === ActivityType.TASK
+              ? "Entrega de la tarea"
+              : "Entrega del examen"
+          }
+        />
+      </Appbar.Header>
+      {isLoading || !teacherActivity || !studentSubmission || !student ? (
+        <View
+          style={{
+            flex: 1,
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <ActivityIndicator
+            animating={true}
+            size="large"
+            color={theme.colors.primary}
           />
-        </Appbar.Header>
-        {isLoading || !teacherActivity || !studentSubmission || !student ? (
-          <View
-            style={{
-              flex: 1,
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
-            <ActivityIndicator
-              animating={true}
-              size="large"
-              color={theme.colors.primary}
-            />
-          </View>
-        ) : (
-          <ScrollView contentContainerStyle={{ padding: 16, gap: 16 }}>
-            <UserCard user={student} onPress={handleStudentPress} />
+        </View>
+      ) : (
+        <View style={{ padding: 16, flex: 1 }}>
+          <FlatList
+            data={
+              (teacherActivity.activity.activityDetails as ExamDetails)
+                .examItems
+            }
+            keyExtractor={(_item, index) => index.toString()}
+            ListHeaderComponent={
+              <View style={{ gap: 16, paddingBottom: 16 }}>
+                <UserCard user={student} onPress={handleStudentPress} />
 
-            <TextField
-              label="Título"
-              value={teacherActivity.activity.activityDetails.title}
-            />
-            {studentSubmission && studentSubmission.submited ? (
-              <>
                 <TextField
-                  label="Respuesta del estudiante"
-                  value={studentSubmission.response}
+                  label="Título"
+                  value={teacherActivity.activity.activityDetails.title}
                 />
-                <TextField
-                  label="Fecha de entrega"
-                  value={formatDateTime(studentSubmission.submissionDate)}
+                {studentSubmission && studentSubmission.submited ? (
+                  <>
+                    <TextField
+                      label="Fecha de entrega"
+                      value={formatDateTime(studentSubmission.submissionDate)}
+                    />
+                  </>
+                ) : (
+                  <Text variant="titleSmall">
+                    El alumno no entregó
+                    {teacherActivity.activity.type === ActivityType.TASK
+                      ? " la tarea"
+                      : " el examen"}
+                  </Text>
+                )}
+              </View>
+            }
+            renderItem={({ item, index }) =>
+              studentSubmission.submited ? (
+                <ExamItemCard
+                  mode={ExamItemMode.SENT}
+                  examItem={item}
+                  studentAnswer={
+                    (studentSubmission as ExamSubmission).submittedExamItems[
+                      index
+                    ].answer
+                  }
+                  setStudentAnswer={() => {}}
                 />
-              </>
-            ) : (
-              <Text variant="titleSmall">
-                El alumno no entregó
-                {teacherActivity.activity.type === ActivityType.TASK
-                  ? " la tarea"
-                  : " el examen"}
-              </Text>
+              ) : null
+            }
+            ItemSeparatorComponent={() => (
+              <View
+                style={{
+                  height: 8,
+                }}
+              />
             )}
-          </ScrollView>
-        )}
-      </View>
+          />
+        </View>
+      )}
       <ErrorMessageSnackbar
         message={errorMessage}
         onDismiss={() => setErrorMessage("")}

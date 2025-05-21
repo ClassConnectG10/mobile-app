@@ -320,20 +320,24 @@ export async function getActivitySubmissions(
     );
     const response = await request.get("");
     const submissionsData = response.data.data;
-    const submissions: [] = submissionsData.map(
-      (activityData: any) =>
-        new ActivitySubmission(
-          activityData.task_id,
-          activity.type,
-          activityData.user_id,
-          activityData.external_ref,
-          activityData.delivered,
-          getDateFromBackend(activityData.due_date),
-          activityData.delivered_date
-            ? getDateFromBackend(activityData.delivered_date)
-            : null
-        )
-    );
+    const submissions: [] = submissionsData.map((activityData: any) => {
+      // TODO: if (activity.type == ActivityType.TASK) devolver un TaskSubmission
+      const examItems = (activity.activityDetails as ExamDetails).examItems;
+      return new ExamSubmission(
+        activity.resourceId,
+        activityData.user_id,
+        activityData.delivered
+          ? activityData.answers.map((item: any, index) =>
+              getExamAnswerFromJSON(item, index, activityData)
+            )
+          : [],
+        activityData.delivered,
+        getDateFromBackend(activityData.due_date),
+        activityData.delivered_date
+          ? getDateFromBackend(activityData.delivered_date)
+          : null
+      );
+    });
     return submissions;
   } catch (error) {
     throw handleError(error, "obtener las entregas de la actividad");
@@ -354,11 +358,16 @@ export async function getActivitySubmission(
     const response = await request.get("");
 
     const submissionData = response.data.data;
-    const submission = new ActivitySubmission(
-      submissionData.task_id,
-      activity.type,
+    // TODO: if (activity.type == ActivityType.TASK) devolver un TaskSubmission
+    const examItems = (activity.activityDetails as ExamDetails).examItems;
+    const submission = new ExamSubmission(
+      activity.resourceId,
       studentId,
-      submissionData.external_ref,
+      submissionData.delivered
+        ? examItems.map((item: any, index) =>
+            getExamAnswerFromJSON(item, index, submissionData)
+          )
+        : [],
       submissionData.delivered,
       getDateFromBackend(submissionData.due_date),
       submissionData.delivered_date
@@ -657,7 +666,6 @@ export async function getStudentExamSubmission(
 
     const examSubmission = new ExamSubmission(
       examId,
-      ActivityType.EXAM,
       studentId,
       examItems.map((item, index) =>
         getExamAnswerFromJSON(item, index, responseData)

@@ -97,13 +97,14 @@ export default function TeacherExamPage() {
   );
 
   const handleViewSubmissions = async () => {
-    // router.push({
-    //   pathname: "/courses/[courseId]/teacher/activities/[examId]/submissions",
-    //   params: {
-    //     courseId: courseId,
-    //     examId: examId,
-    //   },
-    // });
+    router.push({
+      pathname:
+        "/courses/[courseId]/teacher/activities/[activityId]/submissions",
+      params: {
+        courseId: courseId,
+        activityId: examId,
+      },
+    });
     // TODO
   };
 

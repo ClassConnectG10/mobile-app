@@ -202,7 +202,7 @@ export default function TeacherSubmissionsPage() {
               data={filteredSubmissions}
               refreshing={isRefreshing}
               onRefresh={handleRefresh}
-              keyExtractor={(item) => item.resourceId.toString()}
+              keyExtractor={(item) => item.studentId.toString()}
               renderItem={({ item }) =>
                 students[item.studentId] && (
                   <SubmissionCard
