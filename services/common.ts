@@ -200,6 +200,10 @@ const STORAGE_FREFIX =
   "https://storage.googleapis.com/class-connect-g10.firebasestorage.app";
 
 export function getFileFromBackend(fileName: string, backendRef: string): File {
+  if (!fileName || !backendRef) {
+    // TODO: ver si está bien manejado el error
+    return null;
+  }
   const firebaseRef = parseBackendRef(backendRef);
   const fileType = getFileTypeFromName(fileName);
   const file = new File(fileName, fileType, null, firebaseRef);

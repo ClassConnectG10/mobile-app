@@ -43,6 +43,8 @@ import {
 } from "@/validations/activities";
 import { getDateFromBackend } from "@/utils/date";
 import { File } from "@/types/file";
+import { act } from "react";
+import { get } from "react-native/Libraries/TurboModule/TurboModuleRegistry";
 // ACTIVITIES
 
 export async function getCourseTeacherActivities(
@@ -120,7 +122,7 @@ export async function getCourseStudentActivities(
                 activityData.module_id,
                 activityData.title,
                 activityData.instruction,
-                null,
+                getFileFromBackend(activityData.external_ref, activityData.url),
                 getDateFromBackend(activityData.due_date)
               )
             ),
@@ -228,27 +230,40 @@ export async function getStudentTask(
   taskId: number
 ): Promise<StudentActivity> {
   try {
-    const request = await createActivityRequest(courseId, taskId);
-    const response = await request.get("");
-    const activityData = response.data.data;
-    const activity = new StudentActivity(
-      new Activity(
-        activityData.resource_id,
-        activityData.module_id,
-        activityData.type,
-        new TaskDetails(
-          activityData.module_id,
-          activityData.title,
-          activityData.instruction,
-          getFileFromBackend(activityData.external_ref, activityData.url),
-          getDateFromBackend(activityData.due_date)
-        )
-      ),
-      activityData.delivered,
-      activityData.delivered_date
-        ? getDateFromBackend(activityData.delivered_date)
-        : null
+    const activities = await getCourseStudentActivities(
+      courseId,
+      ActivitiesOption.ALL
     );
+    const activity = activities.find(
+      (activity) => activity.activity.resourceId === taskId
+    );
+    if (!activity) {
+      throw new Error("Actividad no encontrada");
+    }
+
+    //   Descomentar cuando se arregle el problema del backend
+    //   que no devuelve el external_ref y el url
+    // const request = await createActivityRequest(courseId, taskId);
+    // const response = await request.get("");
+    // const activityData = response.data.data;
+    // const activity = new StudentActivity(
+    //   new Activity(
+    //     activityData.resource_id,
+    //     activityData.module_id,
+    //     activityData.type,
+    //     new TaskDetails(
+    //       activityData.module_id,
+    //       activityData.title,
+    //       activityData.instruction,
+    //       getFileFromBackend(activityData.external_ref, activityData.url),
+    //       getDateFromBackend(activityData.due_date)
+    //     )
+    //   ),
+    //   activityData.delivered,
+    //   activityData.delivered_date
+    //     ? getDateFromBackend(activityData.delivered_date)
+    //     : null
+    // );
 
     return activity;
   } catch (error) {
@@ -512,8 +527,9 @@ export async function submitTask(
 ): Promise<void> {
   try {
     const request = await createSubmitTaskRequest(courseId, taskId);
-
-    await postFile(request, file);
+    if (file) {
+      await postFile(request, file);
+    }
   } catch (error) {
     throw handleError(error, "enviar la actividad");
   }

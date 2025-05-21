@@ -124,8 +124,8 @@ export default function ModulePage() {
 
     if (studentActivity.activity.type === ActivityType.TASK) {
       router.push({
-        pathname: "/courses/[courseId]/student/activities/[activityId]",
-        params: { courseId, activityId },
+        pathname: "/courses/[courseId]/student/activities/tasks/[taskId]",
+        params: { courseId, taskId: activityId },
       });
     } else if (studentActivity.activity.type === ActivityType.EXAM) {
       router.push({

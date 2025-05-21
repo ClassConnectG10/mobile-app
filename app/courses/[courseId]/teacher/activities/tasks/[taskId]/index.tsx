@@ -78,10 +78,14 @@ export default function TeacherExamPage() {
         taskDetailsHook.setTaskDetails(
           teacherTask.activity.activityDetails as TaskDetails
         );
-        setTaskFiles([
-          (teacherTask.activity.activityDetails as TaskDetails)
-            .instructionsFile,
-        ]);
+        setTaskFiles(
+          (teacherTask.activity.activityDetails as TaskDetails).instructionsFile
+            ? [
+                (teacherTask.activity.activityDetails as TaskDetails)
+                  .instructionsFile,
+              ]
+            : []
+        );
       }
     } catch (error) {
       setErrorMessage((error as Error).message);
