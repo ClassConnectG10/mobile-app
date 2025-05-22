@@ -1,25 +1,30 @@
 import { FAB } from "react-native-paper";
-import { StyleSheet } from "react-native";
 
 interface FloatingActionButtonProps {
   onPress: () => void;
+  index?: number;
+  icon?: string;
 }
 
 export const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({
   onPress,
+  index = 0,
+  icon = "plus",
 }) => {
-  return <FAB icon="plus" style={styles.fab} onPress={onPress} />;
+  return (
+    <FAB
+      icon={icon}
+      style={{
+        position: "absolute",
+        right: 16 + index * 80,
+        bottom: 16,
+        width: 64,
+        height: 64,
+        borderRadius: 32,
+        justifyContent: "center",
+        alignItems: "center",
+      }}
+      onPress={onPress}
+    />
+  );
 };
-
-const styles = StyleSheet.create({
-  fab: {
-    position: "absolute",
-    right: 16,
-    bottom: 16,
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-});

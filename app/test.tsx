@@ -12,7 +12,7 @@ export default function TestPage() {
       "1.pdf",
       "application/pdf",
       null,
-      "/course/16b8c2e6-3239-4f18-9165-364d713fadbe/1"
+      "/course/16b8c2e6-3239-4f18-9165-364d713fadbe/1",
     ),
   ]);
 
@@ -28,7 +28,7 @@ export default function TestPage() {
           files={files}
           editable={true}
           onChange={setFiles}
-          maxFiles={2}
+          maxFiles={5}
         />
       </ScrollView>
     </>

@@ -22,6 +22,7 @@ export const ModulesTab: React.FC<ModulesTabProps> = ({ course }) => {
   const router = useRouter();
   const theme = useTheme();
   const [isLoading, setIsLoading] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -53,14 +54,34 @@ export const ModulesTab: React.FC<ModulesTabProps> = ({ course }) => {
   useFocusEffect(
     useCallback(() => {
       fetchModules();
-    }, [course.courseId])
+    }, [course.courseId]),
   );
+
+  const handleEditModulesOrder = () => {
+    setIsEditing(!isEditing);
+  };
 
   const handleCreateModule = () => {
     router.push({
       pathname: "/courses/[courseId]/teacher/modules/create",
       params: { courseId: course.courseId },
     });
+  };
+
+  const handleMoveUpModule = (index: number) => {
+    const newModules = [...modules];
+    const temp = newModules[index - 1];
+    newModules[index - 1] = newModules[index];
+    newModules[index] = temp;
+    setModules(newModules);
+  };
+
+  const handleMoveDownModule = (index: number) => {
+    const newModules = [...modules];
+    const temp = newModules[index + 1];
+    newModules[index + 1] = newModules[index];
+    newModules[index] = temp;
+    setModules(newModules);
   };
 
   return (
@@ -82,7 +103,7 @@ export const ModulesTab: React.FC<ModulesTabProps> = ({ course }) => {
       ) : (
         <View
           style={{
-            gap: 16,
+            gap: 32,
           }}
         >
           <FlatList
@@ -114,21 +135,44 @@ export const ModulesTab: React.FC<ModulesTabProps> = ({ course }) => {
                   }}
                 />
 
-                <View>
-                  {index > 0 && (
-                    <IconButton icon="arrow-up" size={18} onPress={() => {}} />
-                  )}
-                  {index < modules.length - 1 && (
-                    <IconButton
-                      icon="arrow-down"
-                      size={18}
-                      onPress={() => {}}
-                    />
-                  )}
-                </View>
+                {isEditing && (
+                  <View
+                    style={{
+                      gap: 8,
+                      alignItems: "center",
+                    }}
+                  >
+                    {index > 0 && (
+                      <IconButton
+                        mode="contained"
+                        style={{
+                          margin: 0,
+                        }}
+                        icon="arrow-up"
+                        size={16}
+                        onPress={() => {
+                          handleMoveUpModule(index);
+                        }}
+                      />
+                    )}
+                    {index < modules.length - 1 && (
+                      <IconButton
+                        mode="contained"
+                        style={{
+                          margin: 0,
+                        }}
+                        icon="arrow-down"
+                        size={16}
+                        onPress={() => {
+                          handleMoveDownModule(index);
+                        }}
+                      />
+                    )}
+                  </View>
+                )}
               </View>
             )}
-            ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
+            ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
             ListEmptyComponent={
               <View
                 style={{
@@ -144,6 +188,19 @@ export const ModulesTab: React.FC<ModulesTabProps> = ({ course }) => {
         </View>
       )}
       <FloatingActionButton onPress={handleCreateModule} />
+      <FloatingActionButton
+        onPress={
+          isEditing
+            ? () => {
+                setIsEditing(false);
+              }
+            : () => {
+                handleEditModulesOrder();
+              }
+        }
+        index={1}
+        icon={isEditing ? "check" : "pencil"}
+      />
 
       <ErrorMessageSnackbar
         message={errorMessage}
