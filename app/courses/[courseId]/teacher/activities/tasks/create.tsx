@@ -6,7 +6,14 @@ import { ActivityType } from "@/types/activity";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import { View, ScrollView } from "react-native";
-import { Appbar, Button, TextInput, useTheme } from "react-native-paper";
+import {
+  ActivityIndicator,
+  Appbar,
+  Button,
+  Divider,
+  TextInput,
+  useTheme,
+} from "react-native-paper";
 import { useTaskDetails } from "@/hooks/useTaskDetails";
 import OptionPicker from "@/components/forms/OptionPicker";
 import { BiMap } from "@/utils/bimap";
@@ -29,9 +36,6 @@ export default function CreateTaskPage() {
   const [taskFiles, setTaskFiles] = useState<File[]>([]);
 
   const courseId = courseIdParam as string;
-
-  // const activityDetailsHook = useTaskDetails();
-  // const activityDetails = activityDetailsHook.taskDetails;
 
   const taskDetailsHook = useTaskDetails();
   const taskDetails = taskDetailsHook.taskDetails;
@@ -79,86 +83,118 @@ export default function CreateTaskPage() {
 
   return (
     <>
-      <Appbar.Header>
-        <Appbar.BackAction onPress={() => router.back()} />
-        <Appbar.Content title={"Nueva tarea"} />
-      </Appbar.Header>
       <View
-        style={[
-          globalStyles.mainContainer,
-          { backgroundColor: theme.colors.background },
-        ]}
+        style={{
+          flex: 1,
+        }}
       >
-        <ScrollView contentContainerStyle={globalStyles.courseDetailsContainer}>
-          <TextInput
-            placeholder="Nombre"
-            value={taskDetails.title}
-            onChangeText={taskDetailsHook.setTitle}
-          />
-
-          <TextInput
-            placeholder="Instrucciones"
-            value={taskDetails.instructions}
-            onChangeText={taskDetailsHook.setInstructions}
-          />
-
-          <DatePickerButton
-            label="Fecha límite"
-            type="datetime"
-            value={taskDetails.dueDate}
-            onChange={taskDetailsHook.setDueDate}
-          />
-
-          <OptionPicker
-            label="Módulo"
-            value={taskDetails.moduleId?.toString()}
-            items={courseModulesBiMap}
-            setValue={(newValue: string) => {
-              taskDetailsHook.setModuleId(Number(newValue));
+        <Appbar.Header>
+          <Appbar.BackAction onPress={() => router.back()} />
+          <Appbar.Content title={"Nueva tarea"} />
+        </Appbar.Header>
+        {isLoading ? (
+          <View
+            style={{
+              flex: 1,
+              justifyContent: "center",
+              alignItems: "center",
             }}
-          />
-          {courseModulesBiMap.isEmpty() && !isLoading && (
-            <>
-              <AlertText
-                text="Antes de crear un examen, debe crear un módulo"
-                error={false}
-              />
-              <Button
-                onPress={() =>
-                  router.push({
-                    pathname: "/courses/[courseId]/teacher/modules/create",
-                    params: { courseId },
-                  })
-                }
-                icon="book-plus"
-                mode="contained"
-                disabled={isLoading}
-              >
-                Crear módulo
-              </Button>
-            </>
-          )}
-
-          <ToggleableFileInput
-            files={taskFiles}
-            editable={true}
-            onChange={setTaskFiles}
-            maxFiles={1}
-          />
-
-          <Button
-            onPress={handleCreateTask}
-            mode="contained"
-            disabled={isLoading}
           >
-            Crear tarea
-          </Button>
-        </ScrollView>
+            <ActivityIndicator
+              animating={true}
+              size="large"
+              color={theme.colors.primary}
+            />
+          </View>
+        ) : (
+          <ScrollView
+            contentContainerStyle={{
+              padding: 16,
+              justifyContent: "space-between",
+              flex: 1,
+            }}
+          >
+            <View
+              style={{
+                gap: 16,
+              }}
+            >
+              <TextInput
+                placeholder="Nombre"
+                value={taskDetails.title}
+                onChangeText={taskDetailsHook.setTitle}
+              />
+
+              <TextInput
+                placeholder="Instrucciones"
+                value={taskDetails.instructions}
+                onChangeText={taskDetailsHook.setInstructions}
+              />
+
+              <DatePickerButton
+                label="Fecha límite"
+                type="datetime"
+                value={taskDetails.dueDate}
+                onChange={taskDetailsHook.setDueDate}
+              />
+
+              <OptionPicker
+                label="Módulo"
+                value={taskDetails.moduleId?.toString()}
+                items={courseModulesBiMap}
+                setValue={(newValue: string) => {
+                  taskDetailsHook.setModuleId(Number(newValue));
+                }}
+              />
+              {courseModulesBiMap.isEmpty() && !isLoading && (
+                <>
+                  <AlertText
+                    text="Antes de crear un examen, debe crear un módulo"
+                    error={false}
+                  />
+                  <Button
+                    onPress={() =>
+                      router.push({
+                        pathname: "/courses/[courseId]/teacher/modules/create",
+                        params: { courseId },
+                      })
+                    }
+                    icon="book-plus"
+                    mode="contained"
+                    disabled={isLoading}
+                  >
+                    Crear módulo
+                  </Button>
+                </>
+              )}
+
+              <Divider />
+
+              <ToggleableFileInput
+                files={taskFiles}
+                editable={true}
+                onChange={setTaskFiles}
+                maxFiles={1}
+              />
+            </View>
+
+            <View>
+              <Button
+                onPress={handleCreateTask}
+                mode="contained"
+                disabled={isLoading || courseModulesBiMap.isEmpty()}
+              >
+                Crear tarea
+              </Button>
+            </View>
+          </ScrollView>
+        )}
+
+        <ErrorMessageSnackbar
+          message={errorMessage}
+          onDismiss={() => setErrorMessage("")}
+        />
       </View>
-      <ErrorMessageSnackbar
-        message={errorMessage}
-        onDismiss={() => setErrorMessage("")}
-      />
     </>
   );
 }

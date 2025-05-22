@@ -20,10 +20,12 @@ import {
   Appbar,
   SegmentedButtons,
   Text,
+  useTheme,
 } from "react-native-paper";
 
-export default function TeacherSubmissionsPage() {
+export default function ExamSubmissionsPage() {
   const router = useRouter();
+  const theme = useTheme();
   const { courseId: courseIdParam, examId: examIdParam } =
     useLocalSearchParams();
 
@@ -162,11 +164,19 @@ export default function TeacherSubmissionsPage() {
           <Appbar.Content title="Entregas" />
         </Appbar.Header>
         {isLoading || !examSubmissions || !students || !teacherActivity ? (
-          <ActivityIndicator
-            animating={true}
-            size="large"
-            style={{ marginTop: 20 }}
-          />
+          <View
+            style={{
+              flex: 1,
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <ActivityIndicator
+              animating={true}
+              size="large"
+              color={theme.colors.primary}
+            />
+          </View>
         ) : (
           <View style={{ padding: 16, gap: 16 }}>
             <Text variant="titleLarge" style={{ fontWeight: "bold" }}>
@@ -187,13 +197,13 @@ export default function TeacherSubmissionsPage() {
               buttons={[
                 {
                   value: ActivityStatusOption.SUBMITTED,
-                  label: "Entregadas",
+                  label: "Entregados",
                   icon: "check-circle-outline",
                   disabled: isLoading,
                 },
                 {
                   value: ActivityStatusOption.PENDING,
-                  label: "No entregadas",
+                  label: "No entregados",
                   icon: "circle-outline",
                   disabled: isLoading,
                 },

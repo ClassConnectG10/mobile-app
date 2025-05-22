@@ -4,11 +4,7 @@ import ResourceCard from "@/components/cards/ResourceCard";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import { getModuleTeacherActivities } from "@/services/activityManagement";
 import { getCourseModule } from "@/services/resourceManager";
-import {
-  ActivityType,
-  StudentActivity,
-  TeacherActivity,
-} from "@/types/activity";
+import { ActivityType, TeacherActivity } from "@/types/activity";
 import { UserRole } from "@/types/course";
 import { Module, Resource } from "@/types/resources";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";

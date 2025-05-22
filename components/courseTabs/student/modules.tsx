@@ -91,7 +91,7 @@ export const ModulesTab: React.FC<ModulesTabProps> = ({ course }) => {
                   onPress={() => {
                     router.push({
                       pathname:
-                        "/courses/[courseId]/teacher/modules/[moduleId]",
+                        "/courses/[courseId]/student/modules/[moduleId]",
                       params: {
                         courseId: course.courseId,
                         moduleId: item.moduleId,

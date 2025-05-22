@@ -1,32 +1,12 @@
-import { AlertText } from "@/components/AlertText";
-import { DatePickerButton } from "@/components/forms/DatePickerButton";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
-import { ToggleableTextInput } from "@/components/forms/ToggleableTextInput";
 import {
-  deleteExam,
-  deleteTask,
   getStudentTask,
   getTaskSubmission,
-  getTeacherExam,
-  getTeacherTask,
-  publishExam,
-  publishTask,
   submitTask,
-  updateExam,
-  updateTask,
-  uploadTaskFile,
 } from "@/services/activityManagement";
-import { getCourse } from "@/services/courseManagement";
-import {
-  ExamDetails,
-  StudentActivity,
-  TaskDetails,
-  TaskSubmission,
-  TeacherActivity,
-} from "@/types/activity";
-import { Course, CourseStatus, UserRole } from "@/types/course";
+import { StudentActivity, TaskDetails, TaskSubmission } from "@/types/activity";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { ScrollView, View } from "react-native";
 import {
   ActivityIndicator,
@@ -34,14 +14,14 @@ import {
   Text,
   useTheme,
   Button,
-  Dialog,
   Divider,
 } from "react-native-paper";
-import { useTaskDetails } from "@/hooks/useTaskDetails";
 import { ToggleableFileInput } from "@/components/forms/ToggleableFileInput";
 import { File } from "@/types/file";
 import { useUserContext } from "@/utils/storage/userContext";
-import { set } from "zod";
+import { TextField } from "@/components/forms/TextField";
+import { formatDateTime } from "@/utils/date";
+import SubmissionCard from "@/components/cards/SubmissionCard";
 
 export default function StudentExamPage() {
   const router = useRouter();
@@ -55,54 +35,32 @@ export default function StudentExamPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [studentTask, setStudentTask] = useState<StudentActivity | null>(null);
-  const [taskFiles, setTaskFiles] = useState<File[]>([]);
-  const [taskFilesChanged, setTaskFilesChanged] = useState(false);
+  const [taskDetails, setTaskDetails] = useState<TaskDetails>(null);
 
-  const [submitttedFiles, setSubmitttedFiles] = useState<File[]>([]);
-  const [submittedFilesChanged, setSubmittedFilesChanged] = useState(false);
+  const [taskFiles, setTaskFiles] = useState<File[]>([]);
+  const [submittedFiles, setSubmittedFiles] = useState<File[]>([]);
 
   const [studentSubmission, setStudentSubmission] =
     useState<TaskSubmission | null>(null);
 
-  const [course, setCourse] = useState<Course | null>(null);
-
-  const taskDetailsHook = useTaskDetails();
-  const taskDetails = taskDetailsHook.taskDetails;
-
   const userContext = useUserContext();
 
-  async function fetchCourse() {
-    if (!courseId) return;
+  async function fetchStudentTask() {
+    if (!courseId || !taskId) return;
     setIsLoading(true);
 
     try {
-      const fetchedCourse = await getCourse(courseId);
-      setCourse(fetchedCourse);
-    } catch (error) {
-      setErrorMessage((error as Error).message);
-    } finally {
-      setIsLoading(false);
-    }
-  }
-
-  async function fetchStudentTask() {
-    try {
-      setIsLoading(true);
-      if (courseId && taskId) {
-        const studentTask = await getStudentTask(courseId, Number(taskId));
-        setStudentTask(studentTask);
-        taskDetailsHook.setTaskDetails(
-          studentTask.activity.activityDetails as TaskDetails
-        );
-        setTaskFiles(
-          (studentTask.activity.activityDetails as TaskDetails).instructionsFile
-            ? [
-                (studentTask.activity.activityDetails as TaskDetails)
-                  .instructionsFile,
-              ]
-            : []
-        );
-      }
+      const studentTask = await getStudentTask(courseId, Number(taskId));
+      setStudentTask(studentTask);
+      setTaskDetails(studentTask.activity.activityDetails as TaskDetails);
+      setTaskFiles(
+        (studentTask.activity.activityDetails as TaskDetails).instructionsFile
+          ? [
+              (studentTask.activity.activityDetails as TaskDetails)
+                .instructionsFile,
+            ]
+          : []
+      );
     } catch (error) {
       setErrorMessage((error as Error).message);
     } finally {
@@ -112,9 +70,9 @@ export default function StudentExamPage() {
 
   const fetchStudentSubmission = async () => {
     if (!studentTask || !userContext.user) return;
+    setIsLoading(true);
 
     try {
-      setIsLoading(true);
       const response = await getTaskSubmission(
         courseId,
         Number(taskId),
@@ -122,7 +80,7 @@ export default function StudentExamPage() {
       );
 
       setStudentSubmission(response);
-      setSubmitttedFiles(response.responseFile ? [response.responseFile] : []);
+      setSubmittedFiles(response.responseFile ? [response.responseFile] : []);
     } catch (error) {
       setErrorMessage((error as Error).message);
     } finally {
@@ -138,7 +96,7 @@ export default function StudentExamPage() {
       await submitTask(
         courseId,
         Number(taskId),
-        submitttedFiles.length > 0 ? submitttedFiles[0] : null
+        submittedFiles.length > 0 ? submittedFiles[0] : null
       );
       const submission = await getTaskSubmission(
         courseId,
@@ -159,25 +117,15 @@ export default function StudentExamPage() {
     }
   };
 
-  const handleSubmittedFilesChange = (files: File[]) => {
-    setSubmitttedFiles(files);
-    setSubmittedFilesChanged(true);
-  };
-
   useFocusEffect(
     useCallback(() => {
       fetchStudentTask();
-      fetchCourse();
     }, [courseId, taskId])
   );
 
-  useFocusEffect(
-    useCallback(() => {
-      if (studentTask) {
-        fetchStudentSubmission();
-      }
-    }, [studentTask])
-  );
+  useEffect(() => {
+    fetchStudentSubmission();
+  }, [studentTask]);
 
   return (
     <>
@@ -189,7 +137,7 @@ export default function StudentExamPage() {
         />
         <Appbar.Content title={"Información de la tarea"} />
       </Appbar.Header>
-      {isLoading || !course ? (
+      {isLoading || !studentTask || !taskDetails || !studentSubmission ? (
         <View
           style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
         >
@@ -213,26 +161,17 @@ export default function StudentExamPage() {
               gap: 16,
             }}
           >
-            <ToggleableTextInput
-              label="Nombre"
-              placeholder="Nombre de la tarea"
-              value={taskDetails.title}
-              editable={false}
-              onChange={taskDetailsHook.setTitle}
-            />
-            <ToggleableTextInput
-              label="Instrucciones"
-              placeholder="Instrucciones del examen"
-              value={taskDetails.instructions}
-              onChange={taskDetailsHook.setInstructions}
-              editable={false}
-            />
-            <DatePickerButton
+            {/* <ActivityCard 
+
+            /> */}
+
+            <TextField label="Nombre" value={taskDetails.title} />
+
+            <TextField label="Instrucciones" value={taskDetails.instructions} />
+
+            <TextField
               label="Fecha límite"
-              type="datetime"
-              value={taskDetails.dueDate}
-              editable={false}
-              onChange={taskDetailsHook.setDueDate}
+              value={formatDateTime(taskDetails.dueDate)}
             />
 
             <Text>Archivos de la consigna</Text>
@@ -249,9 +188,9 @@ export default function StudentExamPage() {
             <Text>Archivos de la entrega</Text>
 
             <ToggleableFileInput
-              files={submitttedFiles}
+              files={submittedFiles}
               editable={studentTask ? !studentTask.submited : false}
-              onChange={handleSubmittedFilesChange}
+              onChange={setSubmittedFiles}
               maxFiles={1}
             />
           </View>
@@ -265,7 +204,12 @@ export default function StudentExamPage() {
               <Button
                 mode="contained"
                 onPress={handleSubmitResponse}
-                disabled={isLoading || studentTask.submited}
+                disabled={
+                  isLoading ||
+                  studentTask.submited ||
+                  !submittedFiles ||
+                  submittedFiles.length === 0
+                }
               >
                 Enviar respuesta
               </Button>

@@ -245,7 +245,7 @@ export default function TeacherExamPage() {
             />
             <ToggleableTextInput
               label="Instrucciones"
-              placeholder="Instrucciones del examen"
+              placeholder="Instrucciones de la tarea"
               value={taskDetails.instructions}
               onChange={taskDetailsHook.setInstructions}
               editable={isEditing}

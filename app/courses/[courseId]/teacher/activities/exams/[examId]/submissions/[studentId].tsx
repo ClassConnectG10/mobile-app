@@ -53,8 +53,8 @@ export default function TeacherSubmissionPage() {
 
   async function fetchSubmission() {
     if (!teacherActivity) return;
-
     setIsLoading(true);
+
     try {
       const submissionData = await getExamSubmission(
         courseId,
@@ -73,6 +73,7 @@ export default function TeacherSubmissionPage() {
   async function fetchStudent() {
     if (!studentId) return;
     setIsLoading(true);
+
     try {
       const studentData = await getUser(Number(studentId));
       setStudent(studentData);

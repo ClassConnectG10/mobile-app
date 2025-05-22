@@ -147,6 +147,7 @@ export function getExamAnswerFromJSON(
     case ExamItemType.MULTIPLE_CHOICE:
       examItemAnswer = new MultipleChoiceAnswer(answer?.answer ?? null);
       if (
+        answer &&
         answer?.answer !== null &&
         (examItem as MultipleChoiceQuestion).correctAnswer !== null
       ) {
@@ -157,6 +158,7 @@ export function getExamAnswerFromJSON(
     case ExamItemType.MULTIPLE_SELECT:
       examItemAnswer = new MultipleSelectAnswer(answer?.answers ?? []);
       if (
+        answer &&
         answer?.answers !== null &&
         (examItem as MultipleSelectQuestion).correctAnswers !== null
       ) {
@@ -175,6 +177,7 @@ export function getExamAnswerFromJSON(
     case ExamItemType.TRUE_FALSE:
       examItemAnswer = new TrueFalseAnswer(answer?.answer ?? null);
       if (
+        answer &&
         answer?.answer !== null &&
         (examItem as TrueFalseQuestion).correctAnswer !== null
       ) {

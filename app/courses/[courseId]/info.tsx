@@ -20,7 +20,7 @@ import { DatePickerButton } from "@/components/forms/DatePickerButton";
 import { useRequiredCoursesContext } from "@/utils/storage/requiredCoursesContext";
 import CourseCard from "@/components/cards/CourseCard";
 import { useCourseContext } from "@/utils/storage/courseContext";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import {
   deleteCourse,
@@ -185,21 +185,17 @@ export default function CreateCoursePage() {
     }
   }
 
-  useFocusEffect(
-    useCallback(() => {
-      fetchCourse();
-    }, [courseId])
-  );
+  useEffect(() => {
+    fetchCourse();
+  }, [courseId]);
 
-  useFocusEffect(
-    useCallback(() => {
-      if (courseContext.course) {
-        setCourseDetails();
-        fetchCourseOwner();
-        fetchRequiredCourses();
-      }
-    }, [courseContext.course])
-  );
+  useEffect(() => {
+    if (courseContext.course) {
+      setCourseDetails();
+      fetchCourseOwner();
+      fetchRequiredCourses();
+    }
+  }, [courseContext.course]);
 
   const handleRequiredCoursePress = (requiredCourse: Course) => {
     router.push({

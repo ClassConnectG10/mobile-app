@@ -124,14 +124,14 @@ export default function CoursePage() {
     );
   };
 
-  const handleActivitiesPress = (teacherActivity: StudentActivity) => {
-    const activityId = teacherActivity.activity.resourceId;
-    if (teacherActivity.activity.type === ActivityType.TASK) {
+  const handleActivitiesPress = (studentActivity: StudentActivity) => {
+    const activityId = studentActivity.activity.resourceId;
+    if (studentActivity.activity.type === ActivityType.TASK) {
       router.push({
         pathname: "/courses/[courseId]/student/activities/tasks/[taskId]",
         params: { courseId, taskId: activityId },
       });
-    } else if (teacherActivity.activity.type === ActivityType.EXAM) {
+    } else if (studentActivity.activity.type === ActivityType.EXAM) {
       router.push({
         pathname: "/courses/[courseId]/student/activities/exams/[examId]",
         params: { courseId, examId: activityId },
