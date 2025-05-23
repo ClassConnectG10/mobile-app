@@ -5,7 +5,6 @@ import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import { getModuleTeacherActivities } from "@/services/activityManagement";
 import { getModule } from "@/services/resourceManager";
 import { ActivityType, TeacherActivity } from "@/types/activity";
-import { UserRole } from "@/types/course";
 import { Module, Resource } from "@/types/resources";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
@@ -27,21 +26,17 @@ class ModuleElement {
   constructor(
     public id: number,
     public type: ModuleElementType,
-    public element: Resource | TeacherActivity,
+    public element: Resource | TeacherActivity
   ) {}
 }
 
 export default function ModulePage() {
   const router = useRouter();
   const theme = useTheme();
-  const {
-    courseId: courseIdParam,
-    moduleId: moduleIdParam,
-    userRole: userRoleParam,
-  } = useLocalSearchParams();
+  const { courseId: courseIdParam, moduleId: moduleIdParam } =
+    useLocalSearchParams();
   const courseId = courseIdParam as string;
   const moduleId = Number(moduleIdParam);
-  const userRole = userRoleParam as UserRole;
 
   const [module, setModule] = useState<Module>(null);
   const [errorMessage, setErrorMessage] = useState("");
@@ -102,9 +97,9 @@ export default function ModulePage() {
           return new ModuleElement(
             activity.activity.resourceId,
             ModuleElementType.ACTIVITY,
-            activity,
+            activity
           );
-        }),
+        })
       );
     } catch (error) {
       setErrorMessage((error as Error).message);
@@ -143,7 +138,7 @@ export default function ModulePage() {
       fetchModule();
       fetchActivities();
       fetchResources();
-    }, [courseId, moduleId]),
+    }, [courseId, moduleId])
   );
 
   return (
@@ -165,7 +160,7 @@ export default function ModulePage() {
             onPress={() => {
               router.push({
                 pathname: "/courses/[courseId]/teacher/modules/[moduleId]/info",
-                params: { courseId, moduleId, userRole },
+                params: { courseId, moduleId },
               });
             }}
           />

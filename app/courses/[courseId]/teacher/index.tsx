@@ -65,7 +65,6 @@ export default function CoursePage() {
       if (!courseContext.course) {
         return null;
       }
-      //  return ParticipantsTab({ course: courseContext.course });
       return <ParticipantsTab course={courseContext.course} />;
     },
     modules: () => {

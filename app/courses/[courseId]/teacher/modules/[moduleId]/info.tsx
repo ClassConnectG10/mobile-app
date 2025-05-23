@@ -66,7 +66,7 @@ export default function CreateCoursePage() {
       setIsLoading(true);
       const newModuleDetails = new ModuleDetails(
         temporalModuleTitle,
-        temporalModuleDescription,
+        temporalModuleDescription
       );
       await updateModule(courseId, moduleId, newModuleDetails);
       setIsEditing(false);
@@ -82,10 +82,8 @@ export default function CreateCoursePage() {
     setIsLoading(true);
     try {
       await deleteModule(courseId, moduleId);
-      router.replace({
-        pathname: "/courses/[courseId]",
-        params: { courseId },
-      }); //TODO: Esto puede llevar a un estado invalido si a continuación se hace un back
+      router.back();
+      router.back();
       setIsEditing(false);
     } catch (error) {
       setErrorMessage((error as Error).message);
@@ -98,7 +96,7 @@ export default function CreateCoursePage() {
   useFocusEffect(
     useCallback(() => {
       fetchModule();
-    }, [courseId]),
+    }, [courseId])
   );
 
   return (

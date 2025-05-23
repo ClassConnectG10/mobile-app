@@ -54,7 +54,7 @@ export const ModulesTab: React.FC<ModulesTabProps> = ({ course }) => {
   useFocusEffect(
     useCallback(() => {
       fetchModules();
-    }, [course.courseId]),
+    }, [course.courseId])
   );
 
   const handleEditModulesOrder = () => {
@@ -129,7 +129,6 @@ export const ModulesTab: React.FC<ModulesTabProps> = ({ course }) => {
                       params: {
                         courseId: course.courseId,
                         moduleId: item.moduleId,
-                        userRole: course.currentUserRole,
                       },
                     });
                   }}
