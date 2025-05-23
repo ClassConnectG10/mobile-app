@@ -107,7 +107,7 @@ export default function TeacherSubmissionPage() {
     useCallback(() => {
       fetchStudent();
       fetchMark();
-    }, [courseId, studentId])
+    }, [courseId, studentId]),
   );
 
   return (

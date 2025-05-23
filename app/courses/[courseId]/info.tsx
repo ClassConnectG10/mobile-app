@@ -8,7 +8,7 @@ import {
   Dialog,
   ActivityIndicator,
 } from "react-native-paper";
-import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import OptionPicker from "@/components/forms/OptionPicker";
 import {
   LEVELS,
@@ -20,7 +20,7 @@ import { DatePickerButton } from "@/components/forms/DatePickerButton";
 import { useRequiredCoursesContext } from "@/utils/storage/requiredCoursesContext";
 import CourseCard from "@/components/cards/CourseCard";
 import { useCourseContext } from "@/utils/storage/courseContext";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import {
   deleteCourse,
@@ -68,8 +68,8 @@ export default function CreateCoursePage() {
 
     const requiredCourses = await Promise.all(
       courseContext.course.courseDetails.dependencies.map(
-        async (courseId) => await getCourse(courseId)
-      )
+        async (courseId) => await getCourse(courseId),
+      ),
     );
 
     requiredCoursesContext.setRequiredCourses(requiredCourses);
@@ -87,7 +87,7 @@ export default function CreateCoursePage() {
 
       const updatedCourse = await editCourse(
         courseContext.course,
-        newCourseDetails
+        newCourseDetails,
       );
 
       courseContext.setCourse(updatedCourse);
@@ -173,8 +173,8 @@ export default function CreateCoursePage() {
       setIsLoading(true);
       const requiredCourses = await Promise.all(
         courseContext.course.courseDetails.dependencies.map(
-          async (courseId) => await getCourse(courseId)
-        )
+          async (courseId) => await getCourse(courseId),
+        ),
       );
 
       requiredCoursesContext.setRequiredCourses(requiredCourses);
@@ -205,14 +205,10 @@ export default function CreateCoursePage() {
   };
 
   const handleOwnerPress = () => {
-    if (isOwner) {
-      router.push("/users/me");
-    } else {
-      router.push({
-        pathname: "/users/[userId]",
-        params: { userId: courseContext.course.ownerId },
-      });
-    }
+    router.push({
+      pathname: "/users/[userId]",
+      params: { userId: courseContext.course.ownerId },
+    });
   };
 
   return (

@@ -8,7 +8,7 @@ export enum SearchOption {
 
 export enum UserRole {
   OWNER = "OWNER",
-  ASSISTANT = "ASSISTANT",
+  ASSISTANT = "INSTRUCTOR",
   STUDENT = "STUDENT",
   NON_PARTICIPANT = "NON_PARTICIPANT",
 }
@@ -27,7 +27,7 @@ export class SearchFilters {
     public level: string,
     public modality: string,
     public category: string,
-    public favorites: boolean = false
+    public favorites: boolean = false,
   ) {}
 }
 
@@ -39,7 +39,7 @@ export class Course {
     public currentUserRole: UserRole,
     public courseStatus: CourseStatus,
     public numberOfStudens?: number,
-    public isFavorite?: boolean
+    public isFavorite?: boolean,
   ) {}
 }
 
@@ -53,6 +53,6 @@ export class CourseDetails {
     public level: string,
     public modality: string,
     public category: string,
-    public dependencies: string[] = []
+    public dependencies: string[] = [],
   ) {}
 }

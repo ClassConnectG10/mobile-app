@@ -80,14 +80,10 @@ export const ParticipantsTab: React.FC<ParticipantsTabProps> = ({ course }) => {
   const handleTeacherPress = (teacher: User) => {
     if (!userContext.user) return;
 
-    if (teacher.id === userContext.user.id) {
-      router.push("/users/me");
-    } else {
-      router.push({
-        pathname: "/users/[userId]",
-        params: { userId: teacher.id },
-      });
-    }
+    router.push({
+      pathname: "/users/[userId]",
+      params: { userId: teacher.id },
+    });
   };
 
   const handleStudentPress = (student: User) => {
@@ -127,7 +123,7 @@ export const ParticipantsTab: React.FC<ParticipantsTabProps> = ({ course }) => {
       fetchCourseOwner();
       fetchAssistants();
       fetchStudents();
-    }, [course])
+    }, [course]),
   );
 
   const handleRemoveAssistant = async () => {
@@ -138,7 +134,7 @@ export const ParticipantsTab: React.FC<ParticipantsTabProps> = ({ course }) => {
       await removeAssistantFromCourse(course.courseId, selectedUser.id);
       setShowConfirmationRemove(false);
       setAssistants((prev) =>
-        prev.filter((assistant) => assistant.id !== selectedUser.id)
+        prev.filter((assistant) => assistant.id !== selectedUser.id),
       );
     } catch (error) {
       setErrorMessage((error as Error).message);
@@ -155,7 +151,7 @@ export const ParticipantsTab: React.FC<ParticipantsTabProps> = ({ course }) => {
       await removeStudentFromCourse(course.courseId, selectedUser.id);
       setShowConfirmationRemove(false);
       setStudents((prev) =>
-        prev.filter((student) => student.id !== selectedUser.id)
+        prev.filter((student) => student.id !== selectedUser.id),
       );
     } catch (error) {
       setErrorMessage((error as Error).message);
@@ -265,7 +261,7 @@ export const ParticipantsTab: React.FC<ParticipantsTabProps> = ({ course }) => {
               }
             }}
             renderSectionHeader={({ section: { title } }) => {
-              if (title === "Asistentes") {
+              if (title === "Asistentes" && isOwner) {
                 return (
                   <View
                     style={{
@@ -275,19 +271,17 @@ export const ParticipantsTab: React.FC<ParticipantsTabProps> = ({ course }) => {
                     }}
                   >
                     <Text variant="titleMedium">{title}</Text>
-                    {isOwner && (
-                      <IconButton
-                        icon="account-plus"
-                        size={24}
-                        onPress={() => {
-                          router.push({
-                            pathname:
-                              "/courses/[courseId]/teacher/participants/addAssistants",
-                            params: { courseId: course.courseId },
-                          });
-                        }}
-                      />
-                    )}
+                    <IconButton
+                      icon="account-plus"
+                      size={24}
+                      onPress={() => {
+                        router.push({
+                          pathname:
+                            "/courses/[courseId]/teacher/participants/addAssistants",
+                          params: { courseId: course.courseId },
+                        });
+                      }}
+                    />
                   </View>
                 );
               } else {

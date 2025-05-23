@@ -6,7 +6,6 @@ import {
 } from "@/services/courseManagement";
 import { Course } from "@/types/course";
 import { User } from "@/types/user";
-import { useUserContext } from "@/utils/storage/userContext";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import { SectionList, View } from "react-native";
@@ -26,8 +25,6 @@ export const ParticipantsTab: React.FC<ParticipantsTabProps> = ({ course }) => {
   const [courseOwner, setCourseOwner] = useState<User | null>(null);
   const [assistants, setAssistants] = useState<User[]>([]);
   const [students, setStudents] = useState<User[]>([]);
-
-  const userContext = useUserContext();
 
   const participantsSections = [
     {
@@ -57,16 +54,10 @@ export const ParticipantsTab: React.FC<ParticipantsTabProps> = ({ course }) => {
   }
 
   const handleUserPress = (user: User) => {
-    if (!userContext.user) return;
-
-    if (user.id === userContext.user.id) {
-      router.push("/users/me");
-    } else {
-      router.push({
-        pathname: "/users/[userId]",
-        params: { userId: user.id },
-      });
-    }
+    router.push({
+      pathname: "/users/[userId]",
+      params: { userId: user.id },
+    });
   };
 
   async function fetchAssistants() {
@@ -98,7 +89,7 @@ export const ParticipantsTab: React.FC<ParticipantsTabProps> = ({ course }) => {
       fetchCourseOwner();
       fetchAssistants();
       fetchStudents();
-    }, [course])
+    }, [course]),
   );
 
   return (

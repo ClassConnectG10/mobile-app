@@ -33,7 +33,7 @@ export default function HomePage() {
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const [searchOption, setSearchOption] = useState<SearchOption>(
-    SearchOption.RELATED
+    SearchOption.RELATED,
   );
   const [searchFiltersModalVisible, setSearchFiltersModalVisible] =
     useState(false);
@@ -49,6 +49,7 @@ export default function HomePage() {
   });
 
   const userContextHook = useUserContext();
+  const userContext = userContextHook.user;
 
   const handleSearchOptionChange = async (value: SearchOption) => {
     if (searchOption === value) {
@@ -59,6 +60,8 @@ export default function HomePage() {
   };
 
   const fetchCourses = async () => {
+    if (!userContext) return;
+
     try {
       setIsLoading(true);
       const coursesData = await searchCourses(searchFilters, searchOption);
@@ -89,7 +92,7 @@ export default function HomePage() {
   useFocusEffect(
     useCallback(() => {
       fetchCourses();
-    }, [searchFilters, searchOption])
+    }, [searchFilters, searchOption, userContext]),
   );
 
   axios.defaults.headers.common["X-Caller-Id"] =
@@ -115,7 +118,14 @@ export default function HomePage() {
         />
         <Appbar.Action
           icon="account"
-          onPress={() => router.push("/users/me")}
+          onPress={() =>
+            router.push({
+              pathname: "/users/[userId]",
+              params: {
+                userId: userContext.id,
+              },
+            })
+          }
         />
       </Appbar.Header>
 
