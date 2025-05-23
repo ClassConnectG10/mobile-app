@@ -131,72 +131,75 @@ export function submittedExamItemToJSON(submittedItem: SubmittedExamItem) {
   }
 }
 
+function createAnswerFromResponse(
+  examItem: ExamItem,
+  answer: any,
+): ExamItemAnswer {
+  switch (examItem.type) {
+    case ExamItemType.OPEN:
+      return new OpenAnswer(answer?.answer ?? "");
+
+    case ExamItemType.MULTIPLE_CHOICE:
+      return new MultipleChoiceAnswer(answer?.answer ?? null);
+
+    case ExamItemType.MULTIPLE_SELECT:
+      return new MultipleSelectAnswer(answer?.answers ?? []);
+
+    case ExamItemType.TRUE_FALSE:
+      return new TrueFalseAnswer(answer?.answer ?? null);
+
+    default:
+      throw new Error(`Unsupported exam item type: ${examItem.type}`);
+  }
+}
+
+function evaluateAnswerCorrectness(
+  examItem: ExamItem,
+  answer: any,
+): boolean | null {
+  if (!answer) return null;
+
+  switch (examItem.type) {
+    case ExamItemType.MULTIPLE_CHOICE: {
+      const correct = (examItem as MultipleChoiceQuestion).correctAnswer;
+      return answer.answer !== null && correct !== null
+        ? answer.answer === correct
+        : null;
+    }
+
+    case ExamItemType.MULTIPLE_SELECT: {
+      const correctAnswers = (examItem as MultipleSelectQuestion)
+        .correctAnswers;
+      const userAnswers = answer.answers;
+      if (!userAnswers || correctAnswers === null) return null;
+      if (userAnswers.length !== correctAnswers.length) return false;
+      return correctAnswers.every((index) => userAnswers.includes(index));
+    }
+
+    case ExamItemType.TRUE_FALSE: {
+      const correct = (examItem as TrueFalseQuestion).correctAnswer;
+      return answer.answer !== null && correct !== null
+        ? answer.answer === correct
+        : null;
+    }
+
+    case ExamItemType.OPEN:
+    default:
+      return null; // No hay validación automática para respuestas abiertas u otros casos.
+  }
+}
+
 export function getExamAnswerFromJSON(
   examItem: ExamItem,
   index: number,
   responseData: any,
 ): SubmittedExamItem {
-  let examItemAnswer: ExamItemAnswer;
-  let correct: boolean | null = null;
   const answer = responseData.answers?.[index] ?? null;
 
-  switch (examItem.type) {
-    case ExamItemType.OPEN:
-      examItemAnswer = new OpenAnswer(answer?.answer ?? "");
-      break;
-    case ExamItemType.MULTIPLE_CHOICE:
-      examItemAnswer = new MultipleChoiceAnswer(answer?.answer ?? null);
-      if (
-        answer &&
-        answer?.answer !== null &&
-        (examItem as MultipleChoiceQuestion).correctAnswer !== null
-      ) {
-        correct =
-          (examItem as MultipleChoiceQuestion).correctAnswer === answer.answer;
-      }
-      break;
-    case ExamItemType.MULTIPLE_SELECT:
-      examItemAnswer = new MultipleSelectAnswer(answer?.answers ?? []);
-      if (
-        answer &&
-        answer?.answers !== null &&
-        (examItem as MultipleSelectQuestion).correctAnswers !== null
-      ) {
-        if (
-          (examItem as MultipleSelectQuestion).correctAnswers.length !==
-          answer?.answers.length
-        ) {
-          correct = false;
-        } else {
-          correct = (examItem as MultipleSelectQuestion).correctAnswers.every(
-            (index) => answer?.answers.includes(index),
-          );
-        }
-      }
-      break;
-    case ExamItemType.TRUE_FALSE:
-      examItemAnswer = new TrueFalseAnswer(answer?.answer ?? null);
-      if (
-        answer &&
-        answer?.answer !== null &&
-        (examItem as TrueFalseQuestion).correctAnswer !== null
-      ) {
-        correct =
-          answer.answer === (examItem as TrueFalseQuestion).correctAnswer;
-      }
-      break;
-    default:
-      throw new Error(`Unsupported exam item type: ${examItem.type}`);
-  }
+  const examItemAnswer = createAnswerFromResponse(examItem, answer);
+  const correct = evaluateAnswerCorrectness(examItem, answer);
 
-  const submittedExamItem = new SubmittedExamItem(
-    index,
-    examItem.type,
-    examItemAnswer,
-    correct,
-  );
-
-  return submittedExamItem;
+  return new SubmittedExamItem(index, examItem.type, examItemAnswer, correct);
 }
 
 const STORAGE_FREFIX =
