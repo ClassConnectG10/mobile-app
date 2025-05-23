@@ -1,4 +1,4 @@
-import { ActivityType, ExamItemType } from "@/types/activity";
+import { ExamItemType } from "@/types/activity";
 import { z } from "zod";
 
 export const activityDetailsSchema = z.object({
@@ -86,7 +86,7 @@ const multipleChoiceSchema = z.object({
           required_error: "La opción es requerida",
           invalid_type_error: "La opción debe ser un texto",
         })
-        .min(1, "La opción no puede estar vacía")
+        .min(1, "La opción no puede estar vacía"),
     )
     .min(2, "Debe haber al menos dos opciones"),
   correctAnswer: z
@@ -133,7 +133,7 @@ const multipleSelectSchema = z.object({
           required_error: "La opción es requerida",
           invalid_type_error: "La opción debe ser un texto",
         })
-        .min(1, "La opción no puede estar vacía")
+        .min(1, "La opción no puede estar vacía"),
     )
     .min(2, "Debe haber al menos dos opciones"),
   correctAnswers: z
@@ -144,7 +144,7 @@ const multipleSelectSchema = z.object({
           invalid_type_error: "La respuesta correcta debe ser un número",
         })
         .int("La respuesta correcta debe ser un número entero")
-        .min(0, "Debe seleccionar una opción correcta")
+        .min(0, "Debe seleccionar una opción correcta"),
     )
     .min(1, "Debe seleccionar al menos una opción correcta"),
 });
@@ -229,7 +229,7 @@ const multipleSelectAnswerSchema = z.object({
       z.number({
         required_error: "Faltan preguntas por responder",
         invalid_type_error: "Faltan preguntas por responder",
-      })
+      }),
     )
     .min(1, "Faltan preguntas por responder"),
 });

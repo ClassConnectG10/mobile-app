@@ -1,11 +1,11 @@
-import { createModuleRequest } from "@/api/modules";
+import { createModuleRequest, createModulesRequest } from "@/api/modules";
 import { Module, ModuleDetails } from "@/types/resources";
 import { handleError } from "./common";
 import { moduleSchema } from "@/validations/resources";
 
-export async function getCourseModules(courseId: string): Promise<Module[]> {
+export async function getModules(courseId: string): Promise<Module[]> {
   try {
-    const request = await createModuleRequest(courseId);
+    const request = await createModulesRequest(courseId);
     const response = await request.get("");
     const modulesData = response.data.data;
 
@@ -14,8 +14,8 @@ export async function getCourseModules(courseId: string): Promise<Module[]> {
         new Module(
           moduleData.module_id,
           moduleData.course_id,
-          new ModuleDetails(moduleData.title, moduleData.description)
-        )
+          new ModuleDetails(moduleData.title, moduleData.description),
+        ),
     );
 
     return modules;
@@ -24,19 +24,19 @@ export async function getCourseModules(courseId: string): Promise<Module[]> {
   }
 }
 
-export async function getCourseModule(
+export async function getModule(
   courseId: string,
-  moduleId: number
+  moduleId: number,
 ): Promise<Module> {
   try {
-    const request = await createModuleRequest(courseId);
-    const response = await request.get(`/${moduleId}`);
+    const request = await createModuleRequest(courseId, moduleId);
+    const response = await request.get("");
     const moduleData = response.data.data;
 
     const module = new Module(
       moduleData.module_id,
       moduleData.course_id,
-      new ModuleDetails(moduleData.title, moduleData.description)
+      new ModuleDetails(moduleData.title, moduleData.description),
     );
 
     return module;
@@ -45,9 +45,9 @@ export async function getCourseModule(
   }
 }
 
-export async function createCourseModule(
+export async function createModule(
   courseId: string,
-  moduleDetails: ModuleDetails
+  moduleDetails: ModuleDetails,
 ): Promise<Module> {
   try {
     moduleSchema.parse(moduleDetails);
@@ -56,14 +56,14 @@ export async function createCourseModule(
       description: moduleDetails.description,
     };
 
-    const request = await createModuleRequest(courseId);
+    const request = await createModulesRequest(courseId);
     const response = await request.post("", body);
     const moduleData = response.data.data;
 
     const module = new Module(
       moduleData.module_id,
       moduleData.course_id,
-      new ModuleDetails(moduleData.title, moduleData.description)
+      new ModuleDetails(moduleData.title, moduleData.description),
     );
 
     return module;
@@ -72,10 +72,10 @@ export async function createCourseModule(
   }
 }
 
-export async function updateCourseModule(
+export async function updateModule(
   courseId: string,
   moduleId: number,
-  moduleDetails: ModuleDetails
+  moduleDetails: ModuleDetails,
 ): Promise<Module> {
   try {
     moduleSchema.parse(moduleDetails);
@@ -84,14 +84,14 @@ export async function updateCourseModule(
       description: moduleDetails.description,
     };
 
-    const request = await createModuleRequest(courseId);
-    const response = await request.patch(`/${moduleId}`, body);
+    const request = await createModuleRequest(courseId, moduleId);
+    const response = await request.patch("", body);
     const moduleData = response.data.data;
 
     const module = new Module(
       moduleData.module_id,
       moduleData.course_id,
-      new ModuleDetails(moduleData.title, moduleData.description)
+      new ModuleDetails(moduleData.title, moduleData.description),
     );
 
     return module;
@@ -100,13 +100,13 @@ export async function updateCourseModule(
   }
 }
 
-export async function deleteCourseModule(
+export async function deleteModule(
   courseId: string,
-  moduleId: number
+  moduleId: number,
 ): Promise<void> {
   try {
-    const request = await createModuleRequest(courseId);
-    await request.delete(`/${moduleId}`);
+    const request = await createModuleRequest(courseId, moduleId);
+    await request.delete("");
   } catch (error) {
     throw handleError(error, "eliminar el módulo del curso");
   }

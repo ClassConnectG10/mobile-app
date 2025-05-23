@@ -21,7 +21,6 @@ import { File } from "@/types/file";
 import { useUserContext } from "@/utils/storage/userContext";
 import { TextField } from "@/components/forms/TextField";
 import { formatDateTime } from "@/utils/date";
-import SubmissionCard from "@/components/cards/SubmissionCard";
 
 export default function StudentExamPage() {
   const router = useRouter();
@@ -59,7 +58,7 @@ export default function StudentExamPage() {
               (studentTask.activity.activityDetails as TaskDetails)
                 .instructionsFile,
             ]
-          : []
+          : [],
       );
     } catch (error) {
       setErrorMessage((error as Error).message);
@@ -76,7 +75,7 @@ export default function StudentExamPage() {
       const response = await getTaskSubmission(
         courseId,
         Number(taskId),
-        userContext.user.id
+        userContext.user.id,
       );
 
       setStudentSubmission(response);
@@ -96,12 +95,12 @@ export default function StudentExamPage() {
       await submitTask(
         courseId,
         Number(taskId),
-        submittedFiles.length > 0 ? submittedFiles[0] : null
+        submittedFiles.length > 0 ? submittedFiles[0] : null,
       );
       const submission = await getTaskSubmission(
         courseId,
         Number(taskId),
-        userContext.user.id
+        userContext.user.id,
       );
 
       setStudentSubmission(submission);
@@ -120,7 +119,7 @@ export default function StudentExamPage() {
   useFocusEffect(
     useCallback(() => {
       fetchStudentTask();
-    }, [courseId, taskId])
+    }, [courseId, taskId]),
   );
 
   useEffect(() => {
@@ -162,7 +161,7 @@ export default function StudentExamPage() {
             }}
           >
             {/* <ActivityCard 
-
+  TODO: Agregar SUBMISSION CARD O ALGO POR EL ESTILO
             /> */}
 
             <TextField label="Nombre" value={taskDetails.title} />

@@ -19,7 +19,7 @@ import {
 export function handleError(error: any, action: string): Error {
   if (error instanceof ZodError) {
     return new Error(
-      `Error de validacion al ${action}: ${error.errors[0].message}`
+      `Error de validacion al ${action}: ${error.errors[0].message}`,
     );
   }
   return new Error(`Error al ${action}: ${error}`);
@@ -27,7 +27,7 @@ export function handleError(error: any, action: string): Error {
 
 export function postFile(
   axiosInstance: AxiosInstance,
-  file: File
+  file: File,
 ): Promise<any> {
   const formData = new FormData();
   formData.append("file", {
@@ -84,7 +84,7 @@ export function getExamItemFromJSON(examItemJSON: any): ExamItem {
       return new MultipleChoiceQuestion(
         examItemJSON.question,
         examItemJSON.options,
-        examItemJSON.answer
+        examItemJSON.answer,
       );
     case ExamItemType.TRUE_FALSE:
       return new TrueFalseQuestion(examItemJSON.question, examItemJSON.answer);
@@ -92,7 +92,7 @@ export function getExamItemFromJSON(examItemJSON: any): ExamItem {
       return new MultipleSelectQuestion(
         examItemJSON.question,
         examItemJSON.options,
-        examItemJSON.answers
+        examItemJSON.answers,
       );
     default:
       throw new Error("Tipo de pregunta no soportado");
@@ -134,7 +134,7 @@ export function submittedExamItemToJSON(submittedItem: SubmittedExamItem) {
 export function getExamAnswerFromJSON(
   examItem: ExamItem,
   index: number,
-  responseData: any
+  responseData: any,
 ): SubmittedExamItem {
   let examItemAnswer: ExamItemAnswer;
   let correct: boolean | null = null;
@@ -163,13 +163,13 @@ export function getExamAnswerFromJSON(
         (examItem as MultipleSelectQuestion).correctAnswers !== null
       ) {
         if (
-          (examItem as MultipleSelectQuestion).correctAnswers.length !=
+          (examItem as MultipleSelectQuestion).correctAnswers.length !==
           answer?.answers.length
         ) {
           correct = false;
         } else {
           correct = (examItem as MultipleSelectQuestion).correctAnswers.every(
-            (index) => answer?.answers.includes(index)
+            (index) => answer?.answers.includes(index),
           );
         }
       }
@@ -193,7 +193,7 @@ export function getExamAnswerFromJSON(
     index,
     examItem.type,
     examItemAnswer,
-    correct
+    correct,
   );
 
   return submittedExamItem;
@@ -217,7 +217,7 @@ function parseBackendRef(backendRef: string): string {
   const prefixLength = STORAGE_FREFIX.length;
   if (backendRef.length <= prefixLength) {
     throw new Error(
-      `El backendRef no es válido. Debe comenzar con ${STORAGE_FREFIX}`
+      `El backendRef no es válido. Debe comenzar con ${STORAGE_FREFIX}`,
     );
   }
   const ref = backendRef.substring(prefixLength);

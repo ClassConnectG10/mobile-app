@@ -12,28 +12,21 @@ import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import { ToggleableTextInput } from "@/components/forms/ToggleableTextInput";
-import { UserRole } from "@/types/course";
 import { ModuleDetails } from "@/types/resources";
 import {
-  deleteCourseModule,
-  getCourseModule,
-  updateCourseModule,
+  deleteModule,
+  getModule,
+  updateModule,
 } from "@/services/resourceManager";
 
 export default function CreateCoursePage() {
   const theme = useTheme();
   const router = useRouter();
 
-  const {
-    courseId: courseIdParam,
-    moduleId: moduleIdParam,
-    userRole: userRoleParam,
-  } = useLocalSearchParams();
+  const { courseId: courseIdParam, moduleId: moduleIdParam } =
+    useLocalSearchParams();
   const courseId = courseIdParam as string;
   const moduleId = Number(moduleIdParam);
-  const userRole = userRoleParam as UserRole;
-  const isTeacher =
-    userRole === UserRole.OWNER || userRole === UserRole.ASSISTANT;
 
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -46,11 +39,11 @@ export default function CreateCoursePage() {
   const [temporalModuleDescription, setTemporalModuleDescription] =
     useState("");
 
-  const fetchCourseModule = async () => {
+  const fetchModule = async () => {
     if (!courseId || !moduleId) return;
     setIsLoading(true);
     try {
-      const module = await getCourseModule(courseId, moduleId);
+      const module = await getModule(courseId, moduleId);
       setModuleTitle(module.courseModuleDetails.title);
       setModuleDescription(module.courseModuleDetails.description);
       setTemporalModuleTitle(module.courseModuleDetails.title);
@@ -73,9 +66,9 @@ export default function CreateCoursePage() {
       setIsLoading(true);
       const newModuleDetails = new ModuleDetails(
         temporalModuleTitle,
-        temporalModuleDescription
+        temporalModuleDescription,
       );
-      await updateCourseModule(courseId, moduleId, newModuleDetails);
+      await updateModule(courseId, moduleId, newModuleDetails);
       setIsEditing(false);
     } catch (error) {
       setErrorMessage((error as Error).message);
@@ -88,11 +81,11 @@ export default function CreateCoursePage() {
   const handleDeleteModule = async () => {
     setIsLoading(true);
     try {
-      await deleteCourseModule(courseId, moduleId);
+      await deleteModule(courseId, moduleId);
       router.replace({
         pathname: "/courses/[courseId]",
-        params: { courseId, role: userRole },
-      });
+        params: { courseId },
+      }); //TODO: Esto puede llevar a un estado invalido si a continuación se hace un back
       setIsEditing(false);
     } catch (error) {
       setErrorMessage((error as Error).message);
@@ -104,8 +97,8 @@ export default function CreateCoursePage() {
 
   useFocusEffect(
     useCallback(() => {
-      fetchCourseModule();
-    }, [courseId])
+      fetchModule();
+    }, [courseId]),
   );
 
   return (
@@ -118,12 +111,10 @@ export default function CreateCoursePage() {
             }
           />
           <Appbar.Content title="Detalles del módulo" />
-          {isTeacher && (
-            <Appbar.Action
-              icon={isEditing ? "check" : "pencil"}
-              onPress={isEditing ? handleEditModule : () => setIsEditing(true)}
-            />
-          )}
+          <Appbar.Action
+            icon={isEditing ? "check" : "pencil"}
+            onPress={isEditing ? handleEditModule : () => setIsEditing(true)}
+          />
         </Appbar.Header>
         {isLoading ? (
           <View
@@ -156,7 +147,7 @@ export default function CreateCoursePage() {
                 onChange={setTemporalModuleDescription}
                 editable={isEditing}
               />
-              {isEditing && isTeacher && (
+              {isEditing && (
                 <Button
                   onPress={() => setShowConfirmationDelete(true)}
                   mode="contained"

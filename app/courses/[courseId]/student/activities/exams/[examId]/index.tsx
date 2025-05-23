@@ -12,7 +12,6 @@ import { TextField } from "@/components/forms/TextField";
 import { formatDateTime } from "@/utils/date";
 import { useUserContext } from "@/utils/storage/userContext";
 import ExamSubmissionCard from "@/components/cards/ExamSubmissionCard";
-import { set } from "zod";
 
 export default function StudentExamPage() {
   const router = useRouter();
@@ -29,7 +28,7 @@ export default function StudentExamPage() {
   const [showConfirmationStartExam, setShowConfirmationStartExam] =
     useState(false);
 
-  const [studentExam, setStudentExam] = useState<StudentActivity>(null);
+  const [, setStudentExam] = useState<StudentActivity>(null);
   const [examDetails, setExamDetails] = useState<ExamDetails>(null);
   const [examSubmission, setExamSubmission] = useState<ExamSubmission>(null);
 
@@ -61,7 +60,7 @@ export default function StudentExamPage() {
         courseId,
         examId,
         studentId,
-        examDetails.examItems
+        examDetails.examItems,
       );
       setExamSubmission(examSubmission);
     } catch (error) {
@@ -90,7 +89,7 @@ export default function StudentExamPage() {
   useFocusEffect(
     useCallback(() => {
       fetchStudentExam();
-    }, [courseId, examId])
+    }, [courseId, examId]),
   );
 
   return (

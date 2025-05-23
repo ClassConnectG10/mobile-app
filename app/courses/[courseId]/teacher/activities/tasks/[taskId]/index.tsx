@@ -3,18 +3,14 @@ import { DatePickerButton } from "@/components/forms/DatePickerButton";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import { ToggleableTextInput } from "@/components/forms/ToggleableTextInput";
 import {
-  deleteExam,
   deleteTask,
-  getTeacherExam,
   getTeacherTask,
-  publishExam,
   publishTask,
-  updateExam,
   updateTask,
   uploadTaskFile,
 } from "@/services/activityManagement";
 import { getCourse } from "@/services/courseManagement";
-import { ExamDetails, TaskDetails, TeacherActivity } from "@/types/activity";
+import { TaskDetails, TeacherActivity } from "@/types/activity";
 import { Course, CourseStatus, UserRole } from "@/types/course";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
@@ -76,7 +72,7 @@ export default function TeacherExamPage() {
         const teacherTask = await getTeacherTask(courseId, Number(taskId));
         setTeacherTask(teacherTask);
         taskDetailsHook.setTaskDetails(
-          teacherTask.activity.activityDetails as TaskDetails
+          teacherTask.activity.activityDetails as TaskDetails,
         );
         setTaskFiles(
           (teacherTask.activity.activityDetails as TaskDetails).instructionsFile
@@ -84,7 +80,7 @@ export default function TeacherExamPage() {
                 (teacherTask.activity.activityDetails as TaskDetails)
                   .instructionsFile,
               ]
-            : []
+            : [],
         );
       }
     } catch (error) {
@@ -102,7 +98,7 @@ export default function TeacherExamPage() {
   const handleDiscardChanges = () => {
     if (teacherTask) {
       taskDetailsHook.setTaskDetails(
-        teacherTask.activity.activityDetails as TaskDetails
+        teacherTask.activity.activityDetails as TaskDetails,
       );
     }
     setIsEditing(false);
@@ -117,7 +113,7 @@ export default function TeacherExamPage() {
     useCallback(() => {
       fetchTeacherTask();
       fetchCourse();
-    }, [courseId, taskId])
+    }, [courseId, taskId]),
   );
 
   const handleViewSubmissions = async () => {

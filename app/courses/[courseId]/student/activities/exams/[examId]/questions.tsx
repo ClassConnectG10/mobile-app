@@ -31,7 +31,7 @@ export default function StudentFillExam() {
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const [studentExam, setStudentExam] = useState(null);
+  const [, setStudentExam] = useState(null);
   const [examDetails, setExamDetails] = useState(null);
   const [examSubmission, setExamSubmission] = useState(null);
 
@@ -62,7 +62,7 @@ export default function StudentFillExam() {
         courseId,
         examId,
         studentId,
-        examDetails.examItems
+        examDetails.examItems,
       );
       setExamSubmission(examSubmission);
     } catch (error) {
@@ -117,7 +117,7 @@ export default function StudentFillExam() {
   useFocusEffect(
     useCallback(() => {
       fetchStudentExam();
-    }, [courseId, examId])
+    }, [courseId, examId]),
   );
 
   return (

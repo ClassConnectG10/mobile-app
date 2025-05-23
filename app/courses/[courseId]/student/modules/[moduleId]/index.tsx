@@ -2,16 +2,9 @@ import ActivityCard from "@/components/cards/ActivityCard";
 import ModuleCard from "@/components/cards/ModuleCard";
 import ResourceCard from "@/components/cards/ResourceCard";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
-import {
-  getModuleStudentActivities,
-  getModuleTeacherActivities,
-} from "@/services/activityManagement";
-import { getCourseModule } from "@/services/resourceManager";
-import {
-  ActivityType,
-  StudentActivity,
-  TeacherActivity,
-} from "@/types/activity";
+import { getModuleStudentActivities } from "@/services/activityManagement";
+import { getModule } from "@/services/resourceManager";
+import { ActivityType, StudentActivity } from "@/types/activity";
 import { Module, Resource } from "@/types/resources";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
@@ -33,18 +26,15 @@ class ModuleElement {
   constructor(
     public id: number,
     public type: ModuleElementType,
-    public element: Resource | StudentActivity
+    public element: Resource | StudentActivity,
   ) {}
 }
 
 export default function ModulePage() {
   const router = useRouter();
   const theme = useTheme();
-  const {
-    courseId: courseIdParam,
-    moduleId: moduleIdParam,
-    userRole: userRoleParam,
-  } = useLocalSearchParams();
+  const { courseId: courseIdParam, moduleId: moduleIdParam } =
+    useLocalSearchParams();
   const courseId = courseIdParam as string;
   const moduleId = Number(moduleIdParam);
 
@@ -53,7 +43,7 @@ export default function ModulePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const [activities, setActivities] = useState<StudentActivity[]>(null);
+  const [, setActivities] = useState<StudentActivity[]>(null);
   const [activitiesDisplayElements, setActivitiesDisplayElements] = useState<
     ModuleElement[]
   >([]);
@@ -74,11 +64,12 @@ export default function ModulePage() {
     },
   ];
 
-  const fetchCourseModule = async () => {
-    if (!courseIdParam || !moduleIdParam) return;
+  const fetchModule = async () => {
+    if (!courseId || !moduleId) return;
     setIsLoading(true);
+
     try {
-      const module = await getCourseModule(courseId, moduleId);
+      const module = await getModule(courseId, moduleId);
       setModule(module);
     } catch (error) {
       setErrorMessage((error as Error).message);
@@ -88,9 +79,9 @@ export default function ModulePage() {
   };
 
   async function fetchActivities() {
-    if (!courseId) return;
-
+    if (!courseId || !moduleId) return;
     setIsLoading(true);
+
     try {
       const activities = await getModuleStudentActivities(courseId, moduleId);
       setActivities(activities);
@@ -99,9 +90,9 @@ export default function ModulePage() {
           return new ModuleElement(
             activity.activity.resourceId,
             ModuleElementType.ACTIVITY,
-            activity
+            activity,
           );
-        })
+        }),
       );
     } catch (error) {
       setErrorMessage((error as Error).message);
@@ -110,10 +101,17 @@ export default function ModulePage() {
     }
   }
 
+  const fetchResources = async () => {
+    if (!courseId || !moduleId) return;
+
+    // TODO: Fetch resources from the module
+    setResourcesDisplayElements([]);
+  };
+
   const handleRefresh = async () => {
     setIsRefreshing(true);
     try {
-      await Promise.all([fetchCourseModule()]);
+      await Promise.all([fetchModule(), fetchActivities(), fetchResources()]);
     } finally {
       setIsRefreshing(false);
     }
@@ -137,14 +135,10 @@ export default function ModulePage() {
 
   useFocusEffect(
     useCallback(() => {
-      fetchCourseModule();
-    }, [courseId, moduleId])
-  );
-
-  useFocusEffect(
-    useCallback(() => {
+      fetchModule();
       fetchActivities();
-    }, [courseId])
+      fetchResources();
+    }, [courseId]),
   );
 
   return (

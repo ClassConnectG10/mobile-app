@@ -3,19 +3,11 @@ import {
   getTaskSubmission,
   getTeacherTask,
 } from "@/services/activityManagement";
-import { getCourse } from "@/services/courseManagement";
 import { TaskDetails, TaskSubmission, TeacherActivity } from "@/types/activity";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import { ScrollView, View } from "react-native";
-import {
-  ActivityIndicator,
-  Appbar,
-  Text,
-  useTheme,
-  Divider,
-} from "react-native-paper";
-import { useTaskDetails } from "@/hooks/useTaskDetails";
+import { ActivityIndicator, Appbar, Text, useTheme } from "react-native-paper";
 import { ToggleableFileInput } from "@/components/forms/ToggleableFileInput";
 import { File } from "@/types/file";
 import { getUser } from "@/services/userManagement";
@@ -71,7 +63,7 @@ export default function TaskSubmissionPage() {
       const response = await getTaskSubmission(
         courseId,
         Number(taskId),
-        Number(studentId)
+        Number(studentId),
       );
 
       setStudentSubmission(response);
@@ -111,7 +103,7 @@ export default function TaskSubmissionPage() {
       fetchTeacherTask();
       fetchStudent();
       fetchStudentSubmission();
-    }, [courseId, taskId, studentId])
+    }, [courseId, taskId, studentId]),
   );
 
   return (

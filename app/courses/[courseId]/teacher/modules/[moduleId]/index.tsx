@@ -3,7 +3,7 @@ import ModuleCard from "@/components/cards/ModuleCard";
 import ResourceCard from "@/components/cards/ResourceCard";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import { getModuleTeacherActivities } from "@/services/activityManagement";
-import { getCourseModule } from "@/services/resourceManager";
+import { getModule } from "@/services/resourceManager";
 import { ActivityType, TeacherActivity } from "@/types/activity";
 import { UserRole } from "@/types/course";
 import { Module, Resource } from "@/types/resources";
@@ -27,7 +27,7 @@ class ModuleElement {
   constructor(
     public id: number,
     public type: ModuleElementType,
-    public element: Resource | TeacherActivity
+    public element: Resource | TeacherActivity,
   ) {}
 }
 
@@ -48,7 +48,7 @@ export default function ModulePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const [activities, setActivities] = useState<TeacherActivity[]>(null);
+  const [, setActivities] = useState<TeacherActivity[]>(null);
   const [activitiesDisplayElements, setActivitiesDisplayElements] = useState<
     ModuleElement[]
   >([]);
@@ -69,11 +69,12 @@ export default function ModulePage() {
     },
   ];
 
-  const fetchCourseModule = async () => {
-    if (!courseIdParam || !moduleIdParam) return;
+  const fetchModule = async () => {
+    if (!courseId || !moduleId) return;
     setIsLoading(true);
+
     try {
-      const module = await getCourseModule(courseId, moduleId);
+      const module = await getModule(courseId, moduleId);
       setModule(module);
     } catch (error) {
       setErrorMessage((error as Error).message);
@@ -82,10 +83,17 @@ export default function ModulePage() {
     }
   };
 
-  async function fetchActivities() {
-    if (!courseId) return;
+  const fetchResources = async () => {
+    if (!courseId || !moduleId) return;
 
+    // TODO: Fetch resources from the module
+    setResourcesDisplayElements([]);
+  };
+
+  async function fetchActivities() {
+    if (!courseId || !moduleId) return;
     setIsLoading(true);
+
     try {
       const activities = await getModuleTeacherActivities(courseId, moduleId);
       setActivities(activities);
@@ -94,9 +102,9 @@ export default function ModulePage() {
           return new ModuleElement(
             activity.activity.resourceId,
             ModuleElementType.ACTIVITY,
-            activity
+            activity,
           );
-        })
+        }),
       );
     } catch (error) {
       setErrorMessage((error as Error).message);
@@ -108,7 +116,7 @@ export default function ModulePage() {
   const handleRefresh = async () => {
     setIsRefreshing(true);
     try {
-      await Promise.all([fetchCourseModule()]);
+      await Promise.all([fetchModule(), fetchActivities(), fetchResources()]);
     } finally {
       setIsRefreshing(false);
     }
@@ -132,14 +140,10 @@ export default function ModulePage() {
 
   useFocusEffect(
     useCallback(() => {
-      fetchCourseModule();
-    }, [courseId, moduleId])
-  );
-
-  useFocusEffect(
-    useCallback(() => {
+      fetchModule();
       fetchActivities();
-    }, [courseId])
+      fetchResources();
+    }, [courseId, moduleId]),
   );
 
   return (

@@ -1,11 +1,10 @@
 import { View, ScrollView } from "react-native";
 import { Appbar, Button, TextInput, useTheme } from "react-native-paper";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { globalStyles } from "@/styles/globalStyles";
 import { ModuleDetails } from "@/types/resources";
 import { useState } from "react";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
-import { createCourseModule } from "@/services/resourceManager";
+import { createModule } from "@/services/resourceManager";
 
 export default function CreateModulePage() {
   const theme = useTheme();
@@ -22,9 +21,9 @@ export default function CreateModulePage() {
       setIsLoading(true);
       const courseModuleDetails = new ModuleDetails(
         moduleTitle,
-        moduleDescription
+        moduleDescription,
       );
-      await createCourseModule(courseId, courseModuleDetails);
+      await createModule(courseId, courseModuleDetails);
       router.back();
     } catch (error) {
       setErrorMessage((error as Error).message);

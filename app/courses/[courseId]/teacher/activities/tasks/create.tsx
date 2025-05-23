@@ -1,8 +1,6 @@
 import { DatePickerButton } from "@/components/forms/DatePickerButton";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import { createTask, uploadTaskFile } from "@/services/activityManagement";
-import { globalStyles } from "@/styles/globalStyles";
-import { ActivityType } from "@/types/activity";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import { View, ScrollView } from "react-native";
@@ -17,7 +15,7 @@ import {
 import { useTaskDetails } from "@/hooks/useTaskDetails";
 import OptionPicker from "@/components/forms/OptionPicker";
 import { BiMap } from "@/utils/bimap";
-import { getCourseModules } from "@/services/resourceManager";
+import { getModules } from "@/services/resourceManager";
 import { AlertText } from "@/components/AlertText";
 import { ToggleableFileInput } from "@/components/forms/ToggleableFileInput";
 import { File } from "@/types/file";
@@ -25,13 +23,12 @@ import { File } from "@/types/file";
 export default function CreateTaskPage() {
   const router = useRouter();
   const theme = useTheme();
-  const { courseId: courseIdParam, activityType: activityTypeParam } =
-    useLocalSearchParams();
+  const { courseId: courseIdParam } = useLocalSearchParams();
 
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [courseModulesBiMap, setCourseModulesBiMap] = useState<BiMap>(
-    new BiMap()
+    new BiMap(),
   );
   const [taskFiles, setTaskFiles] = useState<File[]>([]);
 
@@ -44,12 +41,12 @@ export default function CreateTaskPage() {
     if (!courseId) return;
     setIsLoading(true);
     try {
-      const courseModules = await getCourseModules(courseId);
+      const courseModules = await getModules(courseId);
       const bimap = new BiMap(
         courseModules.map((module) => [
           module.courseModuleDetails.title,
           module.moduleId.toString(),
-        ])
+        ]),
       );
       setCourseModulesBiMap(bimap);
     } catch (error) {
@@ -78,7 +75,7 @@ export default function CreateTaskPage() {
   useFocusEffect(
     useCallback(() => {
       fetchCourseModules();
-    }, [courseId])
+    }, [courseId]),
   );
 
   return (
@@ -149,7 +146,7 @@ export default function CreateTaskPage() {
               {courseModulesBiMap.isEmpty() && !isLoading && (
                 <>
                   <AlertText
-                    text="Antes de crear un examen, debe crear un módulo"
+                    text="Antes de crear una tarea, debe crear un módulo"
                     error={false}
                   />
                   <Button

@@ -1,4 +1,4 @@
-import { getCourseModules } from "@/services/resourceManager";
+import { getModules } from "@/services/resourceManager";
 import { Course } from "@/types/course";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useState, useCallback } from "react";
@@ -26,7 +26,7 @@ export const ModulesTab: React.FC<ModulesTabProps> = ({ course }) => {
 
     setIsLoading(true);
     try {
-      const modules = await getCourseModules(course.courseId);
+      const modules = await getModules(course.courseId);
       setModules(modules);
     } catch (error) {
       setErrorMessage((error as Error).message);
@@ -47,7 +47,7 @@ export const ModulesTab: React.FC<ModulesTabProps> = ({ course }) => {
   useFocusEffect(
     useCallback(() => {
       fetchModules();
-    }, [course.courseId])
+    }, [course.courseId]),
   );
 
   return (

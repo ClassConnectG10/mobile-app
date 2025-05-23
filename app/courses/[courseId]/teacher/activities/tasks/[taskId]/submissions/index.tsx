@@ -1,18 +1,12 @@
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import SubmissionCard from "@/components/cards/SubmissionCard";
 import {
-  getExamSubmissions,
-  getTaskSubmission,
   getTaskSubmissions,
-  getTeacherExam,
   getTeacherTask,
 } from "@/services/activityManagement";
 import { getUser } from "@/services/userManagement";
 import {
   ActivityStatusOption,
-  ExamDetails,
-  ExamSubmission,
-  TaskDetails,
   TaskSubmission,
   TeacherActivity,
 } from "@/types/activity";
@@ -47,7 +41,7 @@ export default function TaskSubmissionsPage() {
     useState<TaskSubmission[]>(null);
   const [students, setStudents] = useState<Record<number, User>>(null);
   const [taskStatusOption, setTaskStatusOption] = useState(
-    ActivityStatusOption.ALL
+    ActivityStatusOption.ALL,
   );
   async function fetchTeacherTask() {
     if (!courseId || !taskId) return;
@@ -65,7 +59,7 @@ export default function TaskSubmissionsPage() {
 
   async function fetchSubmissions() {
     if (!teacherTask) return;
-    const taskDetails = teacherTask.activity.activityDetails as TaskDetails;
+
     setIsLoading(taskSubmissions === null);
     try {
       const fetchedTaskSubmissions = await getTaskSubmissions(courseId, taskId);
@@ -87,9 +81,9 @@ export default function TaskSubmissionsPage() {
         taskSubmissions.map(async (submission) => {
           const student = await getUser(submission.studentId);
           return { [submission.studentId]: student };
-        })
+        }),
       ).then((studentsArray) =>
-        studentsArray.reduce((acc, curr) => ({ ...acc, ...curr }), {})
+        studentsArray.reduce((acc, curr) => ({ ...acc, ...curr }), {}),
       );
 
       setStudents(studentsDict);
@@ -140,19 +134,19 @@ export default function TaskSubmissionsPage() {
   useFocusEffect(
     useCallback(() => {
       fetchTeacherTask();
-    }, [courseId, taskId])
+    }, [courseId, taskId]),
   );
 
   useFocusEffect(
     useCallback(() => {
       fetchSubmissions();
-    }, [teacherTask])
+    }, [teacherTask]),
   );
 
   useFocusEffect(
     useCallback(() => {
       fetchStudents();
-    }, [taskSubmissions])
+    }, [taskSubmissions]),
   );
 
   return (

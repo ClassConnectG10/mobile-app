@@ -1,24 +1,11 @@
 import { View, ScrollView } from "react-native";
-import {
-  Appbar,
-  Button,
-  Text,
-  useTheme,
-  Dialog,
-  ActivityIndicator,
-} from "react-native-paper";
+import { Appbar, useTheme, ActivityIndicator } from "react-native-paper";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 
 import { useCallback, useState } from "react";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import { ToggleableTextInput } from "@/components/forms/ToggleableTextInput";
-import { UserRole } from "@/types/course";
-import { ModuleDetails } from "@/types/resources";
-import {
-  deleteCourseModule,
-  getCourseModule,
-  updateCourseModule,
-} from "@/services/resourceManager";
+import { getModule } from "@/services/resourceManager";
 
 export default function CreateCoursePage() {
   const theme = useTheme();
@@ -38,7 +25,7 @@ export default function CreateCoursePage() {
     if (!courseId || !moduleId) return;
     setIsLoading(true);
     try {
-      const module = await getCourseModule(courseId, moduleId);
+      const module = await getModule(courseId, moduleId);
       setModuleTitle(module.courseModuleDetails.title);
       setModuleDescription(module.courseModuleDetails.description);
     } catch (error) {
@@ -51,7 +38,7 @@ export default function CreateCoursePage() {
   useFocusEffect(
     useCallback(() => {
       fetchCourseModule();
-    }, [courseId])
+    }, [courseId]),
   );
 
   return (
