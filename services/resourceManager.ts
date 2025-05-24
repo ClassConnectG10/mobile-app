@@ -3,9 +3,15 @@ import {
   createModulesRequest,
   createOrderModulesRequest,
 } from "@/api/modules";
-import { Module, ModuleDetails } from "@/types/resources";
-import { handleError } from "./common";
+import {
+  Module,
+  ModuleDetails,
+  Resource,
+  ResourceDetails,
+} from "@/types/resources";
+import { getFileFromBackend, handleError } from "./common";
 import { moduleSchema } from "@/validations/resources";
+import { createResourcesRequest } from "@/api/resources";
 
 export async function getModules(courseId: string): Promise<Module[]> {
   try {
@@ -131,3 +137,57 @@ export async function orderModules(
     throw handleError(error, "ordenar los módulos del curso");
   }
 }
+
+export async function getResources(courseId: string): Promise<Resource[]> {
+  try {
+    const modules = await getModules(courseId);
+
+    const resources = await Promise.all(
+      modules.map(async (module) => {
+        const request = await createResourcesRequest(courseId, module.moduleId);
+        const response = await request.get("");
+        const resourcesData = response.data.data;
+
+        return resourcesData.map(
+          (resourceData: any) =>
+            new Resource(
+              resourceData.learning_resource_id,
+              new ResourceDetails(
+                resourceData.type,
+                resourceData.external_ref,
+                resourceData.module_id,
+                "",
+                getFileFromBackend(resourceData.external_ref, resourceData.url),
+              ),
+            ),
+        );
+      }),
+    );
+
+    return resources.flat();
+  } catch (error) {
+    throw handleError(error, "obtener los recursos del curso");
+  }
+}
+
+// export class Resource {
+//   constructor(
+//     public resourceId: number,
+//     public ResourceDetails: ResourceDetails,
+//   ) {}
+// }
+
+// export class ResourceDetails {
+//   constructor(
+//     public type: ResourceType,
+//     public title: string,
+//     public moduleId: number,
+//     public description: string,
+//     public resourceDetails:
+//       | DocuemntDetails
+//       | VideoDetails
+//       | ImagesDetails
+//       | LinkDetails
+//       | TextDetails,
+//   ) {}
+// }

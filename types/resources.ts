@@ -21,34 +21,30 @@ export class ResourceDetails {
     public title: string,
     public moduleId: number,
     public description: string,
-    public resourceDetails:
-      | DocuemntDetails
-      | VideoDetails
-      | ImagesDetails
-      | LinkDetails
-      | TextDetails,
-  ) {}
+    public resourceFile: File, // | DocuemntData // | VideoData // | ImagesData // | LinkData
+  ) // | TextData,
+  {}
 }
 
-export class DocuemntDetails {
-  constructor(public files: File[]) {}
-}
+// export class DocuemntData {
+//   constructor(public files: File) {}
+// }
 
-export class VideoDetails {
-  constructor(public video: File) {}
-}
+// export class VideoData {
+//   constructor(public video: File) {}
+// }
 
-export class ImagesDetails {
-  constructor(public images: File[]) {}
-}
+// export class ImagesData {
+//   constructor(public images: File[]) {}
+// }
 
-export class LinkDetails {
-  constructor(public link: string) {}
-}
+// export class LinkData {
+//   constructor(public link: string) {}
+// }
 
-export class TextDetails {
-  constructor(public text: string) {}
-}
+// export class TextData {
+//   constructor(public text: string) {}
+// }
 
 export class Module {
   constructor(

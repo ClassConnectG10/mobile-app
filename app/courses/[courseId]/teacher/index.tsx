@@ -18,6 +18,7 @@ import { View } from "react-native";
 import ActivitiesTab from "../../../../components/courseTabs/teacher/activities";
 import { ParticipantsTab } from "../../../../components/courseTabs/teacher/participants";
 import { ModulesTab } from "@/components/courseTabs/teacher/modules";
+import { ResourcesTab } from "@/components/courseTabs/teacher/resources";
 
 export default function CoursePage() {
   const router = useRouter();
@@ -38,12 +39,12 @@ export default function CoursePage() {
       unfocusedIcon: "clipboard-text",
     },
     // recursos
-    // {
-    //   key: "resources",
-    //   title: "Recursos",
-    //   focusedIcon: "file-document",
-    //   unfocusedIcon: "file-document",
-    // },
+    {
+      key: "resources",
+      title: "Recursos",
+      focusedIcon: "file-document",
+      unfocusedIcon: "file-document",
+    },
     {
       key: "modules",
       title: "Módulos",
@@ -79,6 +80,12 @@ export default function CoursePage() {
         return null;
       }
       return <ModulesTab course={courseContext.course} />;
+    },
+    resources: () => {
+      if (!courseContext.course) {
+        return null;
+      }
+      return <ResourcesTab course={courseContext.course} />;
     },
   });
 
