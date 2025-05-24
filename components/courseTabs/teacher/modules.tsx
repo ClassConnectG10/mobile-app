@@ -1,4 +1,4 @@
-import { getModules } from "@/services/resourceManager";
+import { getModules, orderModules } from "@/services/resourceManager";
 import { Course } from "@/types/course";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useState, useCallback } from "react";
@@ -54,11 +54,21 @@ export const ModulesTab: React.FC<ModulesTabProps> = ({ course }) => {
   useFocusEffect(
     useCallback(() => {
       fetchModules();
-    }, [course.courseId])
+    }, [course.courseId]),
   );
 
-  const handleEditModulesOrder = () => {
-    setIsEditing(!isEditing);
+  const handleEditModulesOrder = async () => {
+    if (!course.courseId) return;
+
+    try {
+      const modulesOrder = modules.map((module) => module.moduleId);
+      await orderModules(course.courseId, modulesOrder);
+    } catch (error) {
+      setErrorMessage((error as Error).message);
+    } finally {
+      setIsEditing(!isEditing);
+      setIsLoading(false);
+    }
   };
 
   const handleCreateModule = () => {
@@ -189,13 +199,7 @@ export const ModulesTab: React.FC<ModulesTabProps> = ({ course }) => {
       <FloatingActionButton onPress={handleCreateModule} />
       <FloatingActionButton
         onPress={
-          isEditing
-            ? () => {
-                setIsEditing(false);
-              }
-            : () => {
-                handleEditModulesOrder();
-              }
+          isEditing ? handleEditModulesOrder : () => setIsEditing(!isEditing)
         }
         index={1}
         icon={isEditing ? "check" : "pencil"}

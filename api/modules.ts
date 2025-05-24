@@ -11,3 +11,9 @@ export const createModuleRequest = (courseId: string, moduleId: number) => {
     uri: `courses/${courseId}/modules/${moduleId}`,
   });
 };
+
+export const createOrderModulesRequest = (courseId: string) => {
+  return createRequest({
+    uri: `courses/${courseId}/modules/order`,
+  });
+};

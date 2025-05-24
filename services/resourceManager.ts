@@ -1,4 +1,8 @@
-import { createModuleRequest, createModulesRequest } from "@/api/modules";
+import {
+  createModuleRequest,
+  createModulesRequest,
+  createOrderModulesRequest,
+} from "@/api/modules";
 import { Module, ModuleDetails } from "@/types/resources";
 import { handleError } from "./common";
 import { moduleSchema } from "@/validations/resources";
@@ -109,5 +113,21 @@ export async function deleteModule(
     await request.delete("");
   } catch (error) {
     throw handleError(error, "eliminar el módulo del curso");
+  }
+}
+
+export async function orderModules(
+  courseId: string,
+  moduleIds: number[],
+): Promise<void> {
+  try {
+    const body = {
+      ids: moduleIds,
+    };
+
+    const request = await createOrderModulesRequest(courseId);
+    await request.post("", body);
+  } catch (error) {
+    throw handleError(error, "ordenar los módulos del curso");
   }
 }
