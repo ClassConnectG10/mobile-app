@@ -14,7 +14,7 @@ import {
 } from "react-native-paper";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import CourseCard from "@/components/cards/CourseCard";
-import { View, ScrollView } from "react-native";
+import { View } from "react-native";
 import ActivitiesTab from "../../../../components/courseTabs/student/activities";
 import { ParticipantsTab } from "../../../../components/courseTabs/student/participants";
 import { ModulesTab } from "../../../../components/courseTabs/student/modules";
@@ -122,7 +122,7 @@ export default function CoursePage() {
   useFocusEffect(
     useCallback(() => {
       fetchCourse();
-    }, [courseId])
+    }, [courseId]),
   );
 
   return (
@@ -169,17 +169,10 @@ export default function CoursePage() {
               }}
             >
               {/* Card de curso */}
-              <ScrollView
-                style={{
-                  gap: 16,
-                  flexGrow: 0,
-                }}
-              >
-                <CourseCard
-                  course={courseContext.course}
-                  onPress={handleInfoPress}
-                />
-              </ScrollView>
+              <CourseCard
+                course={courseContext.course}
+                onPress={handleInfoPress}
+              />
             </View>
             <BottomNavigation
               navigationState={{ index: tabIndex, routes }}

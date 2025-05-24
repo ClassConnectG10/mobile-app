@@ -264,6 +264,7 @@ export default function CourseIncriptionDetails() {
                           },
                         })
                       }
+                      horizontal={true}
                     />
                     <Icon
                       source={

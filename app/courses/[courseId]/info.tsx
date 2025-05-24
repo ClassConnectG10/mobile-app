@@ -346,6 +346,7 @@ export default function CreateCoursePage() {
                       course={course}
                       small={true}
                       onPress={() => handleRequiredCoursePress(course)}
+                      horizontal={true}
                     />
                     {isEditing && (
                       <IconButton
