@@ -12,7 +12,7 @@ import {
   TeacherActivity,
 } from "@/types/activity";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { ScrollView, View } from "react-native";
 import {
   ActivityIndicator,
@@ -116,7 +116,6 @@ export default function TaskSubmissionPage() {
   async function fetchTaskGrade() {
     if (!courseId || !taskId || !studentId) return;
     setIsLoading(true);
-
     try {
       const grade = await getTaskGrade(
         courseId,
@@ -126,6 +125,9 @@ export default function TaskSubmissionPage() {
       setTaskGrade(grade);
       if (grade) {
         temporalTaskGradeHook.setTaskGrade(grade);
+      } else {
+        temporalTaskGradeHook.setTaskId(Number(taskId));
+        temporalTaskGradeHook.setStudentId(Number(studentId));
       }
     } catch (error) {
       setErrorMessage((error as Error).message);
@@ -157,11 +159,14 @@ export default function TaskSubmissionPage() {
     }
   };
 
+  useEffect(() => {
+    fetchStudentSubmission();
+  }, [teacherTask]);
+
   useFocusEffect(
     useCallback(() => {
       fetchTeacherTask();
       fetchStudent();
-      fetchStudentSubmission();
       fetchTaskGrade();
     }, [courseId, taskId, studentId])
   );
@@ -191,92 +196,92 @@ export default function TaskSubmissionPage() {
           />
         </View>
       ) : (
-        <ScrollView
-          contentContainerStyle={{
-            backgroundColor: theme.colors.background,
-            justifyContent: "space-between",
-            padding: 16,
-          }}
-        >
-          <View
-            style={{
-              flex: 1,
-              gap: 16,
+        <>
+          <ScrollView
+            contentContainerStyle={{
+              backgroundColor: theme.colors.background,
+              padding: 16,
             }}
           >
             <View
               style={{
-                flexDirection: "row",
+                flex: 1,
+                gap: 16,
               }}
             >
-              <UserCard user={student} onPress={handleStudentPress} />
-            </View>
-
-            <TextField label="Título" value={taskDetails.title} />
-
-            <TextField
-              label="Fecha límite"
-              value={formatDateTime(taskDetails.dueDate)}
-            />
-
-            {studentSubmission && studentSubmission.submited ? (
-              <>
-                <TextField
-                  label="Fecha de entrega"
-                  value={formatDateTime(studentSubmission.submissionDate)}
-                />
-
-                <Text>Archivos de la entrega</Text>
-
-                <ToggleableFileInput
-                  files={submittedFiles}
-                  editable={false}
-                  onChange={() => {}}
-                  maxFiles={1}
-                />
-              </>
-            ) : (
-              <Text variant="titleSmall">El alumno no entregó la tarea</Text>
-            )}
-            <Divider />
-            <Text>Calificación de la entrega</Text>
-            {!taskGrade && !isEditing && (
-              <AlertText text="La entrega no ha sido calificada todavía." />
-            )}
-
-            {(taskGrade || isEditing) && (
-              <View style={{ flex: 1, gap: 16 }}>
-                <ToggleableNumberInput
-                  label="Nota"
-                  value={temporalTaskGrade.mark}
-                  editable={isEditing}
-                  onChange={(mark) => temporalTaskGradeHook.setMark(mark)}
-                  minValue={0}
-                  maxValue={10}
-                />
-                <ToggleableTextInput
-                  label="Comentario de retroalimentación"
-                  placeholder="Escriba un comentario para el estudiante"
-                  value={temporalTaskGrade.feedback_message}
-                  editable={isEditing}
-                  onChange={(feedback) =>
-                    temporalTaskGradeHook.setFeedbackMessage(feedback)
-                  }
-                />
+              <View
+                style={{
+                  flexDirection: "row",
+                }}
+              >
+                <UserCard user={student} onPress={handleStudentPress} />
               </View>
-            )}
 
+              <TextField label="Título" value={taskDetails.title} />
+
+              <TextField
+                label="Fecha límite"
+                value={formatDateTime(taskDetails.dueDate)}
+              />
+
+              {studentSubmission && studentSubmission.submited ? (
+                <>
+                  <TextField
+                    label="Fecha de entrega"
+                    value={formatDateTime(studentSubmission.submissionDate)}
+                  />
+
+                  <Text>Archivos de la entrega</Text>
+
+                  <ToggleableFileInput
+                    files={submittedFiles}
+                    editable={false}
+                    onChange={() => {}}
+                    maxFiles={1}
+                  />
+                </>
+              ) : (
+                <Text variant="titleSmall">El alumno no entregó la tarea</Text>
+              )}
+              <Divider />
+              <Text>Calificación de la entrega</Text>
+              {!taskGrade && !isEditing && (
+                <AlertText text="La entrega no ha sido calificada todavía." />
+              )}
+
+              {(taskGrade || isEditing) && (
+                <View style={{ flex: 1, gap: 16 }}>
+                  <ToggleableNumberInput
+                    label="Nota"
+                    value={temporalTaskGrade.mark}
+                    editable={isEditing}
+                    onChange={(mark) => temporalTaskGradeHook.setMark(mark)}
+                    minValue={0}
+                    maxValue={10}
+                  />
+                  <ToggleableTextInput
+                    label="Comentario de retroalimentación"
+                    placeholder="Escriba un comentario para el estudiante"
+                    value={temporalTaskGrade.feedback_message}
+                    editable={isEditing}
+                    onChange={(feedback) =>
+                      temporalTaskGradeHook.setFeedbackMessage(feedback)
+                    }
+                  />
+                </View>
+              )}
+            </View>
+          </ScrollView>
+          <View style={{ padding: 16 }}>
             {isEditing ? (
-              <>
-                <Button
-                  icon="note-check"
-                  mode="contained"
-                  onPress={() => handleSaveGrade()}
-                  disabled={isLoading}
-                >
-                  Confirmar calificación
-                </Button>
-              </>
+              <Button
+                icon="note-check"
+                mode="contained"
+                onPress={() => handleSaveGrade()}
+                disabled={isLoading}
+              >
+                Confirmar calificación
+              </Button>
             ) : (
               <Button
                 icon="note-check"
@@ -288,7 +293,7 @@ export default function TaskSubmissionPage() {
               </Button>
             )}
           </View>
-        </ScrollView>
+        </>
       )}
       <ErrorMessageSnackbar
         message={errorMessage}

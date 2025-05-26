@@ -11,6 +11,7 @@ import {
   ExamItem,
   TaskSubmission,
   TaskGrade,
+  ExamGrade,
 } from "@/types/activity";
 import {
   examItemToJSON,
@@ -681,7 +682,29 @@ export async function gradeTask(
     };
     await request.post("", body);
   } catch (error) {
-    throw handleError(error, "calificar la actividad");
+    throw handleError(error, "calificar la tarea");
+  }
+}
+
+export async function gradeExam(
+  courseId: string,
+  examGrade: ExamGrade
+): Promise<void> {
+  try {
+    taskGradeSchema.parse(examGrade);
+    const request = await createGradeSubmissionRequest(
+      courseId,
+      examGrade.resourceId,
+      examGrade.studentId
+    );
+    const body = {
+      mark: examGrade.mark,
+      feedback: examGrade.feedback_message,
+      corrections: examGrade.correctExamItems,
+    };
+    await request.post("", body);
+  } catch (error) {
+    throw handleError(error, "calificar el examen");
   }
 }
 
@@ -710,6 +733,36 @@ export async function getTaskGrade(
       responseData.feedback
     );
   } catch (error) {
-    throw handleError(error, "obtener la calificación de la actividad");
+    throw handleError(error, "obtener la calificación de la tarea");
+  }
+}
+
+export async function getExamGrade(
+  courseId: string,
+  examId: number,
+  studentId: number
+): Promise<ExamGrade | null> {
+  try {
+    const request = await createGradeSubmissionRequest(
+      courseId,
+      examId,
+      studentId
+    );
+    const response = await request.get("");
+    const responseData = response.data.data;
+
+    if (!responseData.mark) {
+      return null;
+    }
+
+    return new ExamGrade(
+      examId,
+      studentId,
+      responseData.mark,
+      responseData.feedback,
+      responseData.corrections
+    );
+  } catch (error) {
+    throw handleError(error, "obtener la calificación de la tarea");
   }
 }

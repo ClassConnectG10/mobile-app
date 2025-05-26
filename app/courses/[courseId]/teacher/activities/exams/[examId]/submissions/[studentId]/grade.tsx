@@ -2,21 +2,40 @@ import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import { TextField } from "@/components/forms/TextField";
 import UserCard from "@/components/cards/UserCard";
 import {
+  getExamGrade,
   getExamSubmission,
   getTeacherExam,
+  gradeExam,
 } from "@/services/activityManagement";
 import { getUser } from "@/services/userManagement";
-import { ExamDetails, ExamSubmission, TeacherActivity } from "@/types/activity";
+import {
+  ExamDetails,
+  ExamGrade,
+  ExamSubmission,
+  SubmittedExamItem,
+  TeacherActivity,
+} from "@/types/activity";
 import { User } from "@/types/user";
 import { formatDateTime } from "@/utils/date";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { FlatList, View } from "react-native";
-import { ActivityIndicator, Appbar, Text, useTheme } from "react-native-paper";
+import {
+  ActivityIndicator,
+  Appbar,
+  Button,
+  Divider,
+  Text,
+  useTheme,
+} from "react-native-paper";
 import { ExamItemCard } from "@/components/cards/examCards/ExamItemCard";
 import { ExamItemMode } from "@/components/cards/examCards/examItemMode";
+import { AlertText } from "@/components/AlertText";
+import { ToggleableNumberInput } from "@/components/forms/ToggleableNumberInput";
+import { ToggleableTextInput } from "@/components/forms/ToggleableTextInput";
+import { useExamGrade } from "@/hooks/useExamGrade";
 
-export default function TeacherSubmissionPage() {
+export default function GradeExamSubmissionPage() {
   const theme = useTheme();
   const router = useRouter();
   const {
@@ -37,7 +56,12 @@ export default function TeacherSubmissionPage() {
     useState<ExamSubmission | null>(null);
   const [student, setStudent] = useState<User | null>(null);
 
-  async function fetchTeacherActivity() {
+  const [examGrade, setExamGrade] = useState<ExamGrade | null>(null);
+
+  const temporalExamGradeHook = useExamGrade();
+  const temporalExamGrade = temporalExamGradeHook.examGrade;
+
+  async function fetchTeacherExam() {
     if (!courseId || !examId || !studentId) return;
 
     setIsLoading(true);
@@ -51,7 +75,7 @@ export default function TeacherSubmissionPage() {
     }
   }
 
-  async function fetchSubmission() {
+  async function fetchStudentSubmission() {
     if (!teacherActivity) return;
     setIsLoading(true);
 
@@ -62,7 +86,15 @@ export default function TeacherSubmissionPage() {
         Number(studentId),
         (teacherActivity.activity.activityDetails as ExamDetails).examItems
       );
+      const correctAnswers = submissionData.submittedExamItems.map(
+        (item: SubmittedExamItem) => {
+          return item.correct;
+        }
+      );
       setStudentSubmission(submissionData);
+      if (temporalExamGrade.correctExamItems.length === 0) {
+        temporalExamGradeHook.setCorrectExamItems(correctAnswers);
+      }
     } catch (error) {
       setErrorMessage((error as Error).message);
     } finally {
@@ -84,38 +116,59 @@ export default function TeacherSubmissionPage() {
     }
   }
 
-  const handleStudentPress = () => {
-    router.push({
-      pathname: `/users/[userId]`,
-      params: {
-        userId: studentId,
-      },
-    });
-  };
+  async function fetchExamGrade() {
+    if (!courseId || !examId || !studentId) return;
+    setIsLoading(true);
+
+    try {
+      const grade = await getExamGrade(
+        courseId,
+        Number(examId),
+        Number(studentId)
+      );
+      setExamGrade(grade);
+      if (grade) {
+        temporalExamGradeHook.setExamGrade(grade);
+        temporalExamGradeHook.setCorrectExamItems(grade.correctExamItems);
+      } else {
+        // temporalExamGradeHook.setCorrectExamItems(originalCorrectAnswers);
+      }
+    } catch (error) {
+      setErrorMessage((error as Error).message);
+    } finally {
+      setIsLoading(false);
+    }
+  }
 
   const setCorrectAnswer = (index: number, correct: boolean) => {
-    const newSubmittedExamItems = [...examSubmission.submittedExamItems];
-    newSubmittedExamItems[index] = {
-      ...newSubmittedExamItems[index],
-      correct,
-    };
-    const newExamSubmission = {
-      ...examSubmission,
-      submittedExamItems: newSubmittedExamItems,
-    };
-    setStudentSubmission(newExamSubmission);
+    const newCorrectExamItems = [...temporalExamGrade?.correctExamItems];
+    newCorrectExamItems[index] = correct;
+    temporalExamGradeHook.setCorrectExamItems(newCorrectExamItems);
   };
 
-  useFocusEffect(
-    useCallback(() => {
-      fetchSubmission();
-    }, [teacherActivity])
-  );
+  const handleSaveGrade = async () => {
+    if (!courseId || !examId || !studentId) return;
+    setIsLoading(true);
+    try {
+      await gradeExam(courseId, temporalExamGrade);
+      setExamGrade(temporalExamGrade);
+    } catch (error) {
+      setErrorMessage((error as Error).message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchStudentSubmission();
+  }, [teacherActivity]);
 
   useFocusEffect(
     useCallback(() => {
-      fetchTeacherActivity();
+      fetchTeacherExam();
       fetchStudent();
+
+      fetchExamGrade();
     }, [courseId, examId, studentId])
   );
 
@@ -123,7 +176,7 @@ export default function TeacherSubmissionPage() {
     <>
       <Appbar.Header>
         <Appbar.BackAction onPress={() => router.back()} />
-        <Appbar.Content title={"Entrega del examen"} />
+        <Appbar.Content title={"Corrección del examen"} />
       </Appbar.Header>
       {isLoading || !teacherActivity || !examSubmission || !student ? (
         <View
@@ -149,24 +202,7 @@ export default function TeacherSubmissionPage() {
             keyExtractor={(_item, index) => index.toString()}
             ListHeaderComponent={
               <View style={{ gap: 16, paddingBottom: 16 }}>
-                <UserCard user={student} onPress={handleStudentPress} />
-
-                <TextField
-                  label="Título"
-                  value={teacherActivity.activity.activityDetails.title}
-                />
-                {examSubmission && examSubmission.submited ? (
-                  <>
-                    <TextField
-                      label="Fecha de entrega"
-                      value={formatDateTime(examSubmission.submissionDate)}
-                    />
-                  </>
-                ) : (
-                  <Text variant="titleSmall">
-                    El alumno no entregó el examen
-                  </Text>
-                )}
+                <Text>Corrección de las preguntas</Text>
               </View>
             }
             renderItem={({ item, index }) =>
@@ -179,10 +215,7 @@ export default function TeacherSubmissionPage() {
                       .answer
                   }
                   setStudentAnswer={() => {}}
-                  answerOk={
-                    (examSubmission as ExamSubmission).submittedExamItems[index]
-                      .correct
-                  }
+                  answerOk={temporalExamGrade.correctExamItems[index]}
                   setAnswerOk={(correct) => setCorrectAnswer(index, correct)}
                 />
               ) : null
@@ -194,6 +227,38 @@ export default function TeacherSubmissionPage() {
                 }}
               />
             )}
+            ListFooterComponent={
+              <View style={{ gap: 16, paddingVertical: 16 }}>
+                <Divider />
+                <Text>Calificación de la entrega</Text>
+                <AlertText text="La entrega no ha sido calificada todavía." />
+                <ToggleableNumberInput
+                  label="Nota"
+                  value={temporalExamGrade.mark}
+                  editable={true}
+                  onChange={(mark) => temporalExamGradeHook.setMark(mark)}
+                  minValue={0}
+                  maxValue={10}
+                />
+                <ToggleableTextInput
+                  label="Comentario de retroalimentación"
+                  placeholder="Escriba un comentario para el estudiante"
+                  value={temporalExamGrade.feedback_message}
+                  editable={true}
+                  onChange={(feedback) =>
+                    temporalExamGradeHook.setFeedbackMessage(feedback)
+                  }
+                />
+                <Button
+                  icon="note-check"
+                  mode="contained"
+                  onPress={() => handleSaveGrade()}
+                  disabled={isLoading}
+                >
+                  Confirmar calificación
+                </Button>
+              </View>
+            }
           />
         </View>
       )}

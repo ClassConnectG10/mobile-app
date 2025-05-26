@@ -4,6 +4,8 @@ import { useState } from "react";
 export interface TaskGradeHook {
   taskGrade: TaskGrade;
   setTaskGrade: (taskGrade: TaskGrade) => void;
+  setTaskId: (taskId: number) => void;
+  setStudentId: (studentId: number) => void;
   setMark: (mark: number) => void;
   setFeedbackMessage: (feedback: string) => void;
 }
@@ -12,6 +14,18 @@ export function useTaskGrade(): TaskGradeHook {
   const [taskGrade, setTaskGrade] = useState<TaskGrade>(
     new TaskGrade(0, 0, 0, "")
   );
+
+  const setTaskId = (taskId: number) => {
+    if (taskGrade) {
+      setTaskGrade({ ...taskGrade, resourceId: taskId });
+    }
+  };
+
+  const setStudentId = (studentId: number) => {
+    if (taskGrade) {
+      setTaskGrade({ ...taskGrade, studentId: studentId });
+    }
+  };
 
   const setMark = (mark: number) => {
     if (taskGrade) {
@@ -28,7 +42,9 @@ export function useTaskGrade(): TaskGradeHook {
   return {
     taskGrade,
     setTaskGrade,
+    setTaskId,
+    setStudentId,
     setMark,
-    setFeedbackMessage: setFeedbackMessage,
+    setFeedbackMessage,
   };
 }

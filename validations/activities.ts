@@ -25,7 +25,7 @@ export const activityDetailsSchema = z.object({
   moduleId: z
     .number({
       required_error: "El módulo es requerido",
-      invalid_type_error: "El módulo debe ser un número",
+      invalid_type_error: "El módulo es requerido",
     })
     .int("El módulo debe ser un número entero"),
 });
@@ -176,7 +176,7 @@ export const examDetailsSchema = z.object({
   moduleId: z
     .number({
       required_error: "El módulo es requerido",
-      invalid_type_error: "El módulo debe ser un número",
+      invalid_type_error: "El módulo es requerido",
     })
     .int("El módulo debe ser un número entero"),
   examItems: z
