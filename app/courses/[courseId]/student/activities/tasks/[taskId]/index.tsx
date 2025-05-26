@@ -1,10 +1,16 @@
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import {
   getStudentTask,
+  getTaskGrade,
   getTaskSubmission,
   submitTask,
 } from "@/services/activityManagement";
-import { StudentActivity, TaskDetails, TaskSubmission } from "@/types/activity";
+import {
+  StudentActivity,
+  TaskDetails,
+  TaskGrade,
+  TaskSubmission,
+} from "@/types/activity";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { ScrollView, View } from "react-native";
@@ -15,12 +21,14 @@ import {
   useTheme,
   Button,
   Divider,
+  TextInput,
 } from "react-native-paper";
 import { ToggleableFileInput } from "@/components/forms/ToggleableFileInput";
 import { File } from "@/types/file";
 import { useUserContext } from "@/utils/storage/userContext";
 import { TextField } from "@/components/forms/TextField";
 import { formatDateTime } from "@/utils/date";
+import { ToggleableNumberInput } from "@/components/forms/ToggleableNumberInput";
 
 export default function StudentExamPage() {
   const router = useRouter();
@@ -42,6 +50,8 @@ export default function StudentExamPage() {
   const [studentSubmission, setStudentSubmission] =
     useState<TaskSubmission | null>(null);
 
+  const [taskGrade, setTaskGrade] = useState<TaskGrade | null>(null);
+
   const userContext = useUserContext();
 
   async function fetchStudentTask() {
@@ -58,7 +68,7 @@ export default function StudentExamPage() {
               (studentTask.activity.activityDetails as TaskDetails)
                 .instructionsFile,
             ]
-          : [],
+          : []
       );
     } catch (error) {
       setErrorMessage((error as Error).message);
@@ -75,7 +85,7 @@ export default function StudentExamPage() {
       const response = await getTaskSubmission(
         courseId,
         Number(taskId),
-        userContext.user.id,
+        userContext.user.id
       );
 
       setStudentSubmission(response);
@@ -95,12 +105,12 @@ export default function StudentExamPage() {
       await submitTask(
         courseId,
         Number(taskId),
-        submittedFiles.length > 0 ? submittedFiles[0] : null,
+        submittedFiles.length > 0 ? submittedFiles[0] : null
       );
       const submission = await getTaskSubmission(
         courseId,
         Number(taskId),
-        userContext.user.id,
+        userContext.user.id
       );
 
       setStudentSubmission(submission);
@@ -116,14 +126,33 @@ export default function StudentExamPage() {
     }
   };
 
+  async function fetchTaskGrade() {
+    if (!courseId || !taskId || !userContext.user) return;
+    setIsLoading(true);
+
+    try {
+      const grade = await getTaskGrade(
+        courseId,
+        Number(taskId),
+        userContext.user?.id
+      );
+      setTaskGrade(grade);
+    } catch (error) {
+      setErrorMessage((error as Error).message);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
   useFocusEffect(
     useCallback(() => {
       fetchStudentTask();
-    }, [courseId, taskId]),
+    }, [courseId, taskId])
   );
 
   useEffect(() => {
     fetchStudentSubmission();
+    fetchTaskGrade();
   }, [studentTask]);
 
   return (
@@ -149,71 +178,71 @@ export default function StudentExamPage() {
       ) : (
         <ScrollView
           contentContainerStyle={{
-            flex: 1,
             backgroundColor: theme.colors.background,
             justifyContent: "space-between",
             padding: 16,
+            gap: 16,
           }}
         >
-          <View
-            style={{
-              gap: 16,
-            }}
-          >
-            {/* <ActivityCard 
+          {/* <ActivityCard 
   TODO: Agregar SUBMISSION CARD O ALGO POR EL ESTILO
             /> */}
 
-            <TextField label="Nombre" value={taskDetails.title} />
+          <TextField label="Nombre" value={taskDetails.title} />
 
-            <TextField label="Instrucciones" value={taskDetails.instructions} />
+          <TextField label="Instrucciones" value={taskDetails.instructions} />
 
-            <TextField
-              label="Fecha límite"
-              value={formatDateTime(taskDetails.dueDate)}
-            />
+          <TextField
+            label="Fecha límite"
+            value={formatDateTime(taskDetails.dueDate)}
+          />
 
-            <Text>Archivos de la consigna</Text>
+          <Text>Archivos de la consigna</Text>
 
-            <ToggleableFileInput
-              files={taskFiles}
-              editable={false}
-              onChange={setTaskFiles}
-              maxFiles={1}
-            />
+          <ToggleableFileInput
+            files={taskFiles}
+            editable={false}
+            onChange={setTaskFiles}
+            maxFiles={1}
+          />
 
-            <Divider />
+          <Divider />
 
-            <Text>Archivos de la entrega</Text>
+          <Text>Archivos de la entrega</Text>
 
-            <ToggleableFileInput
-              files={submittedFiles}
-              editable={studentTask ? !studentTask.submited : false}
-              onChange={setSubmittedFiles}
-              maxFiles={1}
-            />
-          </View>
+          <ToggleableFileInput
+            files={submittedFiles}
+            editable={studentTask ? !studentTask.submited : false}
+            onChange={setSubmittedFiles}
+            maxFiles={1}
+          />
 
-          <View
-            style={{
-              gap: 16,
-            }}
-          >
-            {studentTask && !studentTask.submited && (
-              <Button
-                mode="contained"
-                onPress={handleSubmitResponse}
-                disabled={
-                  isLoading ||
-                  studentTask.submited ||
-                  !submittedFiles ||
-                  submittedFiles.length === 0
-                }
-              >
-                Enviar respuesta
-              </Button>
-            )}
-          </View>
+          {studentTask && !studentTask.submited && (
+            <Button
+              mode="contained"
+              onPress={handleSubmitResponse}
+              disabled={
+                isLoading ||
+                studentTask.submited ||
+                !submittedFiles ||
+                submittedFiles.length === 0
+              }
+            >
+              Enviar respuesta
+            </Button>
+          )}
+
+          {taskGrade && (
+            <View style={{ flex: 1, gap: 16 }}>
+              <Divider />
+              <Text>Calificación de la entrega</Text>
+              <TextField label="Nota" value={taskGrade.mark} />
+              <TextField
+                label="Comentario de retroalimentación"
+                value={taskGrade.feedback_message}
+              />
+            </View>
+          )}
         </ScrollView>
       )}
       <ErrorMessageSnackbar

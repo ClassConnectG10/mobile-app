@@ -236,7 +236,7 @@ export default function TaskSubmissionPage() {
                 />
               </>
             ) : (
-              <Text variant="titleSmall">El alumno no entregó el examen</Text>
+              <Text variant="titleSmall">El alumno no entregó la tarea</Text>
             )}
             <Divider />
             <Text>Calificación de la entrega</Text>
