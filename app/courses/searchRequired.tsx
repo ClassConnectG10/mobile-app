@@ -24,7 +24,7 @@ export default function SearchCoursesPage() {
     useState(false);
 
   const [searchFilters, setSearchFilters] = useState(
-    new SearchFilters("", null, null, "", "", "")
+    new SearchFilters("", null, null, "", "", ""),
   );
 
   const requiredCoursesContext = useRequiredCoursesContext();
@@ -38,13 +38,13 @@ export default function SearchCoursesPage() {
       const filteredCourses = coursesData.filter(
         (course) =>
           !requiredCoursesContext.requiredCourses.some(
-            (selectedCourse) => selectedCourse.courseId === course.courseId
-          )
+            (selectedCourse) => selectedCourse.courseId === course.courseId,
+          ),
       );
 
       if (courseContext.course) {
         const filteredCoursesWithSelected = filteredCourses.filter(
-          (course) => course.courseId !== courseContext.course?.courseId
+          (course) => course.courseId !== courseContext.course?.courseId,
         );
 
         setCourses(filteredCoursesWithSelected);
@@ -73,7 +73,7 @@ export default function SearchCoursesPage() {
   useFocusEffect(
     useCallback(() => {
       fetchCourses();
-    }, [searchFilters])
+    }, [searchFilters]),
   );
 
   return (

@@ -338,7 +338,6 @@ export default function CreateCoursePage() {
                     style={{
                       flexDirection: "row",
                       justifyContent: "space-between",
-                      alignItems: "center",
                       gap: 10,
                     }}
                   >
@@ -352,6 +351,7 @@ export default function CreateCoursePage() {
                       <IconButton
                         icon="delete"
                         mode="contained"
+                        size={20}
                         onPress={() => {
                           requiredCoursesContext.deleteRequiredCourse(course);
                         }}

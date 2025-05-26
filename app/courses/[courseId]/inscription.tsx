@@ -277,7 +277,7 @@ export default function CourseIncriptionDetails() {
                           ? customColors.success
                           : theme.colors.error
                       }
-                      size={24}
+                      size={20}
                     />
                   </View>
                 ))}
