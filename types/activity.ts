@@ -194,3 +194,36 @@ export class MultipleSelectAnswer implements ExamItemAnswer {
     this.type = ExamItemType.MULTIPLE_SELECT;
   }
 }
+
+export interface ActivityGrade {
+  resourceId: number;
+  type: ActivityType;
+  studentId: number;
+  mark: number;
+  feedback_message: string;
+}
+
+export class TaskGrade implements ActivityGrade {
+  type: ActivityType;
+  constructor(
+    public resourceId: number,
+    public studentId: number,
+    public mark: number,
+    public feedback_message: string
+  ) {
+    this.type = ActivityType.TASK;
+  }
+}
+
+export class ExamGrade implements ActivityGrade {
+  type: ActivityType;
+  constructor(
+    public resourceId: number,
+    public studentId: number,
+    public mark: number,
+    public feedback_message: string,
+    public correctExamItems: boolean[]
+  ) {
+    this.type = ActivityType.EXAM;
+  }
+}

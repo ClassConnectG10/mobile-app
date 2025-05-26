@@ -1,13 +1,27 @@
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import {
+  getTaskGrade,
   getTaskSubmission,
   getTeacherTask,
+  gradeTask,
 } from "@/services/activityManagement";
-import { TaskDetails, TaskSubmission, TeacherActivity } from "@/types/activity";
+import {
+  TaskDetails,
+  TaskGrade,
+  TaskSubmission,
+  TeacherActivity,
+} from "@/types/activity";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import { ScrollView, View } from "react-native";
-import { ActivityIndicator, Appbar, Text, useTheme } from "react-native-paper";
+import {
+  ActivityIndicator,
+  Appbar,
+  Button,
+  Divider,
+  Text,
+  useTheme,
+} from "react-native-paper";
 import { ToggleableFileInput } from "@/components/forms/ToggleableFileInput";
 import { File } from "@/types/file";
 import { getUser } from "@/services/userManagement";
@@ -15,6 +29,11 @@ import { User } from "@/types/user";
 import UserCard from "@/components/cards/UserCard";
 import { formatDateTime } from "@/utils/date";
 import { TextField } from "@/components/forms/TextField";
+import { AlertText } from "@/components/AlertText";
+import { set } from "zod";
+import { useTaskGrade } from "@/hooks/useTaskGrade";
+import { ToggleableNumberInput } from "@/components/forms/ToggleableNumberInput";
+import { ToggleableTextInput } from "@/components/forms/ToggleableTextInput";
 
 export default function TaskSubmissionPage() {
   const router = useRouter();
@@ -30,6 +49,7 @@ export default function TaskSubmissionPage() {
   const studentId = studentIdParam as string;
 
   const [isLoading, setIsLoading] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [teacherTask, setTeacherTask] = useState<TeacherActivity | null>(null);
   const [taskDetails, setTaskDetails] = useState<TaskDetails | null>(null);
@@ -39,6 +59,10 @@ export default function TaskSubmissionPage() {
     useState<TaskSubmission | null>(null);
 
   const [student, setStudent] = useState<User | null>(null);
+  const [taskGrade, setTaskGrade] = useState<TaskGrade | null>(null);
+
+  const temporalTaskGradeHook = useTaskGrade();
+  const { taskGrade: temporalTaskGrade } = temporalTaskGradeHook;
 
   async function fetchTeacherTask() {
     if (!courseId || !taskId) return;
@@ -63,7 +87,7 @@ export default function TaskSubmissionPage() {
       const response = await getTaskSubmission(
         courseId,
         Number(taskId),
-        Number(studentId),
+        Number(studentId)
       );
 
       setStudentSubmission(response);
@@ -89,6 +113,27 @@ export default function TaskSubmissionPage() {
     }
   }
 
+  async function fetchTaskGrade() {
+    if (!courseId || !taskId || !studentId) return;
+    setIsLoading(true);
+
+    try {
+      const grade = await getTaskGrade(
+        courseId,
+        Number(taskId),
+        Number(studentId)
+      );
+      setTaskGrade(grade);
+      if (grade) {
+        temporalTaskGradeHook.setTaskGrade(grade);
+      }
+    } catch (error) {
+      setErrorMessage((error as Error).message);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
   const handleStudentPress = () => {
     router.push({
       pathname: `/users/[userId]`,
@@ -98,12 +143,27 @@ export default function TaskSubmissionPage() {
     });
   };
 
+  const handleSaveGrade = async () => {
+    if (!courseId || !taskId || !studentId) return;
+    setIsLoading(true);
+    try {
+      await gradeTask(courseId, temporalTaskGrade);
+      setTaskGrade(temporalTaskGrade);
+      setIsEditing(false);
+    } catch (error) {
+      setErrorMessage((error as Error).message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useFocusEffect(
     useCallback(() => {
       fetchTeacherTask();
       fetchStudent();
       fetchStudentSubmission();
-    }, [courseId, taskId, studentId]),
+      fetchTaskGrade();
+    }, [courseId, taskId, studentId])
   );
 
   return (
@@ -133,7 +193,6 @@ export default function TaskSubmissionPage() {
       ) : (
         <ScrollView
           contentContainerStyle={{
-            flex: 1,
             backgroundColor: theme.colors.background,
             justifyContent: "space-between",
             padding: 16,
@@ -141,6 +200,7 @@ export default function TaskSubmissionPage() {
         >
           <View
             style={{
+              flex: 1,
               gap: 16,
             }}
           >
@@ -177,6 +237,55 @@ export default function TaskSubmissionPage() {
               </>
             ) : (
               <Text variant="titleSmall">El alumno no entregó el examen</Text>
+            )}
+            <Divider />
+            <Text>Calificación de la entrega</Text>
+            {!taskGrade && !isEditing && (
+              <AlertText text="La entrega no ha sido calificada todavía." />
+            )}
+
+            {(taskGrade || isEditing) && (
+              <View style={{ flex: 1, gap: 16 }}>
+                <ToggleableNumberInput
+                  label="Nota"
+                  value={temporalTaskGrade.mark}
+                  editable={isEditing}
+                  onChange={(mark) => temporalTaskGradeHook.setMark(mark)}
+                  minValue={0}
+                  maxValue={10}
+                />
+                <ToggleableTextInput
+                  label="Comentario de retroalimentación"
+                  placeholder="Escriba un comentario para el estudiante"
+                  value={temporalTaskGrade.feedback_message}
+                  editable={isEditing}
+                  onChange={(feedback) =>
+                    temporalTaskGradeHook.setFeedbackMessage(feedback)
+                  }
+                />
+              </View>
+            )}
+
+            {isEditing ? (
+              <>
+                <Button
+                  icon="note-check"
+                  mode="contained"
+                  onPress={() => handleSaveGrade()}
+                  disabled={isLoading}
+                >
+                  Confirmar calificación
+                </Button>
+              </>
+            ) : (
+              <Button
+                icon="note-check"
+                mode="contained"
+                onPress={() => setIsEditing(true)}
+                disabled={isLoading}
+              >
+                {taskGrade ? "Editar calificación" : "Calificar entrega"}
+              </Button>
             )}
           </View>
         </ScrollView>

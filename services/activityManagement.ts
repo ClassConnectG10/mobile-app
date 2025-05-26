@@ -10,6 +10,7 @@ import {
   SubmittedExamItem,
   ExamItem,
   TaskSubmission,
+  TaskGrade,
 } from "@/types/activity";
 import {
   examItemToJSON,
@@ -34,12 +35,14 @@ import {
   createSubmitExamRequest,
   createPublishTaskRequest,
   createPublishExamRequest,
+  createGradeSubmissionRequest,
 } from "@/api/activities";
 import {
   activityDetailsSchema,
   activityDetailsSchemaUpdate,
   examDetailsSchema,
   submittedExamItemSchema,
+  taskGradeSchema,
 } from "@/validations/activities";
 import { getDateFromBackend } from "@/utils/date";
 import { File } from "@/types/file";
@@ -47,7 +50,7 @@ import { File } from "@/types/file";
 
 export async function getCourseTeacherActivities(
   courseId: string,
-  activitiesOption: ActivitiesOption,
+  activitiesOption: ActivitiesOption
 ): Promise<TeacherActivity[]> {
   try {
     const request = await createActivitiesRequest(courseId, activitiesOption);
@@ -68,10 +71,10 @@ export async function getCourseTeacherActivities(
                 activityData.title,
                 activityData.instruction,
                 null,
-                getDateFromBackend(activityData.due_date),
-              ),
+                getDateFromBackend(activityData.due_date)
+              )
             ),
-            activityData.visible,
+            activityData.visible
           );
         } else if (activityData.type === ActivityType.EXAM) {
           return new TeacherActivity(
@@ -84,13 +87,13 @@ export async function getCourseTeacherActivities(
                 activityData.title,
                 activityData.instruction,
                 [],
-                getDateFromBackend(activityData.due_date),
-              ),
+                getDateFromBackend(activityData.due_date)
+              )
             ),
-            activityData.visible,
+            activityData.visible
           );
         }
-      },
+      }
     );
 
     return activities;
@@ -101,7 +104,7 @@ export async function getCourseTeacherActivities(
 
 export async function getCourseStudentActivities(
   courseId: string,
-  activitiesOption: ActivitiesOption,
+  activitiesOption: ActivitiesOption
 ): Promise<StudentActivity[]> {
   try {
     const request = await createActivitiesRequest(courseId, activitiesOption);
@@ -121,13 +124,13 @@ export async function getCourseStudentActivities(
                 activityData.title,
                 activityData.instruction,
                 getFileFromBackend(activityData.external_ref, activityData.url),
-                getDateFromBackend(activityData.due_date),
-              ),
+                getDateFromBackend(activityData.due_date)
+              )
             ),
             activityData.delivered,
             activityData.delivered_date
               ? getDateFromBackend(activityData.delivered_date)
-              : null,
+              : null
           );
         } else if (activityData.type === ActivityType.EXAM) {
           return new StudentActivity(
@@ -140,16 +143,16 @@ export async function getCourseStudentActivities(
                 activityData.title,
                 activityData.instruction,
                 [],
-                getDateFromBackend(activityData.due_date),
-              ),
+                getDateFromBackend(activityData.due_date)
+              )
             ),
             activityData.delivered,
             activityData.delivered_date
               ? getDateFromBackend(activityData.delivered_date)
-              : null,
+              : null
           );
         }
-      },
+      }
     );
 
     return activities;
@@ -160,15 +163,15 @@ export async function getCourseStudentActivities(
 
 export async function getModuleTeacherActivities(
   courseId: string,
-  moduleId: number,
+  moduleId: number
 ): Promise<TeacherActivity[]> {
   try {
     const activities = await getCourseTeacherActivities(
       courseId,
-      ActivitiesOption.ALL,
+      ActivitiesOption.ALL
     );
     return activities.filter(
-      (activity) => activity.activity.moduleId === moduleId,
+      (activity) => activity.activity.moduleId === moduleId
     );
   } catch (error) {
     throw handleError(error, "obtener las actividades del curso");
@@ -177,15 +180,15 @@ export async function getModuleTeacherActivities(
 
 export async function getModuleStudentActivities(
   courseId: string,
-  moduleId: number,
+  moduleId: number
 ): Promise<StudentActivity[]> {
   try {
     const activities = await getCourseStudentActivities(
       courseId,
-      ActivitiesOption.ALL,
+      ActivitiesOption.ALL
     );
     return activities.filter(
-      (activity) => activity.activity.moduleId === moduleId,
+      (activity) => activity.activity.moduleId === moduleId
     );
   } catch (error) {
     throw handleError(error, "obtener las actividades del módulo");
@@ -194,7 +197,7 @@ export async function getModuleStudentActivities(
 
 export async function getTeacherTask(
   courseId: string,
-  taskId: number,
+  taskId: number
 ): Promise<TeacherActivity> {
   try {
     const request = await createActivityRequest(courseId, taskId);
@@ -211,10 +214,10 @@ export async function getTeacherTask(
           activityData.title,
           activityData.instruction,
           getFileFromBackend(activityData.external_ref, activityData.url),
-          getDateFromBackend(activityData.due_date),
-        ),
+          getDateFromBackend(activityData.due_date)
+        )
       ),
-      activityData.visible,
+      activityData.visible
     );
 
     return activity;
@@ -225,22 +228,22 @@ export async function getTeacherTask(
 
 export async function getStudentTask(
   courseId: string,
-  taskId: number,
+  taskId: number
 ): Promise<StudentActivity> {
   try {
     const activities = await getCourseStudentActivities(
       courseId,
-      ActivitiesOption.ALL,
+      ActivitiesOption.ALL
     );
     const activity = activities.find(
-      (activity) => activity.activity.resourceId === taskId,
+      (activity) => activity.activity.resourceId === taskId
     );
     if (!activity) {
       throw new Error("Actividad no encontrada");
     }
 
-    //   Descomentar cuando se arregle el problema del backend
-    //   que no devuelve el external_ref y el url
+    //   TODO: Descomentar cuando se arregle el problema del backend
+    //   que no devuelve el external_ref y el url (creo que ya lo arreglaron)
     // const request = await createActivityRequest(courseId, taskId);
     // const response = await request.get("");
     // const activityData = response.data.data;
@@ -271,7 +274,7 @@ export async function getStudentTask(
 
 export async function getTeacherExam(
   courseId: string,
-  examId: number,
+  examId: number
 ): Promise<TeacherActivity> {
   try {
     const request = await createActivityRequest(courseId, examId);
@@ -288,12 +291,12 @@ export async function getTeacherExam(
           activityData.title,
           activityData.instruction,
           activityData.exam_fields.map((item: any) =>
-            getExamItemFromJSON(item),
+            getExamItemFromJSON(item)
           ),
-          getDateFromBackend(activityData.due_date),
-        ),
+          getDateFromBackend(activityData.due_date)
+        )
       ),
-      activityData.visible,
+      activityData.visible
     );
 
     return activity;
@@ -304,7 +307,7 @@ export async function getTeacherExam(
 
 export async function getStudentExam(
   courseId: string,
-  examId: number,
+  examId: number
 ): Promise<StudentActivity> {
   try {
     const request = await createActivityRequest(courseId, examId);
@@ -320,15 +323,15 @@ export async function getStudentExam(
           activityData.title,
           activityData.instruction,
           activityData.exam_fields.map((item: any) =>
-            getExamItemFromJSON(item),
+            getExamItemFromJSON(item)
           ),
-          getDateFromBackend(activityData.due_date),
-        ),
+          getDateFromBackend(activityData.due_date)
+        )
       ),
       activityData.delivered,
       activityData.delivered_date
         ? getDateFromBackend(activityData.delivered_date)
-        : null,
+        : null
     );
     return activity;
   } catch (error) {
@@ -340,7 +343,7 @@ export async function getStudentExam(
 
 export async function getTaskSubmissions(
   courseId: string,
-  taskId: number,
+  taskId: number
 ): Promise<TaskSubmission[]> {
   try {
     const request = await createActivitySubmissionsRequest(courseId, taskId);
@@ -358,7 +361,7 @@ export async function getTaskSubmissions(
           : null,
         activityData.delivered
           ? getDateFromBackend(activityData.delivered_date)
-          : null,
+          : null
       );
     });
     return submissions;
@@ -370,7 +373,7 @@ export async function getTaskSubmissions(
 export async function getExamSubmissions(
   courseId: string,
   examId: number,
-  examItems: ExamItem[],
+  examItems: ExamItem[]
 ): Promise<ExamSubmission[]> {
   try {
     const request = await createActivitySubmissionsRequest(courseId, examId);
@@ -383,14 +386,14 @@ export async function getExamSubmissions(
         activityData.user_id,
         activityData.delivered
           ? examItems.map((item: any, index) =>
-              getExamAnswerFromJSON(item, index, activityData),
+              getExamAnswerFromJSON(item, index, activityData)
             )
           : [],
         activityData.delivered,
         getDateFromBackend(activityData.due_date),
         activityData.delivered_date
           ? getDateFromBackend(activityData.delivered_date)
-          : null,
+          : null
       );
     });
     return submissions;
@@ -403,13 +406,13 @@ export async function getExamSubmissions(
 export async function getTaskSubmission(
   courseId: string,
   taskId: number,
-  studentId: number,
+  studentId: number
 ): Promise<TaskSubmission> {
   try {
     const request = await createActivitySubmissionRequest(
       courseId,
       taskId,
-      studentId,
+      studentId
     );
     const response = await request.get("");
     const responseData = response.data.data;
@@ -424,7 +427,7 @@ export async function getTaskSubmission(
         : null,
       responseData.delivered_date
         ? getDateFromBackend(responseData.delivered_date)
-        : null,
+        : null
     );
 
     return taskSubmission;
@@ -437,13 +440,13 @@ export async function getExamSubmission(
   courseId: string,
   examId: number,
   studentId: number,
-  examItems: ExamItem[],
+  examItems: ExamItem[]
 ): Promise<ExamSubmission> {
   try {
     const request = await createActivitySubmissionRequest(
       courseId,
       examId,
-      studentId,
+      studentId
     );
 
     const response = await request.get("");
@@ -453,13 +456,13 @@ export async function getExamSubmission(
       examId,
       studentId,
       examItems.map((item, index) =>
-        getExamAnswerFromJSON(item, index, responseData),
+        getExamAnswerFromJSON(item, index, responseData)
       ),
       responseData.delivered,
       getDateFromBackend(responseData.due_date),
       responseData.delivered_date
         ? getDateFromBackend(responseData.delivered_date)
-        : null,
+        : null
     );
 
     return examSubmission;
@@ -472,7 +475,7 @@ export async function getExamSubmission(
 
 export async function createTask(
   courseId: string,
-  taskDetails: TaskDetails,
+  taskDetails: TaskDetails
 ): Promise<number> {
   try {
     activityDetailsSchema.parse(taskDetails);
@@ -496,7 +499,7 @@ export async function createTask(
 
 export async function createExam(
   courseId: string,
-  examDetails: ExamDetails,
+  examDetails: ExamDetails
 ): Promise<number> {
   try {
     examDetailsSchema.parse(examDetails);
@@ -521,7 +524,7 @@ export async function createExam(
 export async function submitTask(
   courseId: string,
   taskId: number,
-  file: File,
+  file: File
 ): Promise<void> {
   try {
     const request = await createSubmitTaskRequest(courseId, taskId);
@@ -536,7 +539,7 @@ export async function submitTask(
 export async function submitExam(
   courseId: string,
   examId: number,
-  examItems: SubmittedExamItem[],
+  examItems: SubmittedExamItem[]
 ): Promise<void> {
   try {
     examItems.forEach((item) => {
@@ -556,7 +559,7 @@ export async function submitExam(
 
 export async function publishTask(
   courseId: string,
-  taskId: number,
+  taskId: number
 ): Promise<void> {
   try {
     let request = await createPublishTaskRequest(courseId, taskId);
@@ -568,7 +571,7 @@ export async function publishTask(
 
 export async function publishExam(
   courseId: string,
-  examId: number,
+  examId: number
 ): Promise<void> {
   try {
     let request = await createPublishExamRequest(courseId, examId);
@@ -581,7 +584,7 @@ export async function publishExam(
 export async function updateTask(
   courseId: string,
   taskId: number,
-  taskDetails: TaskDetails,
+  taskDetails: TaskDetails
 ): Promise<void> {
   try {
     activityDetailsSchemaUpdate.parse(taskDetails);
@@ -604,7 +607,7 @@ export async function updateTask(
 export async function updateExam(
   courseId: string,
   examId: number,
-  examDetails: ExamDetails,
+  examDetails: ExamDetails
 ): Promise<void> {
   try {
     examDetailsSchema.parse(examDetails);
@@ -626,7 +629,7 @@ export async function updateExam(
 
 export async function deleteTask(
   courseId: string,
-  taskId: number,
+  taskId: number
 ): Promise<void> {
   try {
     let request = await createTaskRequest(courseId, taskId);
@@ -638,7 +641,7 @@ export async function deleteTask(
 
 export async function deleteExam(
   courseId: string,
-  examId: number,
+  examId: number
 ): Promise<void> {
   try {
     const request = await createExamRequest(courseId, examId);
@@ -651,12 +654,62 @@ export async function deleteExam(
 export async function uploadTaskFile(
   courseId: string,
   taskId: number,
-  file: File,
+  file: File
 ): Promise<void> {
   try {
     const request = await createUploadTaskFileRequest(courseId, taskId);
     await postFile(request, file);
   } catch (error) {
     throw handleError(error, "subir el archivo de la actividad");
+  }
+}
+
+export async function gradeTask(
+  courseId: string,
+  taskGrade: TaskGrade
+): Promise<void> {
+  try {
+    taskGradeSchema.parse(taskGrade);
+    const request = await createGradeSubmissionRequest(
+      courseId,
+      taskGrade.resourceId,
+      taskGrade.studentId
+    );
+    const body = {
+      mark: taskGrade.mark,
+      feedback: taskGrade.feedback_message,
+    };
+    await request.post("", body);
+  } catch (error) {
+    throw handleError(error, "calificar la actividad");
+  }
+}
+
+export async function getTaskGrade(
+  courseId: string,
+  taskId: number,
+  studentId: number
+): Promise<TaskGrade | null> {
+  try {
+    const request = await createGradeSubmissionRequest(
+      courseId,
+      taskId,
+      studentId
+    );
+    const response = await request.get("");
+    const responseData = response.data.data;
+
+    if (!responseData.mark) {
+      return null;
+    }
+
+    return new TaskGrade(
+      taskId,
+      studentId,
+      responseData.mark,
+      responseData.feedback
+    );
+  } catch (error) {
+    throw handleError(error, "obtener la calificación de la actividad");
   }
 }

@@ -103,3 +103,13 @@ export const createUploadTaskFileRequest = (
     uri: `courses/${courseId}/activities/tasks/${taskId}/upload`,
   });
 };
+
+export const createGradeSubmissionRequest = (
+  courseId: string,
+  activityId: number,
+  studentId: number
+) => {
+  return createRequest({
+    uri: `courses/${courseId}/activities/${activityId}/grade/${studentId}`,
+  });
+};
