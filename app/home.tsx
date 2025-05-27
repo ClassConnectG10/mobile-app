@@ -33,7 +33,7 @@ export default function HomePage() {
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const [searchOption, setSearchOption] = useState<SearchOption>(
-    SearchOption.RELATED,
+    SearchOption.RELATED
   );
   const [searchFiltersModalVisible, setSearchFiltersModalVisible] =
     useState(false);
@@ -60,7 +60,7 @@ export default function HomePage() {
   };
 
   const fetchCourses = async () => {
-    if (!userContext) return;
+    if (!userContext || !searchFilters || !searchOption) return;
 
     try {
       setIsLoading(true);
@@ -92,7 +92,7 @@ export default function HomePage() {
   useFocusEffect(
     useCallback(() => {
       fetchCourses();
-    }, [searchFilters, searchOption, userContext]),
+    }, [searchFilters, searchOption, userContext])
   );
 
   axios.defaults.headers.common["X-Caller-Id"] =
