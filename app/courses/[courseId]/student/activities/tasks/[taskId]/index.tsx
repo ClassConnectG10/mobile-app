@@ -21,14 +21,12 @@ import {
   useTheme,
   Button,
   Divider,
-  TextInput,
 } from "react-native-paper";
 import { ToggleableFileInput } from "@/components/forms/ToggleableFileInput";
 import { File } from "@/types/file";
 import { useUserContext } from "@/utils/storage/userContext";
 import { TextField } from "@/components/forms/TextField";
 import { formatDateTime } from "@/utils/date";
-import { ToggleableNumberInput } from "@/components/forms/ToggleableNumberInput";
 
 export default function StudentExamPage() {
   const router = useRouter();

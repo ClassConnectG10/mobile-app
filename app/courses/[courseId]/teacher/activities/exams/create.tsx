@@ -16,7 +16,6 @@ import { FloatingActionButton } from "@/components/FloatingActionButton";
 import { FullScreenModal } from "@/components/FullScreenModal";
 import { useExamDetails } from "@/hooks/useExamDetails";
 import { ExamItemCard } from "@/components/cards/examCards/ExamItemCard";
-import { examDetailsSchema } from "@/validations/activities";
 import OptionPicker from "@/components/forms/OptionPicker";
 import { getModules } from "@/services/resourceManager";
 import { BiMap } from "@/utils/bimap";

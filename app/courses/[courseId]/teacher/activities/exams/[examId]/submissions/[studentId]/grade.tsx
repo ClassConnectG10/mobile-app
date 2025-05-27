@@ -1,6 +1,4 @@
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
-import { TextField } from "@/components/forms/TextField";
-import UserCard from "@/components/cards/UserCard";
 import {
   getExamGrade,
   getExamSubmission,
@@ -16,7 +14,6 @@ import {
   TeacherActivity,
 } from "@/types/activity";
 import { User } from "@/types/user";
-import { formatDateTime } from "@/utils/date";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { FlatList, View } from "react-native";
@@ -25,6 +22,7 @@ import {
   Appbar,
   Button,
   Divider,
+  Icon,
   Text,
   useTheme,
 } from "react-native-paper";
@@ -34,7 +32,8 @@ import { AlertText } from "@/components/AlertText";
 import { ToggleableNumberInput } from "@/components/forms/ToggleableNumberInput";
 import { ToggleableTextInput } from "@/components/forms/ToggleableTextInput";
 import { useExamGrade } from "@/hooks/useExamGrade";
-import { set } from "zod";
+import { customColors } from "@/utils/constants/colors";
+import { FullScreenModal } from "@/components/FullScreenModal";
 
 export default function GradeExamSubmissionPage() {
   const theme = useTheme();
@@ -58,6 +57,8 @@ export default function GradeExamSubmissionPage() {
   const [student, setStudent] = useState<User | null>(null);
 
   const [hasPreviousGrade, setHasPreviousGrade] = useState(false);
+
+  const [helpModalVisible, setHelpModalVisible] = useState(false);
 
   const temporalExamGradeHook = useExamGrade();
   const temporalExamGrade = temporalExamGradeHook.examGrade;
@@ -197,6 +198,11 @@ export default function GradeExamSubmissionPage() {
       <Appbar.Header>
         <Appbar.BackAction onPress={() => router.back()} />
         <Appbar.Content title={"Corrección del examen"} />
+        <Appbar.Action
+          icon="help"
+          onPress={() => setHelpModalVisible(true)}
+          disabled={isLoading}
+        />
       </Appbar.Header>
       {isLoading ||
       !teacherActivity ||
@@ -271,7 +277,7 @@ export default function GradeExamSubmissionPage() {
 
                 <Text variant="bodyMedium">
                   Nota sugerida:{" "}
-                  {Math.ceil(
+                  {Math.round(
                     (temporalExamGrade.correctExamItems.filter(
                       (item) => item === true
                     ).length /
@@ -310,6 +316,99 @@ export default function GradeExamSubmissionPage() {
           />
         </View>
       )}
+      <FullScreenModal
+        visible={helpModalVisible}
+        onDismiss={() => setHelpModalVisible(false)}
+        children={
+          <View style={{ gap: 16, paddingBottom: 16 }}>
+            <Text variant="titleMedium">Íconos y código de colores</Text>
+            <View>
+              <Text>
+                Cada pregunta tiene arriba a la izquierda un ícono que indica si
+                el estudiante la respondió correctamente o no:
+              </Text>
+              <View style={{ marginVertical: 16, gap: 8 }}>
+                <View
+                  style={{ flexDirection: "row", alignItems: "center", gap: 8 }}
+                >
+                  <Icon
+                    source="check-circle-outline"
+                    size={24}
+                    color={customColors.success}
+                  />
+                  <Text>Pregunta respondida correctamente</Text>
+                </View>
+                <View
+                  style={{ flexDirection: "row", alignItems: "center", gap: 8 }}
+                >
+                  <Icon
+                    source="close-circle-outline"
+                    size={24}
+                    color={customColors.error}
+                  />
+                  <Text>Pregunta respondida incorrectamente</Text>
+                </View>
+                <View
+                  style={{ flexDirection: "row", alignItems: "center", gap: 8 }}
+                >
+                  <Icon
+                    source="help-circle-outline"
+                    size={24}
+                    color={theme.colors.primary}
+                  />
+                  <Text>
+                    Pregunta abierta sin calificar. Presione el ícono para
+                    marcarla como correcta o incorrecta.
+                  </Text>
+                </View>
+              </View>
+
+              <Text>En las preguntas con opciones:</Text>
+              <View style={{ marginLeft: 16 }}>
+                <Text>
+                  {"\u2022"} En{" "}
+                  <Text
+                    style={{
+                      fontWeight: "bold",
+                      color: customColors.success,
+                    }}
+                  >
+                    verde
+                  </Text>
+                  : opciones correctas seleccionadas por el estudiante
+                </Text>
+                <Text>
+                  {"\u2022"} En{" "}
+                  <Text
+                    style={{
+                      fontWeight: "bold",
+                      color: customColors.error,
+                    }}
+                  >
+                    rojo
+                  </Text>
+                  : opciones incorrectas seleccionadas por el estudiante
+                </Text>
+                <Text>
+                  {"\u2022"} En{" "}
+                  <Text
+                    style={{
+                      fontWeight: "bold",
+                      color: theme.colors.primary,
+                    }}
+                  >
+                    violeta
+                  </Text>
+                  : opciones correctas no seleccionadas por el estudiante
+                </Text>
+              </View>
+            </View>
+            <Button mode="outlined" onPress={() => setHelpModalVisible(false)}>
+              OK
+            </Button>
+          </View>
+        }
+      />
       <ErrorMessageSnackbar
         message={errorMessage}
         onDismiss={() => setErrorMessage("")}

@@ -17,7 +17,7 @@ import { User } from "@/types/user";
 import { formatDateTime } from "@/utils/date";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
-import { FlatList, ScrollView, View } from "react-native";
+import { ScrollView, View } from "react-native";
 import {
   ActivityIndicator,
   Appbar,
@@ -26,8 +26,6 @@ import {
   Text,
   useTheme,
 } from "react-native-paper";
-import { ExamItemCard } from "@/components/cards/examCards/ExamItemCard";
-import { ExamItemMode } from "@/components/cards/examCards/examItemMode";
 import { AlertText } from "@/components/AlertText";
 
 export default function TeacherSubmissionPage() {
@@ -113,7 +111,6 @@ export default function TeacherSubmissionPage() {
       );
       setExamGrade(grade);
       if (grade) {
-        console.log("Exam grade fetched:", grade);
         setExamGrade(grade);
       }
     } catch (error) {
