@@ -1,11 +1,9 @@
 import { File } from "./file";
+import { Link } from "./link";
 
-export enum ResourceType {
-  DOCUMENT = "DOCUMENT",
-  VIDEO = "VIDEO",
-  IMAGES = "IMAGES",
+export enum AttachmentType {
+  FILE = "FILE",
   LINK = "LINK",
-  TEXT = "TEXT",
 }
 
 export class Resource {
@@ -17,34 +15,13 @@ export class Resource {
 
 export class ResourceDetails {
   constructor(
-    public type: ResourceType,
     public title: string,
     public moduleId: number,
     public description: string,
-    public resourceFile: File, // | DocuemntData // | VideoData // | ImagesData // | LinkData
-  ) // | TextData,
-  {}
+    public resourceFiles: File[],
+    public resourceLinks: Link[],
+  ) {}
 }
-
-// export class DocuemntData {
-//   constructor(public files: File) {}
-// }
-
-// export class VideoData {
-//   constructor(public video: File) {}
-// }
-
-// export class ImagesData {
-//   constructor(public images: File[]) {}
-// }
-
-// export class LinkData {
-//   constructor(public link: string) {}
-// }
-
-// export class TextData {
-//   constructor(public text: string) {}
-// }
 
 export class Module {
   constructor(
