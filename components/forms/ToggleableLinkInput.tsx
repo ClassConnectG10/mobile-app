@@ -1,5 +1,5 @@
 import { Link } from "@/types/link";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { View, Pressable, Linking } from "react-native";
 import {
   Button,
@@ -26,95 +26,73 @@ export const ToggleableLinkInput: React.FC<ToggleableLinkInputProps> = ({
 }) => {
   const theme = useTheme();
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
-  const [editingValue, setEditingValue] = useState<Link | null>(null);
   const [showUrlIndex, setShowUrlIndex] = useState<number | null>(null);
+  const [tempLinks, setTempLinks] = useState<Link[]>(links);
 
-  // Agregar un nuevo link vacío y ponerlo en modo edición
+  useEffect(() => {
+    setTempLinks(links);
+  }, [links]);
+
   const handleAdd = () => {
     if (editingIndex !== null) return;
+    setTempLinks([...links, { display: "", url: "" }]);
     setEditingIndex(links.length);
-    setEditingValue({ display: "", url: "" });
-    onChange([...links, { display: "", url: "" }]);
   };
 
-  // Confirmar edición/agregado
   const handleConfirm = () => {
-    if (!editingValue?.display || !editingValue?.url) return;
-    const updated = [...links];
-    updated[editingIndex!] = editingValue;
-    onChange(updated);
+    const editing = tempLinks[editingIndex!];
+    if (!editing.display || !editing.url) return;
     setEditingIndex(null);
-    setEditingValue(null);
+    onChange(tempLinks);
   };
 
-  // Cancelar edición/agregado
   const handleCancel = () => {
-    // Si es un nuevo link, lo eliminamos
-    if (
-      editingIndex === links.length - 1 &&
-      !links[editingIndex!].display &&
-      !links[editingIndex!].url
-    ) {
-      const updated = links.slice(0, -1);
-      onChange(updated);
-    }
+    setTempLinks(links);
     setEditingIndex(null);
-    setEditingValue(null);
   };
 
-  // Iniciar edición de un link existente
   const handleEdit = (index: number) => {
     setEditingIndex(index);
-    setEditingValue({ ...links[index] });
   };
 
-  // Eliminar link
   const handleDelete = (index: number) => {
-    const updated = links.filter((_, i) => i !== index);
+    const updated = tempLinks.filter((_, i) => i !== index);
+    setTempLinks(updated);
     onChange(updated);
-    // Si se borra el que se está editando, salir de edición
-    if (editingIndex === index) {
-      setEditingIndex(null);
-      setEditingValue(null);
-    }
+    if (editingIndex === index) setEditingIndex(null);
   };
 
   const handleLinkPress = async (index: number) => {
-    const url = links[index]?.url;
+    const url = tempLinks[index]?.url;
     if (!url) return;
     try {
-      await Linking.openURL(url);
+      if (url.startsWith("http://") || url.startsWith("https://")) {
+        await Linking.openURL(url);
+      } else {
+        const supported = await Linking.canOpenURL(url);
+        if (supported) await Linking.openURL(url);
+        else console.warn(`No se puede abrir la URL: ${url}`);
+      }
     } catch (error) {
       console.error(`Error al abrir la URL: ${url}`, error);
     }
   };
 
-  // Elimina link vacío sin confirmar antes de editar otro
-  function removePendingEmptyLink(
-    editingIndex: number | null,
-    links: Link[],
-    onChange: (links: Link[]) => void,
-    setEditingIndex: (v: number | null) => void,
-    setEditingValue: (v: Link | null) => void,
-  ) {
-    if (
-      editingIndex === links.length - 1 &&
-      !links[editingIndex!].display &&
-      !links[editingIndex!].url
-    ) {
-      const updated = links.slice(0, -1);
-      onChange(updated);
-      setEditingIndex(null);
-      setEditingValue(null);
-    }
-  }
+  // Para actualizar el campo en edición
+  const updateEditingField = (field: keyof Link, value: string) => {
+    setTempLinks((prev) =>
+      prev.map((l, i) =>
+        i === editingIndex ? { ...l, [field]: value } : l
+      )
+    );
+  };
 
   return (
     <View style={{ gap: 4 }}>
-      {links.length === 0 && (
+      {tempLinks.length === 0 && (
         <Text style={{ textAlign: "center" }}>No hay links</Text>
       )}
-      {links.map((link, index) => (
+      {tempLinks.map((link, index) => (
         <Card
           key={index}
           style={{
@@ -127,9 +105,7 @@ export const ToggleableLinkInput: React.FC<ToggleableLinkInputProps> = ({
         >
           <Pressable
             disabled={editable && editingIndex === index}
-            onPress={() => {
-              handleLinkPress(index);
-            }}
+            onPress={() => handleLinkPress(index)}
             style={{ flexDirection: "row", gap: 10, paddingVertical: 4 }}
           >
             <View style={{ justifyContent: "center" }}>
@@ -144,55 +120,40 @@ export const ToggleableLinkInput: React.FC<ToggleableLinkInputProps> = ({
                 <>
                   <TextInput
                     label="Texto a mostrar"
-                    value={editingValue?.display ?? ""}
-                    onChangeText={(t) =>
-                      setEditingValue((v) => ({ ...v!, display: t }))
-                    }
+                    value={tempLinks[editingIndex]?.display ?? ""}
+                    onChangeText={(t) => updateEditingField("display", t)}
                     dense
                     autoFocus
                     right={
-                      editingValue?.display ? (
+                      tempLinks[editingIndex]?.display ? (
                         <TextInput.Icon
                           icon="close"
-                          onPress={() =>
-                            setEditingValue((v) => ({ ...v!, display: "" }))
-                          }
+                          onPress={() => updateEditingField("display", "")}
                         />
                       ) : null
                     }
                   />
                   <TextInput
                     label="URL"
-                    value={editingValue?.url ?? ""}
-                    onChangeText={(t) =>
-                      setEditingValue((v) => ({ ...v!, url: t }))
-                    }
-                    multiline={true}
+                    value={tempLinks[editingIndex]?.url ?? ""}
+                    onChangeText={(t) => updateEditingField("url", t)}
+                    multiline
                     dense
                     right={
-                      editingValue?.url ? (
+                      tempLinks[editingIndex]?.url ? (
                         <TextInput.Icon
                           icon="close"
-                          onPress={() =>
-                            setEditingValue((v) => ({ ...v!, url: "" }))
-                          }
+                          onPress={() => updateEditingField("url", "")}
                         />
                       ) : null
                     }
                   />
                 </>
               ) : (
-                <View
-                  style={{
-                    justifyContent: "center",
-                    flexGrow: 1,
-                  }}
-                >
+                <View style={{ justifyContent: "center", flexGrow: 1 }}>
                   <Text style={{ fontWeight: "bold" }}>{link.display}</Text>
                   {showUrlIndex === index && (
-                    <Text
-                      style={{ color: theme.colors.secondary, fontSize: 13 }}
-                    >
+                    <Text style={{ color: theme.colors.secondary, fontSize: 13 }}>
                       {link.url}
                     </Text>
                   )}
@@ -211,7 +172,10 @@ export const ToggleableLinkInput: React.FC<ToggleableLinkInputProps> = ({
                   icon="check"
                   size={24}
                   onPress={handleConfirm}
-                  disabled={!editingValue?.display || !editingValue?.url}
+                  disabled={
+                    !tempLinks[editingIndex]?.display ||
+                    !tempLinks[editingIndex]?.url
+                  }
                   style={{ margin: 0 }}
                 />
                 <IconButton
@@ -226,16 +190,7 @@ export const ToggleableLinkInput: React.FC<ToggleableLinkInputProps> = ({
                 <IconButton
                   icon="pencil"
                   size={24}
-                  onPress={() => {
-                    removePendingEmptyLink(
-                      editingIndex,
-                      links,
-                      onChange,
-                      setEditingIndex,
-                      setEditingValue,
-                    );
-                    handleEdit(index);
-                  }}
+                  onPress={() => handleEdit(index)}
                   style={{ margin: 0 }}
                 />
                 <IconButton
@@ -259,7 +214,7 @@ export const ToggleableLinkInput: React.FC<ToggleableLinkInputProps> = ({
         </Card>
       ))}
       {editable &&
-        links.length < (maxLinks || Infinity) &&
+        tempLinks.length < (maxLinks || Infinity) &&
         editingIndex === null && (
           <Button
             icon="plus"
