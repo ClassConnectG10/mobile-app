@@ -209,23 +209,23 @@ export const ToggleableLinkInput: React.FC<ToggleableLinkInputProps> = ({
               >
                 <IconButton
                   icon="check"
-                  size={22}
+                  size={24}
                   onPress={handleConfirm}
                   disabled={!editingValue?.display || !editingValue?.url}
                   style={{ margin: 0 }}
                 />
                 <IconButton
                   icon="close"
-                  size={22}
+                  size={24}
                   onPress={handleCancel}
                   style={{ margin: 0 }}
                 />
               </View>
             ) : editable ? (
-              <>
+              <View style={{ flexDirection: "row", gap: 2 }}>
                 <IconButton
                   icon="pencil"
-                  size={20}
+                  size={24}
                   onPress={() => {
                     removePendingEmptyLink(
                       editingIndex,
@@ -240,15 +240,15 @@ export const ToggleableLinkInput: React.FC<ToggleableLinkInputProps> = ({
                 />
                 <IconButton
                   icon="trash-can"
-                  size={20}
+                  size={24}
                   onPress={() => handleDelete(index)}
                   style={{ margin: 0 }}
                 />
-              </>
+              </View>
             ) : (
               <IconButton
                 icon={showUrlIndex === index ? "eye-off" : "eye"}
-                size={20}
+                size={24}
                 onPress={() =>
                   setShowUrlIndex(showUrlIndex === index ? null : index)
                 }

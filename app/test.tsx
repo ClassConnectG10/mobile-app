@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { ScrollView } from "react-native";
-import { Appbar } from "react-native-paper";
+import { Appbar, Divider } from "react-native-paper";
 import { useRouter } from "expo-router";
 import { File } from "@/types/file";
 import { Link } from "@/types/link";
@@ -35,6 +35,13 @@ export default function TestPage() {
           onChange={setFiles}
           maxFiles={5}
         />
+        <ToggleableFileInput
+          files={files}
+          editable={false}
+          onChange={setFiles}
+          maxFiles={5}
+        />
+        <Divider />
         <ToggleableLinkInput
           links={links}
           editable={true}
