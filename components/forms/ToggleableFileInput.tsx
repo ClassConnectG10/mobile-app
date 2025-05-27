@@ -6,6 +6,7 @@ import { getStorage } from "@react-native-firebase/storage";
 import { documentDirectory, downloadAsync } from "expo-file-system";
 
 import {
+  ActivityIndicator,
   Button,
   Card,
   Icon,
@@ -13,6 +14,7 @@ import {
   Text,
   useTheme,
 } from "react-native-paper";
+import React, { useState } from "react";
 
 interface ToggleableFileInputProps {
   // label: string;
@@ -29,6 +31,7 @@ export const ToggleableFileInput: React.FC<ToggleableFileInputProps> = ({
   maxFiles,
 }) => {
   const theme = useTheme();
+  const [loadingIndex, setLoadingIndex] = useState<number | null>(null);
 
   const viewFile = async (file: File) => {
     try {
@@ -43,6 +46,7 @@ export const ToggleableFileInput: React.FC<ToggleableFileInputProps> = ({
 
   const downloadAndOpenFile = async (index: number) => {
     try {
+      setLoadingIndex(index);
       const file = files[index];
 
       const firebaseRef = getStorage().ref(file.firebaseUrl);
@@ -61,6 +65,8 @@ export const ToggleableFileInput: React.FC<ToggleableFileInputProps> = ({
       await viewFile(newFile);
     } catch (err) {
       console.error("Error al descargar el archivo:", err);
+    } finally {
+      setLoadingIndex(null);
     }
   };
 
@@ -143,6 +149,26 @@ export const ToggleableFileInput: React.FC<ToggleableFileInputProps> = ({
               <View style={{ flex: 1 }}>
                 <Text numberOfLines={1}>{file.name}</Text>
               </View>
+
+              {/* Estado de descarga */}
+              <View style={{ marginRight: editable ? 0 : 8 }}>
+                {loadingIndex === index ? (
+                  <ActivityIndicator size={20} />
+                ) : file.localUri ? (
+                  <Icon
+                    source="cloud-check-outline"
+                    size={22}
+                    color={theme.colors.primary}
+                  />
+                ) : (
+                  <Icon
+                    source="cloud-outline"
+                    size={22}
+                    color={theme.colors.primary}
+                  />
+                )}
+              </View>
+
               {editable && (
                 <IconButton
                   size={24}
@@ -151,8 +177,6 @@ export const ToggleableFileInput: React.FC<ToggleableFileInputProps> = ({
                   onPress={() => deleteFile(file)}
                 />
               )}
-
-              {/* <IconButton icon="View" onPress={() => viewFile(file)} /> */}
             </View>
           </Card>
         </Pressable>
