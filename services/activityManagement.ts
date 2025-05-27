@@ -42,11 +42,13 @@ import {
   activityDetailsSchema,
   activityDetailsSchemaUpdate,
   examDetailsSchema,
+  examGradeSchema,
   submittedExamItemSchema,
   taskGradeSchema,
 } from "@/validations/activities";
 import { getDateFromBackend } from "@/utils/date";
 import { File } from "@/types/file";
+import { act } from "react";
 // ACTIVITIES
 
 export async function getCourseTeacherActivities(
@@ -334,6 +336,7 @@ export async function getStudentExam(
         ? getDateFromBackend(activityData.delivered_date)
         : null
     );
+    console.log(activity.activity.activityDetails);
     return activity;
   } catch (error) {
     throw handleError(error, "obtener la actividad del estudiante");
@@ -691,7 +694,7 @@ export async function gradeExam(
   examGrade: ExamGrade
 ): Promise<void> {
   try {
-    taskGradeSchema.parse(examGrade);
+    examGradeSchema.parse(examGrade);
     const request = await createGradeSubmissionRequest(
       courseId,
       examGrade.resourceId,

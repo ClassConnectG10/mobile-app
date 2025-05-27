@@ -1,5 +1,5 @@
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
-import { ExamDetails, ExamItemAnswer } from "@/types/activity";
+import { ExamDetails, ExamGrade, ExamItemAnswer } from "@/types/activity";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useState, useEffect } from "react";
 import { View, FlatList } from "react-native";
@@ -12,6 +12,7 @@ import {
 import { ExamItemCard } from "@/components/cards/examCards/ExamItemCard";
 import { useFocusEffect } from "@react-navigation/native";
 import {
+  getExamGrade,
   getExamSubmission,
   getStudentExam,
   submitExam,
@@ -34,6 +35,7 @@ export default function StudentFillExam() {
   const [, setStudentExam] = useState(null);
   const [examDetails, setExamDetails] = useState(null);
   const [examSubmission, setExamSubmission] = useState(null);
+  const [examGrade, setExamGrade] = useState<ExamGrade>(null);
 
   const userContextHook = useUserContext();
   const studentId = userContextHook.user.id;
@@ -62,7 +64,7 @@ export default function StudentFillExam() {
         courseId,
         examId,
         studentId,
-        examDetails.examItems,
+        examDetails.examItems
       );
       setExamSubmission(examSubmission);
     } catch (error) {
@@ -98,6 +100,24 @@ export default function StudentFillExam() {
     setExamSubmission(newExamSubmission);
   };
 
+  async function fetchExamGrade() {
+    if (!courseId || !examId || !studentId) return;
+    setIsLoading(true);
+
+    try {
+      const grade = await getExamGrade(
+        courseId,
+        Number(examId),
+        Number(studentId)
+      );
+      setExamGrade(grade);
+    } catch (error) {
+      setErrorMessage((error as Error).message);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
   const handleFinishExam = async () => {
     setIsLoading(true);
     try {
@@ -117,7 +137,8 @@ export default function StudentFillExam() {
   useFocusEffect(
     useCallback(() => {
       fetchStudentExam();
-    }, [courseId, examId]),
+      fetchExamGrade();
+    }, [courseId, examId])
   );
 
   return (
@@ -154,20 +175,30 @@ export default function StudentFillExam() {
           <FlatList
             data={examDetails.examItems}
             keyExtractor={(_item, index) => index.toString()}
-            renderItem={({ item, index }) => (
-              <ExamItemCard
-                mode={
-                  examSubmission.submited
-                    ? ExamItemMode.SENT
-                    : ExamItemMode.FILL
-                }
-                examItem={item}
-                studentAnswer={examSubmission.submittedExamItems[index].answer}
-                setStudentAnswer={(answer) => setStudentAnswer(index, answer)}
-                answerOk={examSubmission.submittedExamItems[index].correct}
-                setAnswerOk={(correct) => setCorrectAnswer(index, correct)}
-              />
-            )}
+            renderItem={({ item, index }) => {
+              let mode;
+              if (examSubmission.submited) {
+                mode = examGrade ? ExamItemMode.MARKED : ExamItemMode.SENT;
+              } else {
+                mode = ExamItemMode.FILL;
+              }
+              return (
+                <ExamItemCard
+                  mode={mode}
+                  examItem={item}
+                  studentAnswer={
+                    examSubmission.submittedExamItems[index].answer
+                  }
+                  setStudentAnswer={(answer) => setStudentAnswer(index, answer)}
+                  answerOk={
+                    examGrade
+                      ? examGrade.correctExamItems[index]
+                      : examSubmission.submittedExamItems[index].correct
+                  }
+                  setAnswerOk={(correct) => setCorrectAnswer(index, correct)}
+                />
+              );
+            }}
             ItemSeparatorComponent={() => (
               <View
                 style={{

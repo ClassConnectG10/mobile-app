@@ -33,7 +33,7 @@ export default function CreateExam() {
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [courseModulesBiMap, setCourseModulesBiMap] = useState<BiMap>(
-    new BiMap(),
+    new BiMap()
   );
 
   const courseId = courseIdParam as string;
@@ -55,7 +55,7 @@ export default function CreateExam() {
         courseModules.map((module) => [
           module.courseModuleDetails.title,
           module.moduleId.toString(),
-        ]),
+        ])
       );
       setCourseModulesBiMap(bimap);
     } catch (error) {
@@ -69,7 +69,6 @@ export default function CreateExam() {
     setIsLoading(true);
 
     try {
-      examDetailsSchema.parse(examDetails);
       await createExam(courseId, examDetails);
       router.back();
     } catch (error) {
@@ -100,7 +99,7 @@ export default function CreateExam() {
   useFocusEffect(
     useCallback(() => {
       fetchCourseModules();
-    }, [courseId]),
+    }, [courseId])
   );
 
   return (

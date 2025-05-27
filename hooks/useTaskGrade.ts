@@ -2,7 +2,7 @@ import { TaskGrade } from "@/types/activity";
 import { useState } from "react";
 
 export interface TaskGradeHook {
-  taskGrade: TaskGrade;
+  taskGrade: TaskGrade | null;
   setTaskGrade: (taskGrade: TaskGrade) => void;
   setTaskId: (taskId: number) => void;
   setStudentId: (studentId: number) => void;
@@ -11,9 +11,7 @@ export interface TaskGradeHook {
 }
 
 export function useTaskGrade(): TaskGradeHook {
-  const [taskGrade, setTaskGrade] = useState<TaskGrade>(
-    new TaskGrade(0, 0, 0, "")
-  );
+  const [taskGrade, setTaskGrade] = useState<TaskGrade | null>(null);
 
   const setTaskId = (taskId: number) => {
     if (taskGrade) {

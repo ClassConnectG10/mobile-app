@@ -59,7 +59,8 @@ export default function TaskSubmissionPage() {
     useState<TaskSubmission | null>(null);
 
   const [student, setStudent] = useState<User | null>(null);
-  const [taskGrade, setTaskGrade] = useState<TaskGrade | null>(null);
+
+  const [hasPreviousGrade, setHasPreviousGrade] = useState(false);
 
   const temporalTaskGradeHook = useTaskGrade();
   const { taskGrade: temporalTaskGrade } = temporalTaskGradeHook;
@@ -122,12 +123,14 @@ export default function TaskSubmissionPage() {
         Number(taskId),
         Number(studentId)
       );
-      setTaskGrade(grade);
       if (grade) {
         temporalTaskGradeHook.setTaskGrade(grade);
+        setHasPreviousGrade(true);
       } else {
-        temporalTaskGradeHook.setTaskId(Number(taskId));
-        temporalTaskGradeHook.setStudentId(Number(studentId));
+        temporalTaskGradeHook.setTaskGrade(
+          new TaskGrade(Number(taskId), Number(studentId), 0, "")
+        );
+        setHasPreviousGrade(false);
       }
     } catch (error) {
       setErrorMessage((error as Error).message);
@@ -150,7 +153,7 @@ export default function TaskSubmissionPage() {
     setIsLoading(true);
     try {
       await gradeTask(courseId, temporalTaskGrade);
-      setTaskGrade(temporalTaskGrade);
+      setHasPreviousGrade(true);
       setIsEditing(false);
     } catch (error) {
       setErrorMessage((error as Error).message);
@@ -185,7 +188,8 @@ export default function TaskSubmissionPage() {
       !teacherTask ||
       !studentSubmission ||
       !student ||
-      !taskDetails ? (
+      !taskDetails ||
+      !temporalTaskGrade ? (
         <View
           style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
         >
@@ -194,6 +198,7 @@ export default function TaskSubmissionPage() {
             size="large"
             color={theme.colors.primary}
           />
+          {/* <Text>taskGrade {JSON.stringify(temporalTaskGrade, null, 2)}</Text> */}
         </View>
       ) : (
         <>
@@ -245,11 +250,11 @@ export default function TaskSubmissionPage() {
               )}
               <Divider />
               <Text>Calificación de la entrega</Text>
-              {!taskGrade && !isEditing && (
+              {!hasPreviousGrade && !isEditing && (
                 <AlertText text="La entrega no ha sido calificada todavía." />
               )}
 
-              {(taskGrade || isEditing) && (
+              {(hasPreviousGrade || isEditing) && (
                 <View style={{ flex: 1, gap: 16 }}>
                   <ToggleableNumberInput
                     label="Nota"
@@ -289,7 +294,7 @@ export default function TaskSubmissionPage() {
                 onPress={() => setIsEditing(true)}
                 disabled={isLoading}
               >
-                {taskGrade ? "Editar calificación" : "Calificar entrega"}
+                {hasPreviousGrade ? "Editar calificación" : "Calificar entrega"}
               </Button>
             )}
           </View>

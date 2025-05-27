@@ -34,6 +34,7 @@ import { AlertText } from "@/components/AlertText";
 import { ToggleableNumberInput } from "@/components/forms/ToggleableNumberInput";
 import { ToggleableTextInput } from "@/components/forms/ToggleableTextInput";
 import { useExamGrade } from "@/hooks/useExamGrade";
+import { set } from "zod";
 
 export default function GradeExamSubmissionPage() {
   const theme = useTheme();
@@ -56,7 +57,7 @@ export default function GradeExamSubmissionPage() {
     useState<ExamSubmission | null>(null);
   const [student, setStudent] = useState<User | null>(null);
 
-  const [examGrade, setExamGrade] = useState<ExamGrade | null>(null);
+  const [hasPreviousGrade, setHasPreviousGrade] = useState(false);
 
   const temporalExamGradeHook = useExamGrade();
   const temporalExamGrade = temporalExamGradeHook.examGrade;
@@ -86,15 +87,8 @@ export default function GradeExamSubmissionPage() {
         Number(studentId),
         (teacherActivity.activity.activityDetails as ExamDetails).examItems
       );
-      const correctAnswers = submissionData.submittedExamItems.map(
-        (item: SubmittedExamItem) => {
-          return item.correct;
-        }
-      );
+
       setStudentSubmission(submissionData);
-      if (temporalExamGrade.correctExamItems.length === 0) {
-        temporalExamGradeHook.setCorrectExamItems(correctAnswers);
-      }
     } catch (error) {
       setErrorMessage((error as Error).message);
     } finally {
@@ -117,7 +111,7 @@ export default function GradeExamSubmissionPage() {
   }
 
   async function fetchExamGrade() {
-    if (!courseId || !examId || !studentId) return;
+    if (!courseId || !examId || !studentId || !examSubmission) return;
     setIsLoading(true);
 
     try {
@@ -126,12 +120,27 @@ export default function GradeExamSubmissionPage() {
         Number(examId),
         Number(studentId)
       );
-      setExamGrade(grade);
       if (grade) {
+        console.log("Exam grade fetched:", grade);
         temporalExamGradeHook.setExamGrade(grade);
-        temporalExamGradeHook.setCorrectExamItems(grade.correctExamItems);
+        setHasPreviousGrade(true);
       } else {
-        // temporalExamGradeHook.setCorrectExamItems(originalCorrectAnswers);
+        const correctAnswers = examSubmission.submittedExamItems.map(
+          (item: SubmittedExamItem) => {
+            return item.correct;
+          }
+        );
+
+        temporalExamGradeHook.setExamGrade(
+          new ExamGrade(
+            Number(examId),
+            Number(studentId),
+            0,
+            "",
+            correctAnswers
+          )
+        );
+        setHasPreviousGrade(false);
       }
     } catch (error) {
       setErrorMessage((error as Error).message);
@@ -150,8 +159,11 @@ export default function GradeExamSubmissionPage() {
     if (!courseId || !examId || !studentId) return;
     setIsLoading(true);
     try {
-      await gradeExam(courseId, temporalExamGrade);
-      setExamGrade(temporalExamGrade);
+      const newGrade = temporalExamGrade;
+      newGrade.studentId = Number(studentId);
+      newGrade.resourceId = Number(examId);
+      await gradeExam(courseId, newGrade);
+      router.back();
     } catch (error) {
       setErrorMessage((error as Error).message);
     } finally {
@@ -159,18 +171,27 @@ export default function GradeExamSubmissionPage() {
     }
   };
 
-  useEffect(() => {
-    fetchStudentSubmission();
-  }, [teacherActivity]);
-
   useFocusEffect(
     useCallback(() => {
-      fetchTeacherExam();
       fetchStudent();
-
-      fetchExamGrade();
+      fetchTeacherExam();
+      setStudentSubmission(null);
+      temporalExamGradeHook.setExamGrade(null);
+      setHasPreviousGrade(false);
     }, [courseId, examId, studentId])
   );
+
+  useEffect(() => {
+    if (teacherActivity) {
+      fetchStudentSubmission();
+    }
+  }, [teacherActivity]);
+
+  useEffect(() => {
+    if (examSubmission) {
+      fetchExamGrade();
+    }
+  }, [examSubmission]);
 
   return (
     <>
@@ -178,7 +199,11 @@ export default function GradeExamSubmissionPage() {
         <Appbar.BackAction onPress={() => router.back()} />
         <Appbar.Content title={"Corrección del examen"} />
       </Appbar.Header>
-      {isLoading || !teacherActivity || !examSubmission || !student ? (
+      {isLoading ||
+      !teacherActivity ||
+      !examSubmission ||
+      !student ||
+      !temporalExamGrade ? (
         <View
           style={{
             flex: 1,
@@ -231,7 +256,9 @@ export default function GradeExamSubmissionPage() {
               <View style={{ gap: 16, paddingVertical: 16 }}>
                 <Divider />
                 <Text>Calificación de la entrega</Text>
-                <AlertText text="La entrega no ha sido calificada todavía." />
+                {!hasPreviousGrade && (
+                  <AlertText text="La entrega no ha sido calificada todavía." />
+                )}
                 <ToggleableNumberInput
                   label="Nota"
                   value={temporalExamGrade.mark}

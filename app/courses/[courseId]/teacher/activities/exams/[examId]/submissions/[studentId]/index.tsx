@@ -2,6 +2,7 @@ import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import { TextField } from "@/components/forms/TextField";
 import UserCard from "@/components/cards/UserCard";
 import {
+  getExamGrade,
   getExamSubmission,
   getTeacherExam,
 } from "@/services/activityManagement";
@@ -100,6 +101,28 @@ export default function TeacherSubmissionPage() {
     }
   }
 
+  async function fetchExamGrade() {
+    if (!courseId || !examId || !studentId) return;
+    setIsLoading(true);
+
+    try {
+      const grade = await getExamGrade(
+        courseId,
+        Number(examId),
+        Number(studentId)
+      );
+      setExamGrade(grade);
+      if (grade) {
+        console.log("Exam grade fetched:", grade);
+        setExamGrade(grade);
+      }
+    } catch (error) {
+      setErrorMessage((error as Error).message);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
   const handleStudentPress = () => {
     router.push({
       pathname: `/users/[userId]`,
@@ -107,19 +130,6 @@ export default function TeacherSubmissionPage() {
         userId: studentId,
       },
     });
-  };
-
-  const setCorrectAnswer = (index: number, correct: boolean) => {
-    const newSubmittedExamItems = [...studentSubmission.submittedExamItems];
-    newSubmittedExamItems[index] = {
-      ...newSubmittedExamItems[index],
-      correct,
-    };
-    const newExamSubmission = {
-      ...studentSubmission,
-      submittedExamItems: newSubmittedExamItems,
-    };
-    setStudentSubmission(newExamSubmission);
   };
 
   const handleEditGrade = () => {
@@ -145,6 +155,7 @@ export default function TeacherSubmissionPage() {
     useCallback(() => {
       fetchTeacherExam();
       fetchStudent();
+      fetchExamGrade();
     }, [courseId, examId, studentId])
   );
 
@@ -175,48 +186,47 @@ export default function TeacherSubmissionPage() {
               backgroundColor: theme.colors.background,
               justifyContent: "space-between",
               padding: 16,
+              gap: 16,
             }}
           >
-            <View style={{ flex: 1, gap: 16 }}>
-              <View
-                style={{
-                  flexDirection: "row",
-                }}
-              >
-                <UserCard user={student} onPress={handleStudentPress} />
-              </View>
-
-              <TextField label="Título" value={examDetails.title} />
-
-              <TextField
-                label="Fecha límite"
-                value={formatDateTime(examDetails.dueDate)}
-              />
-
-              {studentSubmission && studentSubmission.submited ? (
-                <>
-                  <TextField
-                    label="Fecha de entrega"
-                    value={formatDateTime(studentSubmission.submissionDate)}
-                  />
-                </>
-              ) : (
-                <Text variant="titleSmall">El alumno no entregó la tarea</Text>
-              )}
-              <Divider />
-              <Text>Calificación de la entrega</Text>
-              {!examGrade ? (
-                <AlertText text="La entrega no ha sido calificada todavía." />
-              ) : (
-                <View style={{ flex: 1, gap: 16 }}>
-                  <TextField label="Nota" value={examGrade.mark.toString()} />
-                  <TextField
-                    label="Comentario de retroalimentación"
-                    value={examGrade.feedback_message}
-                  />
-                </View>
-              )}
+            <View
+              style={{
+                flexDirection: "row",
+              }}
+            >
+              <UserCard user={student} onPress={handleStudentPress} />
             </View>
+
+            <TextField label="Título" value={examDetails.title} />
+
+            <TextField
+              label="Fecha límite"
+              value={formatDateTime(examDetails.dueDate)}
+            />
+
+            {studentSubmission && studentSubmission.submited ? (
+              <>
+                <TextField
+                  label="Fecha de entrega"
+                  value={formatDateTime(studentSubmission.submissionDate)}
+                />
+              </>
+            ) : (
+              <Text variant="titleSmall">El alumno no entregó el examen</Text>
+            )}
+            <Divider />
+            <Text>Calificación de la entrega</Text>
+            {!examGrade ? (
+              <AlertText text="La entrega no ha sido calificada todavía." />
+            ) : (
+              <View style={{ flex: 1, gap: 16 }}>
+                <TextField label="Nota" value={examGrade.mark.toString()} />
+                <TextField
+                  label="Comentario de retroalimentación"
+                  value={examGrade.feedback_message}
+                />
+              </View>
+            )}
           </ScrollView>
           <View style={{ padding: 16 }}>
             <Button

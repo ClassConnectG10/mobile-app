@@ -2,7 +2,7 @@ import { ExamGrade } from "@/types/activity";
 import { useState } from "react";
 
 export interface ExamGradeHook {
-  examGrade: ExamGrade;
+  examGrade: ExamGrade | null;
   setExamGrade: (ExamGrade: ExamGrade) => void;
   setExamId: (examId: number) => void;
   setStudentId: (studentId: number) => void;
@@ -12,38 +12,41 @@ export interface ExamGradeHook {
 }
 
 export function useExamGrade(): ExamGradeHook {
-  const [examGrade, setExamGrade] = useState<ExamGrade>(
-    new ExamGrade(0, 0, 0, "", [])
-  );
+  const [examGrade, setExamGrade] = useState<ExamGrade | null>(null);
 
   const setExamId = (examId: number) => {
-    if (ExamGrade) {
-      setExamGrade({ ...examGrade, resourceId: examId });
+    if (!examGrade) {
+      return;
     }
+    setExamGrade({ ...examGrade, resourceId: examId });
   };
 
   const setStudentId = (studentId: number) => {
-    if (ExamGrade) {
-      setExamGrade({ ...examGrade, studentId: studentId });
+    if (!examGrade) {
+      return;
     }
+    setExamGrade({ ...examGrade, studentId: studentId });
   };
 
   const setMark = (mark: number) => {
-    if (ExamGrade) {
-      setExamGrade({ ...examGrade, mark });
+    if (!examGrade) {
+      return;
     }
+    setExamGrade({ ...examGrade, mark });
   };
 
   const setFeedbackMessage = (feedbackMesage: string) => {
-    if (ExamGrade) {
-      setExamGrade({ ...examGrade, feedback_message: feedbackMesage });
+    if (!examGrade) {
+      return;
     }
+    setExamGrade({ ...examGrade, feedback_message: feedbackMesage });
   };
 
   const setCorrectExamItems = (correctExamItems: boolean[]) => {
-    if (ExamGrade) {
-      setExamGrade({ ...examGrade, correctExamItems });
+    if (!examGrade) {
+      return;
     }
+    setExamGrade({ ...examGrade, correctExamItems });
   };
 
   return {

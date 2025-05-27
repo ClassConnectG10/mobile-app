@@ -259,8 +259,8 @@ export const submittedExamItemSchema = z.object({
 export const taskGradeSchema = z.object({
   mark: z
     .number({
-      required_error: "El índice de la pregunta es requerido",
-      invalid_type_error: "El índice de la pregunta debe ser un número",
+      required_error: "La nota es requerida",
+      invalid_type_error: "La nota debe ser un número valido",
     })
     .int()
     .min(0, "La nota debe estar entre 0 y 10")
@@ -269,4 +269,28 @@ export const taskGradeSchema = z.object({
     required_error: "El comentario de retroalimentación es requerido",
     invalid_type_error: "El comentario de retroalimentacióndebe ser un texto",
   }),
+});
+
+export const examGradeSchema = z.object({
+  mark: z
+    .number({
+      required_error: "La nota es requerida",
+      invalid_type_error: "La nota debe ser un número valido",
+    })
+    .int()
+    .min(0, "La nota debe estar entre 0 y 10")
+    .max(10, "La nota debe estar entre 0 y 10"),
+  feedback_message: z.string({
+    required_error: "El comentario de retroalimentación es requerido",
+    invalid_type_error: "El comentario de retroalimentacióndebe ser un texto",
+  }),
+  correctExamItems: z
+    .array(z.boolean().nullable(), {
+      required_error: "Debe indicar si las preguntas son correctas",
+      invalid_type_error: "Debe indicar si las preguntas son correctas",
+    })
+    .refine((arr) => arr.every((val) => val !== null), {
+      message:
+        "Debe marcar si las respuestas de las preguntas abiertas son correctas",
+    }),
 });
