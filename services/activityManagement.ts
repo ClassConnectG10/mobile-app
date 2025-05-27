@@ -234,40 +234,27 @@ export async function getStudentTask(
   taskId: number
 ): Promise<StudentActivity> {
   try {
-    const activities = await getCourseStudentActivities(
-      courseId,
-      ActivitiesOption.ALL
+    const request = await createActivityRequest(courseId, taskId);
+    const response = await request.get("");
+    const activityData = response.data.data;
+    const activity = new StudentActivity(
+      new Activity(
+        activityData.resource_id,
+        activityData.module_id,
+        activityData.type,
+        new TaskDetails(
+          activityData.module_id,
+          activityData.title,
+          activityData.instruction,
+          getFileFromBackend(activityData.external_ref, activityData.url),
+          getDateFromBackend(activityData.due_date)
+        )
+      ),
+      activityData.delivered,
+      activityData.delivered_date
+        ? getDateFromBackend(activityData.delivered_date)
+        : null
     );
-    const activity = activities.find(
-      (activity) => activity.activity.resourceId === taskId
-    );
-    if (!activity) {
-      throw new Error("Actividad no encontrada");
-    }
-
-    //   TODO: Descomentar cuando se arregle el problema del backend
-    //   que no devuelve el external_ref y el url (creo que ya lo arreglaron)
-    // const request = await createActivityRequest(courseId, taskId);
-    // const response = await request.get("");
-    // const activityData = response.data.data;
-    // const activity = new StudentActivity(
-    //   new Activity(
-    //     activityData.resource_id,
-    //     activityData.module_id,
-    //     activityData.type,
-    //     new TaskDetails(
-    //       activityData.module_id,
-    //       activityData.title,
-    //       activityData.instruction,
-    //       getFileFromBackend(activityData.external_ref, activityData.url),
-    //       getDateFromBackend(activityData.due_date)
-    //     )
-    //   ),
-    //   activityData.delivered,
-    //   activityData.delivered_date
-    //     ? getDateFromBackend(activityData.delivered_date)
-    //     : null
-    // );
 
     return activity;
   } catch (error) {
