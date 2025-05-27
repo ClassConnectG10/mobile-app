@@ -121,7 +121,6 @@ export default function GradeExamSubmissionPage() {
         Number(studentId)
       );
       if (grade) {
-        console.log("Exam grade fetched:", grade);
         temporalExamGradeHook.setExamGrade(grade);
         setHasPreviousGrade(true);
       } else {
@@ -227,7 +226,7 @@ export default function GradeExamSubmissionPage() {
             keyExtractor={(_item, index) => index.toString()}
             ListHeaderComponent={
               <View style={{ gap: 16, paddingBottom: 16 }}>
-                <Text>Corrección de las preguntas</Text>
+                <Text variant="titleMedium">Corrección de las preguntas</Text>
               </View>
             }
             renderItem={({ item, index }) =>
@@ -255,10 +254,32 @@ export default function GradeExamSubmissionPage() {
             ListFooterComponent={
               <View style={{ gap: 16, paddingVertical: 16 }}>
                 <Divider />
-                <Text>Calificación de la entrega</Text>
+                <Text variant="titleLarge">Calificación de la entrega</Text>
                 {!hasPreviousGrade && (
                   <AlertText text="La entrega no ha sido calificada todavía." />
                 )}
+                {/* Quiero un Text que indique la cantidad de items en true en temporalExamGrade.correctExamItems */}
+                <Text variant="bodyMedium">
+                  Preguntas correctas:{" "}
+                  {
+                    temporalExamGrade.correctExamItems.filter(
+                      (item) => item === true
+                    ).length
+                  }{" "}
+                  de {temporalExamGrade.correctExamItems.length} preguntas.
+                </Text>
+
+                <Text variant="bodyMedium">
+                  Nota sugerida:{" "}
+                  {Math.ceil(
+                    (temporalExamGrade.correctExamItems.filter(
+                      (item) => item === true
+                    ).length /
+                      temporalExamGrade.correctExamItems.length) *
+                      10
+                  )}{" "}
+                </Text>
+
                 <ToggleableNumberInput
                   label="Nota"
                   value={temporalExamGrade.mark}
