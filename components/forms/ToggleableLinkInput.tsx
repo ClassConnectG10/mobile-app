@@ -83,16 +83,31 @@ export const ToggleableLinkInput: React.FC<ToggleableLinkInputProps> = ({
     const url = links[index]?.url;
     if (!url) return;
     try {
-      const supported = await Linking.canOpenURL(url);
-      if (supported) {
-        await Linking.openURL(url);
-      } else {
-        console.warn(`No se puede abrir la URL: ${url}`);
-      }
+      await Linking.openURL(url);
     } catch (error) {
       console.error(`Error al abrir la URL: ${url}`, error);
     }
   };
+
+  // Elimina link vacío sin confirmar antes de editar otro
+  function removePendingEmptyLink(
+    editingIndex: number | null,
+    links: Link[],
+    onChange: (links: Link[]) => void,
+    setEditingIndex: (v: number | null) => void,
+    setEditingValue: (v: Link | null) => void,
+  ) {
+    if (
+      editingIndex === links.length - 1 &&
+      !links[editingIndex!].display &&
+      !links[editingIndex!].url
+    ) {
+      const updated = links.slice(0, -1);
+      onChange(updated);
+      setEditingIndex(null);
+      setEditingValue(null);
+    }
+  }
 
   return (
     <View style={{ gap: 4 }}>
@@ -135,6 +150,16 @@ export const ToggleableLinkInput: React.FC<ToggleableLinkInputProps> = ({
                     }
                     dense
                     autoFocus
+                    right={
+                      editingValue?.display ? (
+                        <TextInput.Icon
+                          icon="close"
+                          onPress={() =>
+                            setEditingValue((v) => ({ ...v!, display: "" }))
+                          }
+                        />
+                      ) : null
+                    }
                   />
                   <TextInput
                     label="URL"
@@ -144,6 +169,16 @@ export const ToggleableLinkInput: React.FC<ToggleableLinkInputProps> = ({
                     }
                     multiline={true}
                     dense
+                    right={
+                      editingValue?.url ? (
+                        <TextInput.Icon
+                          icon="close"
+                          onPress={() =>
+                            setEditingValue((v) => ({ ...v!, url: "" }))
+                          }
+                        />
+                      ) : null
+                    }
                   />
                 </>
               ) : (
@@ -192,17 +227,13 @@ export const ToggleableLinkInput: React.FC<ToggleableLinkInputProps> = ({
                   icon="pencil"
                   size={20}
                   onPress={() => {
-                    // Si hay un link vacío sin confirmar, lo eliminamos antes de editar otro
-                    if (
-                      editingIndex === links.length - 1 &&
-                      !links[editingIndex!].display &&
-                      !links[editingIndex!].url
-                    ) {
-                      const updated = links.slice(0, -1);
-                      onChange(updated);
-                      setEditingIndex(null);
-                      setEditingValue(null);
-                    }
+                    removePendingEmptyLink(
+                      editingIndex,
+                      links,
+                      onChange,
+                      setEditingIndex,
+                      setEditingValue,
+                    );
                     handleEdit(index);
                   }}
                   style={{ margin: 0 }}
