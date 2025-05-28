@@ -4,11 +4,7 @@ import ResourceCard from "@/components/cards/ResourceCard";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import { getModuleStudentActivities } from "@/services/activityManagement";
 import { getModule, getResources } from "@/services/resourceManager";
-import {
-  ActivityType,
-  StudentActivity,
-  TeacherActivity,
-} from "@/types/activity";
+import { ActivityType, StudentActivity } from "@/types/activity";
 import { Module, Resource } from "@/types/resources";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useState } from "react";

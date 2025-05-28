@@ -1,7 +1,6 @@
 import { View, ScrollView } from "react-native";
 import {
   Appbar,
-  Button,
   useTheme,
   ActivityIndicator,
   Divider,
@@ -9,7 +8,6 @@ import {
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
-import { ToggleableTextInput } from "@/components/forms/ToggleableTextInput";
 import { ToggleableFileInput } from "@/components/forms/ToggleableFileInput";
 import { ToggleableLinkInput } from "@/components/forms/ToggleableLinkInput";
 import { getResource } from "@/services/resourceManager";

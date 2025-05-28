@@ -18,7 +18,6 @@ import { View } from "react-native";
 import ActivitiesTab from "../../../../components/courseTabs/teacher/activities";
 import { ParticipantsTab } from "../../../../components/courseTabs/teacher/participants";
 import { ModulesTab } from "@/components/courseTabs/teacher/modules";
-import { ResourcesTab } from "@/components/courseTabs/teacher/resources";
 
 export default function CoursePage() {
   const router = useRouter();
@@ -74,12 +73,6 @@ export default function CoursePage() {
       }
       return <ModulesTab course={courseContext.course} />;
     },
-    resources: () => {
-      if (!courseContext.course) {
-        return null;
-      }
-      return <ResourcesTab course={courseContext.course} />;
-    },
   });
 
   async function fetchCourse() {
@@ -129,7 +122,7 @@ export default function CoursePage() {
   useFocusEffect(
     useCallback(() => {
       fetchCourse();
-    }, [courseId]),
+    }, [courseId])
   );
 
   return (

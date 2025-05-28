@@ -2,8 +2,6 @@ import ActivityCard from "@/components/cards/ActivityCard";
 import ModuleCard from "@/components/cards/ModuleCard";
 import ResourceCard from "@/components/cards/ResourceCard";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
-import { FloatingActionButton } from "@/components/FloatingActionButton";
-import { FullScreenModal } from "@/components/FullScreenModal";
 import { getModuleTeacherActivities } from "@/services/activityManagement";
 import {
   getModule,
@@ -18,7 +16,6 @@ import { SectionList, View } from "react-native";
 import {
   ActivityIndicator,
   Appbar,
-  Button,
   Divider,
   IconButton,
   Text,
