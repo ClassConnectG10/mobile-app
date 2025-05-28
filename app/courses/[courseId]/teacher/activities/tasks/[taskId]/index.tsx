@@ -27,6 +27,7 @@ import {
 import { useTaskDetails } from "@/hooks/useTaskDetails";
 import { ToggleableFileInput } from "@/components/forms/ToggleableFileInput";
 import { File } from "@/types/file";
+import { set } from "zod";
 
 export default function TeacherExamPage() {
   const router = useRouter();
@@ -43,6 +44,7 @@ export default function TeacherExamPage() {
   const [teacherTask, setTeacherTask] = useState<TeacherActivity | null>(null);
   const [taskFiles, setTaskFiles] = useState<File[]>([]);
   const [taskFilesChanged, setTaskFilesChanged] = useState(false);
+  const [taskFilesDeleted, setTaskFilesDeleted] = useState(false);
 
   const [showConfirmationDelete, setShowConfirmationDelete] = useState(false);
   const [showConfirmationPublish, setShowConfirmationPublish] = useState(false);
@@ -94,6 +96,7 @@ export default function TeacherExamPage() {
   const handleTaskFilesChange = (files: File[]) => {
     setTaskFiles(files);
     setTaskFilesChanged(true);
+    setTaskFilesDeleted(files.length === 0);
   };
 
   const handleDiscardChanges = () => {
@@ -141,10 +144,9 @@ export default function TeacherExamPage() {
             activityDetails: taskDetails,
           },
         });
-        setIsEditing(false);
         if (taskFilesChanged) {
-          console.log("taskFiles", taskFiles);
-          if (taskFiles.length > 0) {
+          console.log("taskFiles fffff", taskFiles);
+          if (!taskFilesDeleted) {
             await uploadTaskFile(courseId, Number(taskId), taskFiles[0]);
           } else {
             console.log("AAAASDSD");
@@ -152,6 +154,7 @@ export default function TeacherExamPage() {
           }
           setTaskFilesChanged(false);
         }
+        setIsEditing(false);
       }
     } catch (error) {
       setErrorMessage((error as Error).message);
