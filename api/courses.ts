@@ -21,7 +21,7 @@ export const createEnrollCourseRequest = (courseId: string) => {
 
 export const createSearchCoursesRequest = (
   searchFilters: SearchFilters,
-  searchOption: SearchOption
+  searchOption: SearchOption,
 ) => {
   const params: Record<string, string> = {
     search_option: searchOption,
@@ -81,7 +81,7 @@ export const createAssistantsRequest = (courseId: string) => {
 
 export const createAddAssistantRequest = (
   courseId: string,
-  assistantId: number
+  assistantId: number,
 ) => {
   return createRequest({
     uri: `courses/${courseId}/instructors`,
@@ -93,7 +93,7 @@ export const createAddAssistantRequest = (
 
 export const createAssistantRequest = (
   courseId: string,
-  assistantId: number
+  assistantId: number,
 ) => {
   return createRequest({
     uri: `courses/${courseId}/instructors/${assistantId}`,
@@ -114,7 +114,7 @@ export const createStudentRequest = (courseId: string, studentId: number) => {
 
 export const createStudentMarkRequest = (
   courseId: string,
-  studentId: number
+  studentId: number,
 ) => {
   return createRequest({
     uri: `courses/${courseId}/marks/students/${studentId}`,
@@ -124,5 +124,14 @@ export const createStudentMarkRequest = (
 export const createMarksRequest = (courseId: string) => {
   return createRequest({
     uri: `courses/${courseId}/marks`,
+  });
+};
+
+export const createAssistantLogsRequest = (
+  courseId: string,
+  assistantId: number,
+) => {
+  return createRequest({
+    uri: `courses/${courseId}/instructors/${assistantId}/logs`,
   });
 };
