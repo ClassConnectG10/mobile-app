@@ -113,3 +113,12 @@ export const createGradeSubmissionRequest = (
     uri: `courses/${courseId}/activities/${activityId}/grade/${studentId}`,
   });
 };
+
+export const createGetSubmissionsByStudentRequest = (
+  courseId: string,
+  studentId: number
+) => {
+  return createRequest({
+    uri: `courses/${courseId}/activities/submissions/${studentId}`,
+  });
+};

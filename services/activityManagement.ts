@@ -12,6 +12,7 @@ import {
   TaskSubmission,
   TaskGrade,
   ExamGrade,
+  ActivitySubmission,
 } from "@/types/activity";
 import {
   examItemToJSON,
@@ -37,6 +38,7 @@ import {
   createPublishTaskRequest,
   createPublishExamRequest,
   createGradeSubmissionRequest,
+  createGetSubmissionsByStudentRequest,
 } from "@/api/activities";
 import {
   activityDetailsSchema,
@@ -753,5 +755,47 @@ export async function getExamGrade(
     );
   } catch (error) {
     throw handleError(error, "obtener la calificación de la tarea");
+  }
+}
+
+export async function getSubmissionsByStudent(
+  courseId: string,
+  studentId: number
+): Promise<ActivitySubmission[]> {
+  try {
+    const request = await createGetSubmissionsByStudentRequest(
+      courseId,
+      studentId
+    );
+    const response = await request.get("");
+    const submissionsData = response.data.data;
+
+    return submissionsData.map((activity: any) => {
+      if (activity.type === ActivityType.TASK) {
+        return new TaskSubmission(
+          activity.resource_id,
+          studentId,
+          activity.delivered,
+          getDateFromBackend(activity.due_date),
+          null,
+          activity.delivered_date
+            ? getDateFromBackend(activity.delivered_date)
+            : null
+        );
+      } else if (activity.type === ActivityType.EXAM) {
+        return new ExamSubmission(
+          activity.resource_id,
+          studentId,
+          [],
+          activity.delivered,
+          getDateFromBackend(activity.due_date),
+          activity.delivered_date
+            ? getDateFromBackend(activity.delivered_date)
+            : null
+        );
+      }
+    });
+  } catch (error) {
+    throw handleError(error, "obtener las entregas del estudiante");
   }
 }

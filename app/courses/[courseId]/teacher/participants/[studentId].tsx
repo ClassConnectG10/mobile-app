@@ -79,15 +79,15 @@ export default function TeacherSubmissionPage() {
   };
 
   // TODO: Solucionar el botón de actividades del alumno
-  // const handleStudentActivityPress = () => {
-  //   router.push({
-  //     pathname: `/courses/[courseId]/teacher/activities/[studentId]`,
-  //     params: {
-  //       courseId,
-  //       studentId,
-  //     },
-  //   });
-  // };
+  const handleStudentActivityPress = () => {
+    router.push({
+      pathname: `/courses/[courseId]/teacher/activities/[studentId]`,
+      params: {
+        courseId,
+        studentId,
+      },
+    });
+  };
 
   const handleSaveMark = async () => {
     if (!courseId || !studentId) return;
@@ -107,7 +107,7 @@ export default function TeacherSubmissionPage() {
     useCallback(() => {
       fetchStudent();
       fetchMark();
-    }, [courseId, studentId]),
+    }, [courseId, studentId])
   );
 
   return (
@@ -141,7 +141,7 @@ export default function TeacherSubmissionPage() {
           <ScrollView contentContainerStyle={{ padding: 16, gap: 16 }}>
             <UserCard user={student} onPress={handleStudentPress} />
 
-            {/* <Button
+            <Button
               icon="check-circle-outline"
               mode="outlined"
               onPress={handleStudentActivityPress}
@@ -149,7 +149,7 @@ export default function TeacherSubmissionPage() {
             >
               Ver actividades de {student.userInformation.firstName}{" "}
               {student.userInformation.lastName}
-            </Button> */}
+            </Button>
 
             <ToggleableNumberInput
               label="Calificación"
