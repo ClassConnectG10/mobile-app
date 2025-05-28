@@ -162,7 +162,7 @@ export default function StudentFillExam() {
         />
         {examSubmission?.submited && examGrade && (
           <Appbar.Action
-            icon="help"
+            icon="help-circle"
             onPress={() => setHelpModalVisible(true)}
             disabled={isLoading}
           />
@@ -244,7 +244,7 @@ export default function StudentFillExam() {
         visible={helpModalVisible}
         onDismiss={() => setHelpModalVisible(false)}
         children={
-          <View style={{ gap: 16, paddingBottom: 16 }}>
+          <View style={{ gap: 16 }}>
             <Text variant="titleMedium">Íconos y código de colores</Text>
             <View>
               <Text>

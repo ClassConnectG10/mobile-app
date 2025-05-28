@@ -115,34 +115,43 @@ export async function searchCourses(
   searchFilters: SearchFilters,
   searchOption: SearchOption
 ): Promise<Course[]> {
-  const request = await createSearchCoursesRequest(searchFilters, searchOption);
-  const response = await request.get("");
-  const coursesData = response.data.data;
+  try {
+    const request = await createSearchCoursesRequest(
+      searchFilters,
+      searchOption
+    );
+    const response = await request.get("");
+    const coursesData = response.data.data;
 
-  const courses: Course[] = await Promise.all(
-    coursesData.map(async (courseData: any) => await getCourse(courseData.id))
-  ); // TODO: Cambiar esto cuando tengamos el endpoint de cursos bien hecho
+    const courses: Course[] = await Promise.all(
+      coursesData.map(async (courseData: any) => await getCourse(courseData.id))
+    ); // TODO: Cambiar esto cuando tengamos el endpoint de cursos bien hecho
 
-  // const courses: Course[] = coursesData.map((courseData: any) => {
-  //   return new Course(
-  //     courseData.id,
-  //     courseData.ownerId,
-  //     new CourseDetails(
-  //       courseData.title,
-  //       courseData.description,
-  //       courseData.capacity,
-  //       new Date(courseData.start_date),
-  //       new Date(courseData.end_date),
-  //       courseData.level,
-  //       courseData.modality,
-  //       courseData.category,
-  //     ),
-  //     courseData.students ? courseData.students : 0,
-  //     courseData.is_favorite,
-  //   );
-  // });
+    // const courses: Course[] = coursesData.map((courseData: any) => {
+    //   return new Course(
+    //     courseData.id,
+    //     null,
+    //     new CourseDetails(
+    //       courseData.title,
+    //       courseData.description,
+    //       courseData.capacity,
+    //       new Date(courseData.start_date),
+    //       new Date(courseData.end_date),
+    //       courseData.level,
+    //       courseData.modality,
+    //       courseData.category
+    //     ),
+    //     null,
+    //     null,
+    //     courseData.students ? courseData.students : 0,
+    //     courseData.is_favorite
+    //   );
+    // });
 
-  return courses;
+    return courses;
+  } catch (error) {
+    throw handleError(error, "buscar cursos");
+  }
 }
 
 export async function enrollCourse(courseId: string) {

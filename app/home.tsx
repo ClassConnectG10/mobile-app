@@ -21,6 +21,7 @@ import { CourseFilterModal } from "@/components/courses/CourseFilterModal";
 import { SearchBar } from "@/components/forms/SearchBar";
 import { FullScreenModal } from "@/components/FullScreenModal";
 import { FloatingActionButton } from "@/components/FloatingActionButton";
+import { set } from "zod";
 
 export default function HomePage() {
   const theme = useTheme();
@@ -67,7 +68,7 @@ export default function HomePage() {
       const coursesData = await searchCourses(searchFilters, searchOption);
       setCourses(coursesData);
     } catch (error) {
-      console.error("Error fetching courses:", error);
+      setErrorMessage((error as Error).message);
     } finally {
       setIsLoading(false);
     }

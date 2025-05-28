@@ -199,7 +199,7 @@ export default function GradeExamSubmissionPage() {
         <Appbar.BackAction onPress={() => router.back()} />
         <Appbar.Content title={"Corrección del examen"} />
         <Appbar.Action
-          icon="help"
+          icon="help-circle"
           onPress={() => setHelpModalVisible(true)}
           disabled={isLoading}
         />
@@ -320,7 +320,7 @@ export default function GradeExamSubmissionPage() {
         visible={helpModalVisible}
         onDismiss={() => setHelpModalVisible(false)}
         children={
-          <View style={{ gap: 16, paddingBottom: 16 }}>
+          <View style={{ gap: 16 }}>
             <Text variant="titleMedium">Íconos y código de colores</Text>
             <View>
               <Text>
