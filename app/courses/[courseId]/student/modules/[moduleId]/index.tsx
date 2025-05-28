@@ -3,8 +3,12 @@ import ModuleCard from "@/components/cards/ModuleCard";
 import ResourceCard from "@/components/cards/ResourceCard";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import { getModuleStudentActivities } from "@/services/activityManagement";
-import { getModule } from "@/services/resourceManager";
-import { ActivityType, StudentActivity } from "@/types/activity";
+import { getModule, getResources } from "@/services/resourceManager";
+import {
+  ActivityType,
+  StudentActivity,
+  TeacherActivity,
+} from "@/types/activity";
 import { Module, Resource } from "@/types/resources";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
@@ -26,7 +30,7 @@ class ModuleElement {
   constructor(
     public id: number,
     public type: ModuleElementType,
-    public element: Resource | StudentActivity,
+    public element: Resource | StudentActivity
   ) {}
 }
 
@@ -43,12 +47,10 @@ export default function ModulePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const [, setActivities] = useState<StudentActivity[]>(null);
   const [activitiesDisplayElements, setActivitiesDisplayElements] = useState<
     ModuleElement[]
   >([]);
 
-  // const [resources, setResources] = useState<Resource[]>(null);
   const [resourcesDisplayElements, setResourcesDisplayElements] = useState<
     ModuleElement[]
   >([]);
@@ -78,21 +80,41 @@ export default function ModulePage() {
     }
   };
 
+  const fetchResources = async () => {
+    if (!courseId || !moduleId) return;
+    setIsLoading(true);
+    try {
+      const fetchedResources = await getResources(courseId, moduleId);
+      const fetchedModuleResources = fetchedResources.map(
+        (resource) =>
+          new ModuleElement(
+            resource.resourceId,
+            ModuleElementType.RESOURCE,
+            resource
+          )
+      );
+      setResourcesDisplayElements(fetchedModuleResources);
+    } catch (error) {
+      setErrorMessage((error as Error).message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   async function fetchActivities() {
     if (!courseId || !moduleId) return;
     setIsLoading(true);
 
     try {
       const activities = await getModuleStudentActivities(courseId, moduleId);
-      setActivities(activities);
       setActivitiesDisplayElements(
         activities.map((activity) => {
           return new ModuleElement(
             activity.activity.resourceId,
             ModuleElementType.ACTIVITY,
-            activity,
+            activity
           );
-        }),
+        })
       );
     } catch (error) {
       setErrorMessage((error as Error).message);
@@ -100,13 +122,6 @@ export default function ModulePage() {
       setIsLoading(false);
     }
   }
-
-  const fetchResources = async () => {
-    if (!courseId || !moduleId) return;
-
-    // TODO: Fetch resources from the module
-    setResourcesDisplayElements([]);
-  };
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -133,12 +148,20 @@ export default function ModulePage() {
     }
   };
 
+  const handleResourcePress = (resource: Resource) => {
+    const resourceId = resource.resourceId;
+    router.push({
+      pathname: "/courses/[courseId]/student/resources/[resourceId]",
+      params: { courseId, moduleId, resourceId },
+    });
+  };
+
   useFocusEffect(
     useCallback(() => {
       fetchModule();
       fetchActivities();
       fetchResources();
-    }, [courseId]),
+    }, [courseId, moduleId])
   );
 
   return (
@@ -180,32 +203,34 @@ export default function ModulePage() {
             />
           </View>
         ) : (
-          <View style={{ padding: 16 }}>
+          <View style={{ padding: 16, flex: 1 }}>
             <SectionList
               sections={moduleSections}
               refreshing={isRefreshing}
               onRefresh={handleRefresh}
               keyExtractor={(item, index) => item?.id.toString() + index}
-              renderItem={({ item }) => {
+              renderItem={({ item, index, section }) => {
                 if (!item) return null;
-
-                return (
-                  <View>
-                    {item.type === ModuleElementType.ACTIVITY ? (
-                      <ActivityCard
-                        activity={item.element as StudentActivity}
-                        onPress={() =>
-                          handleActivityPress(item.element as StudentActivity)
-                        }
-                      />
-                    ) : (
-                      <ResourceCard
-                        resource={item.element as Resource}
-                        onPress={() => {}}
-                      />
-                    )}
-                  </View>
-                );
+                if (section.title === "Recursos") {
+                  return (
+                    <ResourceCard
+                      resource={item.element as Resource}
+                      onPress={() =>
+                        handleResourcePress(item.element as Resource)
+                      }
+                    />
+                  );
+                } else if (section.title === "Actividades") {
+                  return (
+                    <ActivityCard
+                      activity={item.element as StudentActivity}
+                      onPress={() =>
+                        handleActivityPress(item.element as StudentActivity)
+                      }
+                    />
+                  );
+                }
+                return null;
               }}
               ListHeaderComponent={
                 <>

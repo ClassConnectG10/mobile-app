@@ -55,7 +55,7 @@ export const ModulesTab: React.FC<ModulesTabProps> = ({ course }) => {
   useFocusEffect(
     useCallback(() => {
       fetchModules();
-    }, [course.courseId]),
+    }, [course.courseId])
   );
 
   const handleEditModulesOrder = async () => {
@@ -197,7 +197,6 @@ export const ModulesTab: React.FC<ModulesTabProps> = ({ course }) => {
                   (index > 0 || index < temporalModules.length - 1) && (
                     <View
                       style={{
-                        flexDirection: "column",
                         alignItems: "center",
                         gap: 8,
                       }}

@@ -9,7 +9,7 @@ interface ResourceCardProps {
 
 const ResourceCard: React.FC<ResourceCardProps> = ({ resource, onPress }) => {
   const theme = useTheme();
-  const { title } = resource.ResourceDetails;
+  const { title, description } = resource.resourceDetails;
 
   return (
     <Card
@@ -26,6 +26,9 @@ const ResourceCard: React.FC<ResourceCardProps> = ({ resource, onPress }) => {
         <View style={{ flex: 1 }}>
           <Text style={[styles.title, { color: theme.colors.onSurface }]}>
             {title}
+          </Text>
+          <Text numberOfLines={1} style={styles.description}>
+            {description}
           </Text>
         </View>
       </View>

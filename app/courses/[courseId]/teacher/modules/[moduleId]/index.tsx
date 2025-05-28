@@ -34,7 +34,7 @@ class ModuleElement {
   constructor(
     public id: number,
     public type: ModuleElementType,
-    public element: Resource | TeacherActivity,
+    public element: Resource | TeacherActivity
   ) {}
 }
 
@@ -50,7 +50,6 @@ export default function ModulePage() {
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [newResourceModalVisible, setNewResourceModalVisible] = useState(false);
   const [isEditingResources, setIsEditingResources] = useState(false);
 
   const [activitiesDisplayElements, setActivitiesDisplayElements] = useState<
@@ -67,12 +66,12 @@ export default function ModulePage() {
 
   const moduleSections = [
     {
-      title: "Actividades",
-      data: activitiesDisplayElements,
-    },
-    {
       title: "Recursos",
       data: temporalResourcesDisplayElements,
+    },
+    {
+      title: "Actividades",
+      data: activitiesDisplayElements,
     },
   ];
 
@@ -100,8 +99,8 @@ export default function ModulePage() {
           new ModuleElement(
             resource.resourceId,
             ModuleElementType.RESOURCE,
-            resource,
-          ),
+            resource
+          )
       );
       setResourcesDisplayElements(fetchedResources);
       setTemporalResourcesDisplayElements(fetchedResources);
@@ -123,9 +122,9 @@ export default function ModulePage() {
           return new ModuleElement(
             activity.activity.resourceId,
             ModuleElementType.ACTIVITY,
-            activity,
+            activity
           );
-        }),
+        })
       );
     } catch (error) {
       setErrorMessage((error as Error).message);
@@ -168,7 +167,6 @@ export default function ModulePage() {
   };
 
   const handleCreateResource = () => {
-    setNewResourceModalVisible(false);
     router.push({
       pathname: "/courses/[courseId]/teacher/resources/create",
       params: { courseId, moduleId },
@@ -219,7 +217,7 @@ export default function ModulePage() {
       fetchModule();
       fetchActivities();
       fetchResources();
-    }, [courseId, moduleId]),
+    }, [courseId, moduleId])
   );
 
   return (
@@ -261,7 +259,7 @@ export default function ModulePage() {
             />
           </View>
         ) : (
-          <View style={{ padding: 16 }}>
+          <View style={{ padding: 16, flex: 1 }}>
             <SectionList
               sections={moduleSections}
               refreshing={isRefreshing}
@@ -285,7 +283,7 @@ export default function ModulePage() {
                         }
                       />
                       {isEditingResources && (
-                        <View style={{ flexDirection: "row", gap: 8 }}>
+                        <View style={{ alignItems: "center", gap: 8 }}>
                           {index > 0 && (
                             <IconButton
                               mode="contained"
@@ -423,30 +421,10 @@ export default function ModulePage() {
           </View>
         )}
       </View>
-      <FullScreenModal
-        visible={newResourceModalVisible}
-        onDismiss={() => setNewResourceModalVisible(false)}
-      >
-        <Button
-          icon="pencil"
-          mode="contained"
-          onPress={() => {
-            setNewResourceModalVisible(false);
-            handleEditResourcesOrder();
-          }}
-        >
-          Editar orden de recursos
-        </Button>
-        <Button icon="plus" mode="contained" onPress={handleCreateResource}>
-          Agregar recurso
-        </Button>
-      </FullScreenModal>
       <ErrorMessageSnackbar
         message={errorMessage}
         onDismiss={() => setErrorMessage("")}
       />
-
-      <FloatingActionButton icon="plus" onPress={handleCreateResource} />
     </>
   );
 }

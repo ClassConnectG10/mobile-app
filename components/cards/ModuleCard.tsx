@@ -27,7 +27,9 @@ const ModuleCard: React.FC<ModuleCardProps> = ({ module, onPress }) => {
           <Text style={[styles.title, { color: theme.colors.onSurface }]}>
             {title}
           </Text>
-          <Text style={styles.description}>{description}</Text>
+          <Text numberOfLines={1} style={styles.description}>
+            {description}
+          </Text>
         </View>
       </View>
     </Card>

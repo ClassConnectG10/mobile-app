@@ -30,8 +30,8 @@ export async function getModules(courseId: string): Promise<Module[]> {
         new Module(
           moduleData.module_id,
           moduleData.course_id,
-          new ModuleDetails(moduleData.title, moduleData.description),
-        ),
+          new ModuleDetails(moduleData.title, moduleData.description)
+        )
     );
 
     return modules;
@@ -42,7 +42,7 @@ export async function getModules(courseId: string): Promise<Module[]> {
 
 export async function getModule(
   courseId: string,
-  moduleId: number,
+  moduleId: number
 ): Promise<Module> {
   try {
     const request = await createModuleRequest(courseId, moduleId);
@@ -52,7 +52,7 @@ export async function getModule(
     const module = new Module(
       moduleData.module_id,
       moduleData.course_id,
-      new ModuleDetails(moduleData.title, moduleData.description),
+      new ModuleDetails(moduleData.title, moduleData.description)
     );
 
     return module;
@@ -63,7 +63,7 @@ export async function getModule(
 
 export async function createModule(
   courseId: string,
-  moduleDetails: ModuleDetails,
+  moduleDetails: ModuleDetails
 ): Promise<Module> {
   try {
     moduleSchema.parse(moduleDetails);
@@ -79,7 +79,7 @@ export async function createModule(
     const module = new Module(
       moduleData.module_id,
       moduleData.course_id,
-      new ModuleDetails(moduleData.title, moduleData.description),
+      new ModuleDetails(moduleData.title, moduleData.description)
     );
 
     return module;
@@ -91,7 +91,7 @@ export async function createModule(
 export async function updateModule(
   courseId: string,
   moduleId: number,
-  moduleDetails: ModuleDetails,
+  moduleDetails: ModuleDetails
 ): Promise<Module> {
   try {
     moduleSchema.parse(moduleDetails);
@@ -107,7 +107,7 @@ export async function updateModule(
     const module = new Module(
       moduleData.module_id,
       moduleData.course_id,
-      new ModuleDetails(moduleData.title, moduleData.description),
+      new ModuleDetails(moduleData.title, moduleData.description)
     );
 
     return module;
@@ -118,7 +118,7 @@ export async function updateModule(
 
 export async function deleteModule(
   courseId: string,
-  moduleId: number,
+  moduleId: number
 ): Promise<void> {
   try {
     const request = await createModuleRequest(courseId, moduleId);
@@ -130,7 +130,7 @@ export async function deleteModule(
 
 export async function orderModules(
   courseId: string,
-  moduleIds: number[],
+  moduleIds: number[]
 ): Promise<void> {
   try {
     const body = {
@@ -146,7 +146,7 @@ export async function orderModules(
 
 export async function getResources(
   courseId: string,
-  moduleId: number,
+  moduleId: number
 ): Promise<Resource[]> {
   try {
     const request = await createResourcesRequest(courseId, moduleId);
@@ -161,9 +161,9 @@ export async function getResources(
             resourceData.title,
             resourceData.module_id,
             resourceData.description,
-            [],
-          ),
-        ),
+            []
+          )
+        )
     );
 
     return resources;
@@ -175,7 +175,7 @@ export async function getResources(
 export async function getResource(
   courseId: string,
   moduleId: number,
-  resourceId: number,
+  resourceId: number
 ): Promise<Resource> {
   try {
     const request = await createResourceRequest(courseId, moduleId, resourceId);
@@ -189,9 +189,14 @@ export async function getResource(
         resourceData.module_id,
         resourceData.description,
         resourceData.attachments.map((attachment: any) =>
-          getAttachmentFromBackend(attachment),
-        ),
-      ),
+          getAttachmentFromBackend(attachment)
+        )
+      )
+    );
+
+    console.log(
+      "Resource fetched attachments:",
+      resource.resourceDetails.attachments
     );
 
     return resource;
@@ -203,7 +208,7 @@ export async function getResource(
 export async function createResource(
   courseId: string,
   moduleId: number,
-  resourceDetails: ResourceDetails,
+  resourceDetails: ResourceDetails
 ): Promise<Resource> {
   try {
     const body = {
@@ -217,7 +222,7 @@ export async function createResource(
 
     const resource = new Resource(
       resourceData.learning_resource_id,
-      resourceDetails,
+      resourceDetails
     );
 
     // Subir archivos adjuntos si existen
@@ -227,7 +232,7 @@ export async function createResource(
         moduleId,
         resource.resourceId,
         resourceDetails.attachments,
-        [],
+        []
       );
     }
 
@@ -242,7 +247,7 @@ export async function updateResource(
   moduleId: number,
   resourceId: number,
   resourceDetails: ResourceDetails,
-  originalAttachments: Attachment[],
+  originalAttachments: Attachment[]
 ): Promise<Resource> {
   try {
     const body = {
@@ -256,7 +261,7 @@ export async function updateResource(
 
     const resource = new Resource(
       resourceData.learning_resource_id,
-      resourceDetails,
+      resourceDetails
     );
 
     // Sincronizar adjuntos usando la función utilitaria
@@ -266,7 +271,7 @@ export async function updateResource(
         moduleId,
         resource.resourceId,
         resourceDetails.attachments,
-        originalAttachments,
+        originalAttachments
       );
     }
 
@@ -279,7 +284,7 @@ export async function updateResource(
 export async function deleteResource(
   courseId: string,
   moduleId: number,
-  resourceId: number,
+  resourceId: number
 ): Promise<void> {
   try {
     const request = await createResourceRequest(courseId, moduleId, resourceId);
@@ -292,7 +297,7 @@ export async function deleteResource(
 export async function orderResources(
   courseId: string,
   moduleId: number,
-  resourceIds: number[],
+  resourceIds: number[]
 ): Promise<void> {
   try {
     const body = { ids: resourceIds };

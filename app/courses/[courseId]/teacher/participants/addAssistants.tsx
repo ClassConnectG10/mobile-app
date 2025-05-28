@@ -250,7 +250,7 @@ export default function AddAssistant() {
                     <Text>No hay usuarios disponibles</Text>
                   </View>
                 }
-                ItemSeparatorComponent={() => <View style={{ height: 16 }} />}
+                ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
               />
             </View>
           </>

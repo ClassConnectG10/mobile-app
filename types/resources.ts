@@ -9,7 +9,7 @@ export enum AttachmentType {
 export class Resource {
   constructor(
     public resourceId: number,
-    public ResourceDetails: ResourceDetails,
+    public resourceDetails: ResourceDetails
   ) {}
 }
 
@@ -18,14 +18,14 @@ export class ResourceDetails {
     public title: string,
     public moduleId: number,
     public description: string,
-    public attachments: Attachment[],
+    public attachments: Attachment[]
   ) {}
 }
 
 export abstract class Attachment {
   constructor(
     public attachmentType: AttachmentType,
-    public attachmentId?: number,
+    public attachmentId?: number
   ) {}
 }
 
@@ -45,7 +45,7 @@ export class Module {
   constructor(
     public moduleId: number,
     public courseId: string,
-    public courseModuleDetails: ModuleDetails,
+    public courseModuleDetails: ModuleDetails
   ) {}
 }
 

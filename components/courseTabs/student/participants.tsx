@@ -89,7 +89,7 @@ export const ParticipantsTab: React.FC<ParticipantsTabProps> = ({ course }) => {
       fetchCourseOwner();
       fetchAssistants();
       fetchStudents();
-    }, [course]),
+    }, [course])
   );
 
   return (
@@ -173,6 +173,7 @@ export const ParticipantsTab: React.FC<ParticipantsTabProps> = ({ course }) => {
               }
               return null;
             }}
+            ListFooterComponent={<View style={{ height: 16 }} />}
           />
         </View>
       )}

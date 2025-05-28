@@ -31,7 +31,7 @@ import {
 export function handleError(error: any, action: string): Error {
   if (error instanceof ZodError) {
     return new Error(
-      `Error de validacion al ${action}: ${error.errors[0].message}`,
+      `Error de validacion al ${action}: ${error.errors[0].message}`
     );
   }
   return new Error(`Error al ${action}: ${error}`);
@@ -39,7 +39,7 @@ export function handleError(error: any, action: string): Error {
 
 export function postFile(
   axiosInstance: AxiosInstance,
-  file: File,
+  file: File
 ): Promise<any> {
   const formData = new FormData();
   formData.append("file", {
@@ -96,7 +96,7 @@ export function getExamItemFromJSON(examItemJSON: any): ExamItem {
       return new MultipleChoiceQuestion(
         examItemJSON.question,
         examItemJSON.options,
-        examItemJSON.answer,
+        examItemJSON.answer
       );
     case ExamItemType.TRUE_FALSE:
       return new TrueFalseQuestion(examItemJSON.question, examItemJSON.answer);
@@ -104,7 +104,7 @@ export function getExamItemFromJSON(examItemJSON: any): ExamItem {
       return new MultipleSelectQuestion(
         examItemJSON.question,
         examItemJSON.options,
-        examItemJSON.answers,
+        examItemJSON.answers
       );
     default:
       throw new Error("Tipo de pregunta no soportado");
@@ -145,7 +145,7 @@ export function submittedExamItemToJSON(submittedItem: SubmittedExamItem) {
 
 function createAnswerFromResponse(
   examItem: ExamItem,
-  answer: any,
+  answer: any
 ): ExamItemAnswer {
   switch (examItem.type) {
     case ExamItemType.OPEN:
@@ -167,7 +167,7 @@ function createAnswerFromResponse(
 
 function evaluateAnswerCorrectness(
   examItem: ExamItem,
-  answer: any,
+  answer: any
 ): boolean | null {
   if (!answer) return null;
 
@@ -204,7 +204,7 @@ function evaluateAnswerCorrectness(
 export function getExamAnswerFromJSON(
   examItem: ExamItem,
   index: number,
-  responseData: any,
+  responseData: any
 ): SubmittedExamItem {
   const answer = responseData.answers?.[index] ?? null;
 
@@ -220,7 +220,7 @@ const STORAGE_FREFIX =
 export function getFileFromBackend(
   fileName: string,
   backendRef: string,
-  frontendRef?: string,
+  frontendRef?: string
 ): File {
   if (!fileName || !backendRef) {
     // TODO: ver si está bien manejado el error
@@ -237,7 +237,7 @@ function parseBackendRef(backendRef: string): string {
   const prefixLength = STORAGE_FREFIX.length;
   if (backendRef.length <= prefixLength) {
     throw new Error(
-      `El backendRef no es válido. Debe comenzar con ${STORAGE_FREFIX}`,
+      `El backendRef no es válido. Debe comenzar con ${STORAGE_FREFIX}`
     );
   }
   const ref = backendRef.substring(prefixLength);
@@ -309,21 +309,21 @@ export async function syncResourceAttachments(
   moduleId: number,
   resourceId: number,
   updatedAttachments: Attachment[],
-  originalAttachments: Attachment[],
+  originalAttachments: Attachment[]
 ) {
   const originalAttachmentIds = originalAttachments.map(
-    (att) => att.attachmentId,
+    (att) => att.attachmentId
   );
   const updatedAttachmentIds = updatedAttachments.map(
-    (att) => att.attachmentId,
+    (att) => att.attachmentId
   );
 
   const attachmentsToDelete = originalAttachments.filter(
     (att) =>
-      att.attachmentId && !updatedAttachmentIds.includes(att.attachmentId),
+      att.attachmentId && !updatedAttachmentIds.includes(att.attachmentId)
   );
   const attachmentsToCreate = updatedAttachments.filter(
-    (att) => !originalAttachmentIds.includes(att.attachmentId),
+    (att) => !originalAttachmentIds.includes(att.attachmentId)
   );
 
   // Eliminar los adjuntos que ya no están en el recurso
@@ -333,21 +333,21 @@ export async function syncResourceAttachments(
         courseId,
         moduleId,
         resourceId,
-        attachment.attachmentId,
+        attachment.attachmentId
       );
       await attachmentRequest.delete("");
-    }),
+    })
   );
 
   const fileRequest = await createResourceFileUploadRequest(
     courseId,
     moduleId,
-    resourceId,
+    resourceId
   );
   const linkRequest = await createResourceLinkUploadRequest(
     courseId,
     moduleId,
-    resourceId,
+    resourceId
   );
 
   // Subir los nuevos adjuntos y actualizar el attachmentId en el arreglo original
@@ -363,7 +363,7 @@ export async function syncResourceAttachments(
           attachment.file = getFileFromBackend(
             attachment.file.name,
             firebaseUrl,
-            attachment.file.localUri,
+            attachment.file.localUri
           );
         }
       } else if (attachment instanceof LinkAttachment) {
@@ -376,23 +376,23 @@ export async function syncResourceAttachments(
           attachment.attachmentId = newId;
         }
       }
-    }),
+    })
   );
 }
 
 export function getAttachmentFromBackend(attachmentData: any): Attachment {
-  if (attachmentData.attachment_type === AttachmentType.FILE) {
+  console.log("attachmentData", attachmentData);
+
+  if (attachmentData.type === AttachmentType.FILE) {
     const file = getFileFromBackend(
       attachmentData.external_ref,
-      attachmentData.url,
+      attachmentData.url
     );
     return new FileAttachment(file, attachmentData.attachment_id);
-  } else if (attachmentData.attachment_type === AttachmentType.LINK) {
+  } else if (attachmentData.type === AttachmentType.LINK) {
     const link = new Link(attachmentData.external_ref, attachmentData.url);
     return new LinkAttachment(link, attachmentData.attachment_id);
   }
 
-  throw new Error(
-    `Tipo de adjunto no soportado: ${attachmentData.attachment_type}`,
-  );
+  throw new Error(`Tipo de adjunto no soportado: ${attachmentData.type}`);
 }

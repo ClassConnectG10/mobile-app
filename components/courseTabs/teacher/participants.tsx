@@ -123,7 +123,7 @@ export const ParticipantsTab: React.FC<ParticipantsTabProps> = ({ course }) => {
       fetchCourseOwner();
       fetchAssistants();
       fetchStudents();
-    }, [course]),
+    }, [course])
   );
 
   const handleRemoveAssistant = async () => {
@@ -134,7 +134,7 @@ export const ParticipantsTab: React.FC<ParticipantsTabProps> = ({ course }) => {
       await removeAssistantFromCourse(course.courseId, selectedUser.id);
       setShowConfirmationRemove(false);
       setAssistants((prev) =>
-        prev.filter((assistant) => assistant.id !== selectedUser.id),
+        prev.filter((assistant) => assistant.id !== selectedUser.id)
       );
     } catch (error) {
       setErrorMessage((error as Error).message);
@@ -151,7 +151,7 @@ export const ParticipantsTab: React.FC<ParticipantsTabProps> = ({ course }) => {
       await removeStudentFromCourse(course.courseId, selectedUser.id);
       setShowConfirmationRemove(false);
       setStudents((prev) =>
-        prev.filter((student) => student.id !== selectedUser.id),
+        prev.filter((student) => student.id !== selectedUser.id)
       );
     } catch (error) {
       setErrorMessage((error as Error).message);
@@ -328,6 +328,7 @@ export const ParticipantsTab: React.FC<ParticipantsTabProps> = ({ course }) => {
               }
               return null;
             }}
+            ListFooterComponent={<View style={{ height: 16 }} />}
           />
         </View>
       )}
