@@ -15,7 +15,7 @@ import {
   handleError,
   syncResourceAttachments,
 } from "./common";
-import { moduleSchema } from "@/validations/resources";
+import { moduleSchema, resourceDetailsSchema } from "@/validations/resources";
 import { createResourceRequest, createResourcesRequest } from "@/api/resources";
 import { createOrderResourcesRequest } from "@/api/resources";
 
@@ -211,6 +211,8 @@ export async function createResource(
   resourceDetails: ResourceDetails
 ): Promise<Resource> {
   try {
+    resourceDetailsSchema.parse(resourceDetails);
+
     const body = {
       title: resourceDetails.title,
       description: resourceDetails.description,
@@ -250,6 +252,7 @@ export async function updateResource(
   originalAttachments: Attachment[]
 ): Promise<Resource> {
   try {
+    resourceDetailsSchema.parse(resourceDetails);
     const body = {
       title: resourceDetails.title,
       description: resourceDetails.description,

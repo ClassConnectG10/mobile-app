@@ -104,6 +104,15 @@ export const createUploadTaskFileRequest = (
   });
 };
 
+export const createDeleteTaskFileRequest = (
+  courseId: string,
+  taskId: number
+) => {
+  return createRequest({
+    uri: `/courses/${courseId}/activities/tasks/${taskId}/file`,
+  });
+};
+
 export const createGradeSubmissionRequest = (
   courseId: string,
   activityId: number,

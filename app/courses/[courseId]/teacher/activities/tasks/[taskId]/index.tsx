@@ -4,6 +4,7 @@ import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import { ToggleableTextInput } from "@/components/forms/ToggleableTextInput";
 import {
   deleteTask,
+  deleteTaskFile,
   getTeacherTask,
   publishTask,
   updateTask,
@@ -72,7 +73,7 @@ export default function TeacherExamPage() {
         const teacherTask = await getTeacherTask(courseId, Number(taskId));
         setTeacherTask(teacherTask);
         taskDetailsHook.setTaskDetails(
-          teacherTask.activity.activityDetails as TaskDetails,
+          teacherTask.activity.activityDetails as TaskDetails
         );
         setTaskFiles(
           (teacherTask.activity.activityDetails as TaskDetails).instructionsFile
@@ -80,7 +81,7 @@ export default function TeacherExamPage() {
                 (teacherTask.activity.activityDetails as TaskDetails)
                   .instructionsFile,
               ]
-            : [],
+            : []
         );
       }
     } catch (error) {
@@ -98,7 +99,7 @@ export default function TeacherExamPage() {
   const handleDiscardChanges = () => {
     if (teacherTask) {
       taskDetailsHook.setTaskDetails(
-        teacherTask.activity.activityDetails as TaskDetails,
+        teacherTask.activity.activityDetails as TaskDetails
       );
     }
     setIsEditing(false);
@@ -113,7 +114,7 @@ export default function TeacherExamPage() {
     useCallback(() => {
       fetchTeacherTask();
       fetchCourse();
-    }, [courseId, taskId]),
+    }, [courseId, taskId])
   );
 
   const handleViewSubmissions = async () => {
@@ -142,7 +143,13 @@ export default function TeacherExamPage() {
         });
         setIsEditing(false);
         if (taskFilesChanged) {
-          await uploadTaskFile(courseId, Number(taskId), taskFiles[0]);
+          console.log("taskFiles", taskFiles);
+          if (taskFiles.length > 0) {
+            await uploadTaskFile(courseId, Number(taskId), taskFiles[0]);
+          } else {
+            console.log("AAAASDSD");
+            await deleteTaskFile(courseId, Number(taskId));
+          }
           setTaskFilesChanged(false);
         }
       }

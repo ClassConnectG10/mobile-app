@@ -39,6 +39,7 @@ import {
   createPublishExamRequest,
   createGradeSubmissionRequest,
   createGetSubmissionsByStudentRequest,
+  createDeleteTaskFileRequest,
 } from "@/api/activities";
 import {
   activityDetailsSchema,
@@ -653,6 +654,18 @@ export async function uploadTaskFile(
     await postFile(request, file);
   } catch (error) {
     throw handleError(error, "subir el archivo de la actividad");
+  }
+}
+
+export async function deleteTaskFile(
+  courseId: string,
+  taskId: number
+): Promise<void> {
+  try {
+    const request = await createDeleteTaskFileRequest(courseId, taskId);
+    await request.delete("");
+  } catch (error) {
+    throw handleError(error, "eliminar el archivo de la actividad");
   }
 }
 
