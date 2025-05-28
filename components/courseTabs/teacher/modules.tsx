@@ -1,5 +1,6 @@
 import { getModules, orderModules } from "@/services/resourceManager";
 import { Course } from "@/types/course";
+import { Module } from "@/types/resources";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useState, useCallback } from "react";
 import { FlatList, View } from "react-native";
@@ -11,8 +12,6 @@ import {
 } from "react-native-paper";
 import ErrorMessageSnackbar from "../../ErrorMessageSnackbar";
 import ModuleCard from "../../cards/ModuleCard";
-import { FloatingActionButton } from "@/components/FloatingActionButton";
-import { Module } from "@/types/resources";
 
 interface ModulesTabProps {
   course: Course;
@@ -27,14 +26,16 @@ export const ModulesTab: React.FC<ModulesTabProps> = ({ course }) => {
   const [errorMessage, setErrorMessage] = useState("");
 
   const [modules, setModules] = useState<Module[]>([]);
+  const [temporalModules, setTemporalModules] = useState<Module[]>([]);
 
   async function fetchModules() {
     if (!course.courseId) return;
 
     setIsLoading(true);
     try {
-      const modules = await getModules(course.courseId);
-      setModules(modules);
+      const fetchedModules = await getModules(course.courseId);
+      setModules(fetchedModules);
+      setTemporalModules(fetchedModules);
     } catch (error) {
       setErrorMessage((error as Error).message);
     } finally {
@@ -61,12 +62,13 @@ export const ModulesTab: React.FC<ModulesTabProps> = ({ course }) => {
     if (!course.courseId) return;
 
     try {
-      const modulesOrder = modules.map((module) => module.moduleId);
+      const modulesOrder = temporalModules.map((module) => module.moduleId);
       await orderModules(course.courseId, modulesOrder);
+      setModules(temporalModules);
     } catch (error) {
       setErrorMessage((error as Error).message);
     } finally {
-      setIsEditing(!isEditing);
+      setIsEditing(false);
       setIsLoading(false);
     }
   };
@@ -78,20 +80,40 @@ export const ModulesTab: React.FC<ModulesTabProps> = ({ course }) => {
     });
   };
 
+  const handleStartEditModulesOrder = () => {
+    setTemporalModules(modules); // Start editing from current modules
+    setIsEditing(true);
+  };
+
+  const handleCancelEditModulesOrder = () => {
+    setTemporalModules(modules); // Restore original order
+    setIsEditing(false);
+  };
+
   const handleMoveUpModule = (index: number) => {
-    const newModules = [...modules];
+    const newModules = [...temporalModules];
     const temp = newModules[index - 1];
     newModules[index - 1] = newModules[index];
     newModules[index] = temp;
-    setModules(newModules);
+    setTemporalModules(newModules);
   };
 
   const handleMoveDownModule = (index: number) => {
-    const newModules = [...modules];
+    const newModules = [...temporalModules];
     const temp = newModules[index + 1];
     newModules[index + 1] = newModules[index];
     newModules[index] = temp;
-    setModules(newModules);
+    setTemporalModules(newModules);
+  };
+
+  const handlePressModule = (module: Module) => {
+    router.push({
+      pathname: "/courses/[courseId]/teacher/modules/[moduleId]",
+      params: {
+        courseId: course.courseId,
+        moduleId: module.moduleId,
+      },
+    });
   };
 
   return (
@@ -111,74 +133,99 @@ export const ModulesTab: React.FC<ModulesTabProps> = ({ course }) => {
           />
         </View>
       ) : (
-        <View
-          style={{
-            gap: 32,
-          }}
-        >
+        <View style={{ flex: 1 }}>
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              paddingVertical: 8,
+              justifyContent: "space-between",
+            }}
+          >
+            <Text variant="titleMedium">Módulos</Text>
+
+            {!isEditing ? (
+              <View style={{ flexDirection: "row", gap: 4 }}>
+                <IconButton
+                  icon="pencil"
+                  size={24}
+                  style={{ margin: 0 }}
+                  onPress={handleStartEditModulesOrder}
+                  accessibilityLabel="Editar orden de módulos"
+                />
+                <IconButton
+                  icon="plus"
+                  size={24}
+                  style={{ margin: 0 }}
+                  onPress={handleCreateModule}
+                  accessibilityLabel="Agregar módulo"
+                />
+              </View>
+            ) : (
+              <View style={{ flexDirection: "row", gap: 4 }}>
+                <IconButton
+                  icon="close"
+                  size={24}
+                  style={{ margin: 0 }}
+                  onPress={handleCancelEditModulesOrder}
+                  accessibilityLabel="Cancelar"
+                />
+                <IconButton
+                  icon="check"
+                  size={24}
+                  style={{ margin: 0 }}
+                  onPress={handleEditModulesOrder}
+                  accessibilityLabel="Guardar orden"
+                />
+              </View>
+            )}
+          </View>
           <FlatList
-            data={modules}
+            data={temporalModules}
             keyExtractor={(item) => item.moduleId.toString()}
             refreshing={isRefreshing}
             onRefresh={handleRefresh}
             renderItem={({ item, index }) => (
               <View
-                style={{
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  gap: 8,
-                }}
+                style={{ flexDirection: "row", alignItems: "center", gap: 8 }}
               >
                 <ModuleCard
                   module={item}
-                  onPress={() => {
-                    router.push({
-                      pathname:
-                        "/courses/[courseId]/teacher/modules/[moduleId]",
-                      params: {
-                        courseId: course.courseId,
-                        moduleId: item.moduleId,
-                      },
-                    });
-                  }}
+                  onPress={() => handlePressModule(item)}
                 />
-
-                {isEditing && (
-                  <View
-                    style={{
-                      gap: 8,
-                      alignItems: "center",
-                    }}
-                  >
-                    {index > 0 && (
-                      <IconButton
-                        mode="contained"
-                        style={{
-                          margin: 0,
-                        }}
-                        icon="arrow-up"
-                        size={16}
-                        onPress={() => {
-                          handleMoveUpModule(index);
-                        }}
-                      />
-                    )}
-                    {index < modules.length - 1 && (
-                      <IconButton
-                        mode="contained"
-                        style={{
-                          margin: 0,
-                        }}
-                        icon="arrow-down"
-                        size={16}
-                        onPress={() => {
-                          handleMoveDownModule(index);
-                        }}
-                      />
-                    )}
-                  </View>
-                )}
+                {isEditing &&
+                  (index > 0 || index < temporalModules.length - 1) && (
+                    <View
+                      style={{
+                        flexDirection: "column",
+                        alignItems: "center",
+                        gap: 8,
+                      }}
+                    >
+                      {index > 0 && (
+                        <IconButton
+                          mode="contained"
+                          style={{ margin: 0 }}
+                          icon="arrow-up"
+                          size={16}
+                          onPress={() => {
+                            handleMoveUpModule(index);
+                          }}
+                        />
+                      )}
+                      {index < temporalModules.length - 1 && (
+                        <IconButton
+                          mode="contained"
+                          style={{ margin: 0 }}
+                          icon="arrow-down"
+                          size={16}
+                          onPress={() => {
+                            handleMoveDownModule(index);
+                          }}
+                        />
+                      )}
+                    </View>
+                  )}
               </View>
             )}
             ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
@@ -196,15 +243,6 @@ export const ModulesTab: React.FC<ModulesTabProps> = ({ course }) => {
           />
         </View>
       )}
-      <FloatingActionButton onPress={handleCreateModule} />
-      <FloatingActionButton
-        onPress={
-          isEditing ? handleEditModulesOrder : () => setIsEditing(!isEditing)
-        }
-        index={1}
-        icon={isEditing ? "check" : "pencil"}
-      />
-
       <ErrorMessageSnackbar
         message={errorMessage}
         onDismiss={() => setErrorMessage("")}

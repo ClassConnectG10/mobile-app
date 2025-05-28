@@ -1,6 +1,6 @@
 import { Card, Icon, Text, useTheme } from "react-native-paper";
 import { StyleSheet, View } from "react-native";
-import { Resource, ResourceType } from "@/types/resources";
+import { Resource } from "@/types/resources";
 
 interface ResourceCardProps {
   resource: Resource;
@@ -9,7 +9,7 @@ interface ResourceCardProps {
 
 const ResourceCard: React.FC<ResourceCardProps> = ({ resource, onPress }) => {
   const theme = useTheme();
-  const { title, type } = resource.ResourceDetails;
+  const { title } = resource.ResourceDetails;
 
   return (
     <Card
@@ -22,23 +22,7 @@ const ResourceCard: React.FC<ResourceCardProps> = ({ resource, onPress }) => {
       ]}
     >
       <View style={styles.row}>
-        <Icon
-          source={
-            type === ResourceType.IMAGES
-              ? "image"
-              : type === ResourceType.VIDEO
-              ? "video"
-              : type === ResourceType.DOCUMENT
-              ? "file-document"
-              : type === ResourceType.LINK
-              ? "link"
-              : type === ResourceType.TEXT
-              ? "text"
-              : ""
-          }
-          size={24}
-          color={theme.colors.primary}
-        />
+        <Icon source="file-multiple" size={24} color={theme.colors.primary} />
         <View style={{ flex: 1 }}>
           <Text style={[styles.title, { color: theme.colors.onSurface }]}>
             {title}

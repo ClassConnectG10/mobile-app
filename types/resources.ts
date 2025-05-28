@@ -18,9 +18,27 @@ export class ResourceDetails {
     public title: string,
     public moduleId: number,
     public description: string,
-    public resourceFiles: File[],
-    public resourceLinks: Link[],
+    public attachments: Attachment[],
   ) {}
+}
+
+export abstract class Attachment {
+  constructor(
+    public attachmentType: AttachmentType,
+    public attachmentId?: number,
+  ) {}
+}
+
+export class FileAttachment extends Attachment {
+  constructor(public file: File, attachmentId?: number) {
+    super(AttachmentType.FILE, attachmentId);
+  }
+}
+
+export class LinkAttachment extends Attachment {
+  constructor(public link: Link, attachmentId?: number) {
+    super(AttachmentType.LINK, attachmentId);
+  }
 }
 
 export class Module {

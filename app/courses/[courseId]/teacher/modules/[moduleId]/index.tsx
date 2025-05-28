@@ -2,8 +2,14 @@ import ActivityCard from "@/components/cards/ActivityCard";
 import ModuleCard from "@/components/cards/ModuleCard";
 import ResourceCard from "@/components/cards/ResourceCard";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
+import { FloatingActionButton } from "@/components/FloatingActionButton";
+import { FullScreenModal } from "@/components/FullScreenModal";
 import { getModuleTeacherActivities } from "@/services/activityManagement";
-import { getModule } from "@/services/resourceManager";
+import {
+  getModule,
+  getResources,
+  orderResources,
+} from "@/services/resourceManager";
 import { ActivityType, TeacherActivity } from "@/types/activity";
 import { Module, Resource } from "@/types/resources";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
@@ -12,7 +18,9 @@ import { SectionList, View } from "react-native";
 import {
   ActivityIndicator,
   Appbar,
+  Button,
   Divider,
+  IconButton,
   Text,
   useTheme,
 } from "react-native-paper";
@@ -26,7 +34,7 @@ class ModuleElement {
   constructor(
     public id: number,
     public type: ModuleElementType,
-    public element: Resource | TeacherActivity
+    public element: Resource | TeacherActivity,
   ) {}
 }
 
@@ -42,25 +50,29 @@ export default function ModulePage() {
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [newResourceModalVisible, setNewResourceModalVisible] = useState(false);
+  const [isEditingResources, setIsEditingResources] = useState(false);
 
-  const [, setActivities] = useState<TeacherActivity[]>(null);
   const [activitiesDisplayElements, setActivitiesDisplayElements] = useState<
     ModuleElement[]
   >([]);
 
-  // const [resources, setResources] = useState<Resource[]>(null);
   const [resourcesDisplayElements, setResourcesDisplayElements] = useState<
     ModuleElement[]
   >([]);
+  const [
+    temporalResourcesDisplayElements,
+    setTemporalResourcesDisplayElements,
+  ] = useState<ModuleElement[]>([]);
 
   const moduleSections = [
     {
-      title: "Recursos",
-      data: resourcesDisplayElements,
-    },
-    {
       title: "Actividades",
       data: activitiesDisplayElements,
+    },
+    {
+      title: "Recursos",
+      data: temporalResourcesDisplayElements,
     },
   ];
 
@@ -80,9 +92,24 @@ export default function ModulePage() {
 
   const fetchResources = async () => {
     if (!courseId || !moduleId) return;
-
-    // TODO: Fetch resources from the module
-    setResourcesDisplayElements([]);
+    setIsLoading(true);
+    try {
+      const resources = await getResources(courseId, moduleId);
+      const fetchedResources = resources.map(
+        (resource) =>
+          new ModuleElement(
+            resource.resourceId,
+            ModuleElementType.RESOURCE,
+            resource,
+          ),
+      );
+      setResourcesDisplayElements(fetchedResources);
+      setTemporalResourcesDisplayElements(fetchedResources);
+    } catch (error) {
+      setErrorMessage((error as Error).message);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   async function fetchActivities() {
@@ -91,15 +118,14 @@ export default function ModulePage() {
 
     try {
       const activities = await getModuleTeacherActivities(courseId, moduleId);
-      setActivities(activities);
       setActivitiesDisplayElements(
         activities.map((activity) => {
           return new ModuleElement(
             activity.activity.resourceId,
             ModuleElementType.ACTIVITY,
-            activity
+            activity,
           );
-        })
+        }),
       );
     } catch (error) {
       setErrorMessage((error as Error).message);
@@ -133,12 +159,67 @@ export default function ModulePage() {
     }
   };
 
+  const handleResourcePress = (resource: Resource) => {
+    const resourceId = resource.resourceId;
+    router.push({
+      pathname: "/courses/[courseId]/teacher/resources/[resourceId]",
+      params: { courseId, moduleId, resourceId },
+    });
+  };
+
+  const handleCreateResource = () => {
+    setNewResourceModalVisible(false);
+    router.push({
+      pathname: "/courses/[courseId]/teacher/resources/create",
+      params: { courseId, moduleId },
+    });
+  };
+
+  const handleMoveUpResource = (index: number) => {
+    if (index <= 0) return;
+    const newResources = [...temporalResourcesDisplayElements];
+    const temp = newResources[index - 1];
+    newResources[index - 1] = newResources[index];
+    newResources[index] = temp;
+    setTemporalResourcesDisplayElements(newResources);
+  };
+
+  const handleMoveDownResource = (index: number) => {
+    if (index >= temporalResourcesDisplayElements.length - 1) return;
+    const newResources = [...temporalResourcesDisplayElements];
+    const temp = newResources[index + 1];
+    newResources[index + 1] = newResources[index];
+    newResources[index] = temp;
+    setTemporalResourcesDisplayElements(newResources);
+  };
+
+  const handleEditResourcesOrder = () => {
+    setTemporalResourcesDisplayElements(resourcesDisplayElements);
+    setIsEditingResources(true);
+  };
+
+  const handleCancelResourcesOrder = () => {
+    setTemporalResourcesDisplayElements(resourcesDisplayElements);
+    setIsEditingResources(false);
+  };
+
+  const handleOrderResources = async () => {
+    try {
+      const resourceIds = temporalResourcesDisplayElements.map((el) => el.id);
+      await orderResources(courseId, moduleId, resourceIds);
+      setResourcesDisplayElements(temporalResourcesDisplayElements);
+      setIsEditingResources(false);
+    } catch (error) {
+      setErrorMessage((error as Error).message);
+    }
+  };
+
   useFocusEffect(
     useCallback(() => {
       fetchModule();
       fetchActivities();
       fetchResources();
-    }, [courseId, moduleId])
+    }, [courseId, moduleId]),
   );
 
   return (
@@ -186,26 +267,59 @@ export default function ModulePage() {
               refreshing={isRefreshing}
               onRefresh={handleRefresh}
               keyExtractor={(item, index) => item?.id.toString() + index}
-              renderItem={({ item }) => {
+              renderItem={({ item, index, section }) => {
                 if (!item) return null;
-
-                return (
-                  <View>
-                    {item.type === ModuleElementType.ACTIVITY ? (
-                      <ActivityCard
-                        activity={item.element as TeacherActivity}
-                        onPress={() =>
-                          handleActivityPress(item.element as TeacherActivity)
-                        }
-                      />
-                    ) : (
+                if (section.title === "Recursos") {
+                  return (
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        gap: 8,
+                      }}
+                    >
                       <ResourceCard
                         resource={item.element as Resource}
-                        onPress={() => {}}
+                        onPress={() =>
+                          handleResourcePress(item.element as Resource)
+                        }
                       />
-                    )}
-                  </View>
-                );
+                      {isEditingResources && (
+                        <View style={{ flexDirection: "row", gap: 8 }}>
+                          {index > 0 && (
+                            <IconButton
+                              mode="contained"
+                              icon="arrow-up"
+                              onPress={() => handleMoveUpResource(index)}
+                              size={20}
+                              style={{ margin: 0 }}
+                            />
+                          )}
+                          {index <
+                            temporalResourcesDisplayElements.length - 1 && (
+                            <IconButton
+                              mode="contained"
+                              icon="arrow-down"
+                              onPress={() => handleMoveDownResource(index)}
+                              size={20}
+                              style={{ margin: 0 }}
+                            />
+                          )}
+                        </View>
+                      )}
+                    </View>
+                  );
+                } else if (section.title === "Actividades") {
+                  return (
+                    <ActivityCard
+                      activity={item.element as TeacherActivity}
+                      onPress={() =>
+                        handleActivityPress(item.element as TeacherActivity)
+                      }
+                    />
+                  );
+                }
+                return null;
               }}
               ListHeaderComponent={
                 <>
@@ -216,6 +330,55 @@ export default function ModulePage() {
                 </>
               }
               renderSectionHeader={({ section: { title } }) => {
+                if (title === "Recursos") {
+                  return (
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        paddingVertical: 8,
+                        justifyContent: "space-between",
+                      }}
+                    >
+                      <Text variant="titleMedium">{title}</Text>
+                      {!isEditingResources ? (
+                        <View style={{ flexDirection: "row", gap: 4 }}>
+                          <IconButton
+                            icon="pencil"
+                            size={24}
+                            style={{ margin: 0 }}
+                            onPress={handleEditResourcesOrder}
+                            accessibilityLabel="Editar orden de módulos"
+                          />
+                          <IconButton
+                            icon="plus"
+                            size={24}
+                            style={{ margin: 0 }}
+                            onPress={handleCreateResource}
+                            accessibilityLabel="Editar orden de módulos"
+                          />
+                        </View>
+                      ) : (
+                        <View style={{ flexDirection: "row", gap: 4 }}>
+                          <IconButton
+                            icon="close"
+                            size={24}
+                            style={{ margin: 0 }}
+                            onPress={handleCancelResourcesOrder}
+                            accessibilityLabel="Cancelar"
+                          />
+                          <IconButton
+                            icon="check"
+                            size={24}
+                            style={{ margin: 0 }}
+                            onPress={handleOrderResources}
+                            accessibilityLabel="Guardar orden"
+                          />
+                        </View>
+                      )}
+                    </View>
+                  );
+                }
                 return (
                   <View style={{ paddingVertical: 8 }}>
                     <Text variant="titleMedium">{title}</Text>
@@ -260,10 +423,30 @@ export default function ModulePage() {
           </View>
         )}
       </View>
+      <FullScreenModal
+        visible={newResourceModalVisible}
+        onDismiss={() => setNewResourceModalVisible(false)}
+      >
+        <Button
+          icon="pencil"
+          mode="contained"
+          onPress={() => {
+            setNewResourceModalVisible(false);
+            handleEditResourcesOrder();
+          }}
+        >
+          Editar orden de recursos
+        </Button>
+        <Button icon="plus" mode="contained" onPress={handleCreateResource}>
+          Agregar recurso
+        </Button>
+      </FullScreenModal>
       <ErrorMessageSnackbar
         message={errorMessage}
         onDismiss={() => setErrorMessage("")}
       />
+
+      <FloatingActionButton icon="plus" onPress={handleCreateResource} />
     </>
   );
 }

@@ -38,13 +38,6 @@ export default function CoursePage() {
       focusedIcon: "clipboard-text",
       unfocusedIcon: "clipboard-text",
     },
-    // recursos
-    {
-      key: "resources",
-      title: "Recursos",
-      focusedIcon: "file-document",
-      unfocusedIcon: "file-document",
-    },
     {
       key: "modules",
       title: "Módulos",

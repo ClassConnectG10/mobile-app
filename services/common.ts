@@ -15,6 +15,18 @@ import {
   MultipleSelectAnswer,
   ExamItemAnswer,
 } from "@/types/activity";
+import {
+  Attachment,
+  FileAttachment,
+  LinkAttachment,
+  AttachmentType,
+} from "@/types/resources";
+import { Link } from "@/types/link";
+import {
+  createAttachmentRequest,
+  createResourceFileUploadRequest,
+  createResourceLinkUploadRequest,
+} from "@/api/resources";
 
 export function handleError(error: any, action: string): Error {
   if (error instanceof ZodError) {
@@ -205,14 +217,19 @@ export function getExamAnswerFromJSON(
 const STORAGE_FREFIX =
   "https://storage.googleapis.com/class-connect-g10.firebasestorage.app";
 
-export function getFileFromBackend(fileName: string, backendRef: string): File {
+export function getFileFromBackend(
+  fileName: string,
+  backendRef: string,
+  frontendRef?: string,
+): File {
   if (!fileName || !backendRef) {
     // TODO: ver si está bien manejado el error
     return null;
   }
   const firebaseRef = parseBackendRef(backendRef);
   const fileType = getFileTypeFromName(fileName);
-  const file = new File(fileName, fileType, null, firebaseRef);
+  const localUri = frontendRef || null;
+  const file = new File(fileName, fileType, localUri, firebaseRef);
   return file;
 }
 
@@ -283,4 +300,99 @@ function getFileTypeFromName(fileName: string): string {
     default:
       return "application/octet-stream";
   }
+}
+
+// Actualiza los adjuntos de un recurso, eliminando los que ya no están y subiendo los nuevos
+// Los adjuntos finales quedarán actualizados en el arreglo `updatedAttachments`
+export async function syncResourceAttachments(
+  courseId: string,
+  moduleId: number,
+  resourceId: number,
+  updatedAttachments: Attachment[],
+  originalAttachments: Attachment[],
+) {
+  const originalAttachmentIds = originalAttachments.map(
+    (att) => att.attachmentId,
+  );
+  const updatedAttachmentIds = updatedAttachments.map(
+    (att) => att.attachmentId,
+  );
+
+  const attachmentsToDelete = originalAttachments.filter(
+    (att) =>
+      att.attachmentId && !updatedAttachmentIds.includes(att.attachmentId),
+  );
+  const attachmentsToCreate = updatedAttachments.filter(
+    (att) => !originalAttachmentIds.includes(att.attachmentId),
+  );
+
+  // Eliminar los adjuntos que ya no están en el recurso
+  await Promise.all(
+    attachmentsToDelete.map(async (attachment) => {
+      const attachmentRequest = await createAttachmentRequest(
+        courseId,
+        moduleId,
+        resourceId,
+        attachment.attachmentId,
+      );
+      await attachmentRequest.delete("");
+    }),
+  );
+
+  const fileRequest = await createResourceFileUploadRequest(
+    courseId,
+    moduleId,
+    resourceId,
+  );
+  const linkRequest = await createResourceLinkUploadRequest(
+    courseId,
+    moduleId,
+    resourceId,
+  );
+
+  // Subir los nuevos adjuntos y actualizar el attachmentId en el arreglo original
+  await Promise.all(
+    attachmentsToCreate.map(async (attachment) => {
+      if (attachment instanceof FileAttachment) {
+        const response = await postFile(fileRequest, attachment.file);
+
+        const newId = response?.data?.data?.attachment_id;
+        const firebaseUrl = response?.data?.data?.url;
+        if (newId && firebaseUrl) {
+          attachment.attachmentId = newId;
+          attachment.file = getFileFromBackend(
+            attachment.file.name,
+            firebaseUrl,
+            attachment.file.localUri,
+          );
+        }
+      } else if (attachment instanceof LinkAttachment) {
+        const response = await linkRequest.post("", {
+          external_ref: attachment.link.display,
+          url: attachment.link.url,
+        });
+        const newId = response?.data?.data?.attachment_id;
+        if (newId) {
+          attachment.attachmentId = newId;
+        }
+      }
+    }),
+  );
+}
+
+export function getAttachmentFromBackend(attachmentData: any): Attachment {
+  if (attachmentData.attachment_type === AttachmentType.FILE) {
+    const file = getFileFromBackend(
+      attachmentData.external_ref,
+      attachmentData.url,
+    );
+    return new FileAttachment(file, attachmentData.attachment_id);
+  } else if (attachmentData.attachment_type === AttachmentType.LINK) {
+    const link = new Link(attachmentData.external_ref, attachmentData.url);
+    return new LinkAttachment(link, attachmentData.attachment_id);
+  }
+
+  throw new Error(
+    `Tipo de adjunto no soportado: ${attachmentData.attachment_type}`,
+  );
 }
