@@ -19,7 +19,7 @@ import { AlertText } from "@/components/AlertText";
 const MAX_MARK = 10;
 const DEFAULT_MARK = 4;
 
-export default function TeacherSubmissionPage() {
+export default function TeacherStudentDetialsPage() {
   const theme = useTheme();
   const router = useRouter();
   const { courseId: courseIdParam, studentId: studentIdParam } =

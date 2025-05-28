@@ -77,13 +77,28 @@ export const ParticipantsTab: React.FC<ParticipantsTabProps> = ({ course }) => {
     }
   }
 
-  const handleTeacherPress = (teacher: User) => {
-    if (!userContext.user) return;
-
+  const handleOwnerPress = () => {
+    if (!courseOwner) return;
     router.push({
       pathname: "/users/[userId]",
-      params: { userId: teacher.id },
+      params: { userId: courseOwner.id },
     });
+  };
+
+  const handleAssistantPress = (teacher: User) => {
+    if (!userContext.user) return;
+
+    if (isOwner) {
+      router.push({
+        pathname: "/courses/[courseId]/teacher/participants/[assistantId]",
+        params: { courseId: course.courseId, assistantId: teacher.id },
+      });
+    } else {
+      router.push({
+        pathname: "/users/[userId]",
+        params: { userId: teacher.id },
+      });
+    }
   };
 
   const handleStudentPress = (student: User) => {
@@ -125,6 +140,13 @@ export const ParticipantsTab: React.FC<ParticipantsTabProps> = ({ course }) => {
       fetchStudents();
     }, [course]),
   );
+
+  const handleAddParticipant = () => {
+    router.push({
+      pathname: "/courses/[courseId]/teacher/participants/addAssistants",
+      params: { courseId: course.courseId },
+    });
+  };
 
   const handleRemoveAssistant = async () => {
     if (!selectedUser) return;
@@ -194,7 +216,7 @@ export const ParticipantsTab: React.FC<ParticipantsTabProps> = ({ course }) => {
                   <UserCard
                     user={item}
                     onPress={() => {
-                      handleTeacherPress(item);
+                      handleOwnerPress();
                     }}
                   />
                 );
@@ -211,7 +233,7 @@ export const ParticipantsTab: React.FC<ParticipantsTabProps> = ({ course }) => {
                     <UserCard
                       user={item}
                       onPress={() => {
-                        handleTeacherPress(item);
+                        handleAssistantPress(item);
                       }}
                     />
                     {isOwner && (
@@ -274,13 +296,7 @@ export const ParticipantsTab: React.FC<ParticipantsTabProps> = ({ course }) => {
                     <IconButton
                       icon="account-plus"
                       size={24}
-                      onPress={() => {
-                        router.push({
-                          pathname:
-                            "/courses/[courseId]/teacher/participants/addAssistants",
-                          params: { courseId: course.courseId },
-                        });
-                      }}
+                      onPress={handleAddParticipant}
                     />
                   </View>
                 );
