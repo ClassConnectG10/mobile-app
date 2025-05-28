@@ -25,7 +25,7 @@ export const activityDetailsSchema = z.object({
   moduleId: z
     .number({
       required_error: "El módulo es requerido",
-      invalid_type_error: "El módulo debe ser un número",
+      invalid_type_error: "El módulo es requerido",
     })
     .int("El módulo debe ser un número entero"),
 });
@@ -86,7 +86,7 @@ const multipleChoiceSchema = z.object({
           required_error: "La opción es requerida",
           invalid_type_error: "La opción debe ser un texto",
         })
-        .min(1, "La opción no puede estar vacía"),
+        .min(1, "La opción no puede estar vacía")
     )
     .min(2, "Debe haber al menos dos opciones"),
   correctAnswer: z
@@ -133,7 +133,7 @@ const multipleSelectSchema = z.object({
           required_error: "La opción es requerida",
           invalid_type_error: "La opción debe ser un texto",
         })
-        .min(1, "La opción no puede estar vacía"),
+        .min(1, "La opción no puede estar vacía")
     )
     .min(2, "Debe haber al menos dos opciones"),
   correctAnswers: z
@@ -144,7 +144,7 @@ const multipleSelectSchema = z.object({
           invalid_type_error: "La respuesta correcta debe ser un número",
         })
         .int("La respuesta correcta debe ser un número entero")
-        .min(0, "Debe seleccionar una opción correcta"),
+        .min(0, "Debe seleccionar una opción correcta")
     )
     .min(1, "Debe seleccionar al menos una opción correcta"),
 });
@@ -176,7 +176,7 @@ export const examDetailsSchema = z.object({
   moduleId: z
     .number({
       required_error: "El módulo es requerido",
-      invalid_type_error: "El módulo debe ser un número",
+      invalid_type_error: "El módulo es requerido",
     })
     .int("El módulo debe ser un número entero"),
   examItems: z
@@ -229,7 +229,7 @@ const multipleSelectAnswerSchema = z.object({
       z.number({
         required_error: "Faltan preguntas por responder",
         invalid_type_error: "Faltan preguntas por responder",
-      }),
+      })
     )
     .min(1, "Faltan preguntas por responder"),
 });
@@ -254,4 +254,43 @@ export const submittedExamItemSchema = z.object({
     invalid_type_error: "El tipo de pregunta es inválido",
   }),
   answer: examItemAnswerSchema,
+});
+
+export const taskGradeSchema = z.object({
+  mark: z
+    .number({
+      required_error: "La nota es requerida",
+      invalid_type_error: "La nota debe ser un número valido",
+    })
+    .int()
+    .min(0, "La nota debe estar entre 0 y 10")
+    .max(10, "La nota debe estar entre 0 y 10"),
+  feedback_message: z.string({
+    required_error: "El comentario de retroalimentación es requerido",
+    invalid_type_error: "El comentario de retroalimentacióndebe ser un texto",
+  }),
+});
+
+export const examGradeSchema = z.object({
+  mark: z
+    .number({
+      required_error: "La nota es requerida",
+      invalid_type_error: "La nota debe ser un número valido",
+    })
+    .int()
+    .min(0, "La nota debe estar entre 0 y 10")
+    .max(10, "La nota debe estar entre 0 y 10"),
+  feedback_message: z.string({
+    required_error: "El comentario de retroalimentación es requerido",
+    invalid_type_error: "El comentario de retroalimentacióndebe ser un texto",
+  }),
+  correctExamItems: z
+    .array(z.boolean().nullable(), {
+      required_error: "Debe indicar si las preguntas son correctas",
+      invalid_type_error: "Debe indicar si las preguntas son correctas",
+    })
+    .refine((arr) => arr.every((val) => val !== null), {
+      message:
+        "Debe marcar si las respuestas de las preguntas abiertas son correctas",
+    }),
 });

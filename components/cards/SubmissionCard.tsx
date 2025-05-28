@@ -1,6 +1,11 @@
 import { Card, Icon, Text, useTheme } from "react-native-paper";
 import { StyleSheet, View } from "react-native";
-import { ActivitySubmission } from "@/types/activity";
+import {
+  ActivitySubmission,
+  ActivityType,
+  StudentActivity,
+  TeacherActivity,
+} from "@/types/activity";
 import { User } from "@/types/user";
 import { getRelativeTimeFromDue, getRelativeTimeFromNow } from "@/utils/date";
 import { customColors } from "@/utils/constants/colors";
@@ -9,12 +14,16 @@ interface SubmissionCardProps {
   student: User;
   submission: ActivitySubmission;
   onPress?: () => void;
+  viewActivityMode?: boolean;
+  activity?: TeacherActivity | StudentActivity;
 }
 
 const SubmissionCard: React.FC<SubmissionCardProps> = ({
   student,
   submission,
   onPress,
+  viewActivityMode = false,
+  activity,
 }) => {
   const theme = useTheme();
   const { firstName, lastName } = student.userInformation;
@@ -35,17 +44,38 @@ const SubmissionCard: React.FC<SubmissionCardProps> = ({
     <Icon source="alert-circle" size={24} color={customColors.error} />
   ) : undefined;
 
+  const cardIcon =
+    viewActivityMode && activity ? (
+      <Icon
+        source={
+          activity.activity.type === ActivityType.TASK
+            ? "file-document"
+            : "test-tube"
+        }
+        size={24}
+        color={theme.colors.primary}
+      />
+    ) : (
+      <Icon source="account" size={36} color={theme.colors.primary} />
+    );
+
+  const mainText = (
+    <Text style={[styles.title, { color: theme.colors.onSurface }]}>
+      {viewActivityMode && activity
+        ? activity.activity.activityDetails.title
+        : `${firstName} ${lastName}`}
+    </Text>
+  );
+
   return (
     <Card
       onPress={onPress}
       style={[styles.card, { backgroundColor: theme.colors.onPrimary }]}
     >
       <View style={styles.row}>
-        <Icon source="account" size={36} color={theme.colors.primary} />
+        {cardIcon}
         <View style={{ flex: 1 }}>
-          <Text style={[styles.title, { color: theme.colors.onSurface }]}>
-            {firstName} {lastName}
-          </Text>
+          {mainText}
           <Text style={[styles.dueDate, { color: statusColor }]}>
             {relativeTime}
           </Text>

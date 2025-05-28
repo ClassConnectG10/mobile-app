@@ -1,12 +1,25 @@
 import {
+  getExamGrade,
   getExamSubmission,
   getStudentExam,
 } from "@/services/activityManagement";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, ScrollView, View } from "react-native";
-import { Appbar, Button, Dialog, useTheme, Text } from "react-native-paper";
-import { ExamDetails, ExamSubmission, StudentActivity } from "@/types/activity";
+import {
+  Appbar,
+  Button,
+  Dialog,
+  useTheme,
+  Text,
+  Divider,
+} from "react-native-paper";
+import {
+  ExamDetails,
+  ExamGrade,
+  ExamSubmission,
+  StudentActivity,
+} from "@/types/activity";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import { TextField } from "@/components/forms/TextField";
 import { formatDateTime } from "@/utils/date";
@@ -31,6 +44,7 @@ export default function StudentExamPage() {
   const [, setStudentExam] = useState<StudentActivity>(null);
   const [examDetails, setExamDetails] = useState<ExamDetails>(null);
   const [examSubmission, setExamSubmission] = useState<ExamSubmission>(null);
+  const [examGrade, setExamGrade] = useState<ExamGrade>(null);
 
   const userContextHook = useUserContext();
   const userContext = userContextHook.user;
@@ -60,7 +74,7 @@ export default function StudentExamPage() {
         courseId,
         examId,
         studentId,
-        examDetails.examItems,
+        examDetails.examItems
       );
       setExamSubmission(examSubmission);
     } catch (error) {
@@ -82,6 +96,20 @@ export default function StudentExamPage() {
     });
   };
 
+  async function fetchExamGrade() {
+    if (!courseId || !examId || !studentId) return;
+    setIsLoading(true);
+
+    try {
+      const grade = await getExamGrade(courseId, Number(examId), studentId);
+      setExamGrade(grade);
+    } catch (error) {
+      setErrorMessage((error as Error).message);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
   useEffect(() => {
     fetchStudentExamSubmission();
   }, [examDetails]);
@@ -89,7 +117,8 @@ export default function StudentExamPage() {
   useFocusEffect(
     useCallback(() => {
       fetchStudentExam();
-    }, [courseId, examId]),
+      fetchExamGrade();
+    }, [courseId, examId])
   );
 
   return (
@@ -110,15 +139,15 @@ export default function StudentExamPage() {
             />
           </View>
         ) : (
-          <ScrollView
-            contentContainerStyle={{
-              flex: 1,
-              backgroundColor: theme.colors.background,
-              justifyContent: "space-between",
-              padding: 16,
-            }}
-          >
-            <View style={{ gap: 16 }}>
+          <>
+            <ScrollView
+              contentContainerStyle={{
+                flex: 1,
+                backgroundColor: theme.colors.background,
+                gap: 16,
+                padding: 16,
+              }}
+            >
               <ExamSubmissionCard
                 student={userContext}
                 examSubmission={examSubmission}
@@ -139,8 +168,23 @@ export default function StudentExamPage() {
                   value={formatDateTime(examSubmission.submissionDate)}
                 />
               )}
-            </View>
-            <View>
+              {examGrade && (
+                <View
+                  style={{
+                    gap: 16,
+                  }}
+                >
+                  <Divider />
+                  <Text>Calificación de la entrega</Text>
+                  <TextField label="Nota" value={examGrade.mark} />
+                  <TextField
+                    label="Comentario de retroalimentación"
+                    value={examGrade.feedback_message}
+                  />
+                </View>
+              )}
+            </ScrollView>
+            <View style={{ padding: 16 }}>
               {examSubmission.submited ? (
                 <Button
                   mode="contained"
@@ -148,7 +192,7 @@ export default function StudentExamPage() {
                   disabled={isLoading}
                   icon="eye"
                 >
-                  Ver entrega
+                  {examGrade ? "Ver entrega calificada" : "Ver entrega"}
                 </Button>
               ) : (
                 <Button
@@ -163,7 +207,7 @@ export default function StudentExamPage() {
                 </Button>
               )}
             </View>
-          </ScrollView>
+          </>
         )}
       </View>
       <ErrorMessageSnackbar

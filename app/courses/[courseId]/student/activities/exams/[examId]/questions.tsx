@@ -1,5 +1,5 @@
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
-import { ExamDetails, ExamItemAnswer } from "@/types/activity";
+import { ExamDetails, ExamGrade, ExamItemAnswer } from "@/types/activity";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useState, useEffect } from "react";
 import { View, FlatList } from "react-native";
@@ -8,16 +8,21 @@ import {
   Button,
   ActivityIndicator,
   useTheme,
+  Text,
+  Icon,
 } from "react-native-paper";
 import { ExamItemCard } from "@/components/cards/examCards/ExamItemCard";
 import { useFocusEffect } from "@react-navigation/native";
 import {
+  getExamGrade,
   getExamSubmission,
   getStudentExam,
   submitExam,
 } from "@/services/activityManagement";
 import { ExamItemMode } from "@/components/cards/examCards/examItemMode";
 import { useUserContext } from "@/utils/storage/userContext";
+import { FullScreenModal } from "@/components/FullScreenModal";
+import { customColors } from "@/utils/constants/colors";
 
 export default function StudentFillExam() {
   const router = useRouter();
@@ -34,6 +39,9 @@ export default function StudentFillExam() {
   const [, setStudentExam] = useState(null);
   const [examDetails, setExamDetails] = useState(null);
   const [examSubmission, setExamSubmission] = useState(null);
+  const [examGrade, setExamGrade] = useState<ExamGrade>(null);
+
+  const [helpModalVisible, setHelpModalVisible] = useState(false);
 
   const userContextHook = useUserContext();
   const studentId = userContextHook.user.id;
@@ -62,7 +70,7 @@ export default function StudentFillExam() {
         courseId,
         examId,
         studentId,
-        examDetails.examItems,
+        examDetails.examItems
       );
       setExamSubmission(examSubmission);
     } catch (error) {
@@ -98,6 +106,24 @@ export default function StudentFillExam() {
     setExamSubmission(newExamSubmission);
   };
 
+  async function fetchExamGrade() {
+    if (!courseId || !examId || !studentId) return;
+    setIsLoading(true);
+
+    try {
+      const grade = await getExamGrade(
+        courseId,
+        Number(examId),
+        Number(studentId)
+      );
+      setExamGrade(grade);
+    } catch (error) {
+      setErrorMessage((error as Error).message);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
   const handleFinishExam = async () => {
     setIsLoading(true);
     try {
@@ -117,7 +143,8 @@ export default function StudentFillExam() {
   useFocusEffect(
     useCallback(() => {
       fetchStudentExam();
-    }, [courseId, examId]),
+      fetchExamGrade();
+    }, [courseId, examId])
   );
 
   return (
@@ -133,6 +160,13 @@ export default function StudentFillExam() {
             examSubmission?.submited ? "Entrega realizada" : "Completar examen"
           }
         />
+        {examSubmission?.submited && examGrade && (
+          <Appbar.Action
+            icon="help-circle"
+            onPress={() => setHelpModalVisible(true)}
+            disabled={isLoading}
+          />
+        )}
       </Appbar.Header>
       {isLoading || !examDetails || !examSubmission ? (
         <View
@@ -154,20 +188,30 @@ export default function StudentFillExam() {
           <FlatList
             data={examDetails.examItems}
             keyExtractor={(_item, index) => index.toString()}
-            renderItem={({ item, index }) => (
-              <ExamItemCard
-                mode={
-                  examSubmission.submited
-                    ? ExamItemMode.SENT
-                    : ExamItemMode.FILL
-                }
-                examItem={item}
-                studentAnswer={examSubmission.submittedExamItems[index].answer}
-                setStudentAnswer={(answer) => setStudentAnswer(index, answer)}
-                answerOk={examSubmission.submittedExamItems[index].correct}
-                setAnswerOk={(correct) => setCorrectAnswer(index, correct)}
-              />
-            )}
+            renderItem={({ item, index }) => {
+              let mode;
+              if (examSubmission.submited) {
+                mode = examGrade ? ExamItemMode.MARKED : ExamItemMode.SENT;
+              } else {
+                mode = ExamItemMode.FILL;
+              }
+              return (
+                <ExamItemCard
+                  mode={mode}
+                  examItem={item}
+                  studentAnswer={
+                    examSubmission.submittedExamItems[index].answer
+                  }
+                  setStudentAnswer={(answer) => setStudentAnswer(index, answer)}
+                  answerOk={
+                    examGrade
+                      ? examGrade.correctExamItems[index]
+                      : examSubmission.submittedExamItems[index].correct
+                  }
+                  setAnswerOk={(correct) => setCorrectAnswer(index, correct)}
+                />
+              );
+            }}
             ItemSeparatorComponent={() => (
               <View
                 style={{
@@ -196,7 +240,86 @@ export default function StudentFillExam() {
           />
         </View>
       )}
+      <FullScreenModal
+        visible={helpModalVisible}
+        onDismiss={() => setHelpModalVisible(false)}
+        children={
+          <View style={{ gap: 16 }}>
+            <Text variant="titleMedium">Íconos y código de colores</Text>
+            <View>
+              <Text>
+                Cada pregunta tiene arriba a la izquierda un ícono que indica si
+                el estudiante la respondió correctamente o no:
+              </Text>
+              <View style={{ marginVertical: 16, gap: 8 }}>
+                <View
+                  style={{ flexDirection: "row", alignItems: "center", gap: 8 }}
+                >
+                  <Icon
+                    source="check-circle-outline"
+                    size={24}
+                    color={customColors.success}
+                  />
+                  <Text>Pregunta respondida correctamente</Text>
+                </View>
+                <View
+                  style={{ flexDirection: "row", alignItems: "center", gap: 8 }}
+                >
+                  <Icon
+                    source="close-circle-outline"
+                    size={24}
+                    color={customColors.error}
+                  />
+                  <Text>Pregunta respondida incorrectamente</Text>
+                </View>
+              </View>
 
+              <Text>En las preguntas con opciones:</Text>
+              <View style={{ marginLeft: 16 }}>
+                <Text>
+                  {"\u2022"} En{" "}
+                  <Text
+                    style={{
+                      fontWeight: "bold",
+                      color: customColors.success,
+                    }}
+                  >
+                    verde
+                  </Text>
+                  : opciones correctas seleccionadas por el estudiante
+                </Text>
+                <Text>
+                  {"\u2022"} En{" "}
+                  <Text
+                    style={{
+                      fontWeight: "bold",
+                      color: customColors.error,
+                    }}
+                  >
+                    rojo
+                  </Text>
+                  : opciones incorrectas seleccionadas por el estudiante
+                </Text>
+                <Text>
+                  {"\u2022"} En{" "}
+                  <Text
+                    style={{
+                      fontWeight: "bold",
+                      color: theme.colors.primary,
+                    }}
+                  >
+                    violeta
+                  </Text>
+                  : opciones correctas no seleccionadas por el estudiante
+                </Text>
+              </View>
+            </View>
+            <Button mode="outlined" onPress={() => setHelpModalVisible(false)}>
+              OK
+            </Button>
+          </View>
+        }
+      />
       <ErrorMessageSnackbar
         message={errorMessage}
         onDismiss={() => setErrorMessage("")}

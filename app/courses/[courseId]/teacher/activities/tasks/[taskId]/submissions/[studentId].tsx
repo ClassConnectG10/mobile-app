@@ -1,13 +1,27 @@
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import {
+  getTaskGrade,
   getTaskSubmission,
   getTeacherTask,
+  gradeTask,
 } from "@/services/activityManagement";
-import { TaskDetails, TaskSubmission, TeacherActivity } from "@/types/activity";
+import {
+  TaskDetails,
+  TaskGrade,
+  TaskSubmission,
+  TeacherActivity,
+} from "@/types/activity";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { ScrollView, View } from "react-native";
-import { ActivityIndicator, Appbar, Text, useTheme } from "react-native-paper";
+import {
+  ActivityIndicator,
+  Appbar,
+  Button,
+  Divider,
+  Text,
+  useTheme,
+} from "react-native-paper";
 import { ToggleableFileInput } from "@/components/forms/ToggleableFileInput";
 import { File } from "@/types/file";
 import { getUser } from "@/services/userManagement";
@@ -15,6 +29,10 @@ import { User } from "@/types/user";
 import UserCard from "@/components/cards/UserCard";
 import { formatDateTime } from "@/utils/date";
 import { TextField } from "@/components/forms/TextField";
+import { AlertText } from "@/components/AlertText";
+import { useTaskGrade } from "@/hooks/useTaskGrade";
+import { ToggleableNumberInput } from "@/components/forms/ToggleableNumberInput";
+import { ToggleableTextInput } from "@/components/forms/ToggleableTextInput";
 
 export default function TaskSubmissionPage() {
   const router = useRouter();
@@ -30,6 +48,7 @@ export default function TaskSubmissionPage() {
   const studentId = studentIdParam as string;
 
   const [isLoading, setIsLoading] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [teacherTask, setTeacherTask] = useState<TeacherActivity | null>(null);
   const [taskDetails, setTaskDetails] = useState<TaskDetails | null>(null);
@@ -39,6 +58,11 @@ export default function TaskSubmissionPage() {
     useState<TaskSubmission | null>(null);
 
   const [student, setStudent] = useState<User | null>(null);
+
+  const [hasPreviousGrade, setHasPreviousGrade] = useState(false);
+
+  const temporalTaskGradeHook = useTaskGrade();
+  const { taskGrade: temporalTaskGrade } = temporalTaskGradeHook;
 
   async function fetchTeacherTask() {
     if (!courseId || !taskId) return;
@@ -63,7 +87,7 @@ export default function TaskSubmissionPage() {
       const response = await getTaskSubmission(
         courseId,
         Number(taskId),
-        Number(studentId),
+        Number(studentId)
       );
 
       setStudentSubmission(response);
@@ -89,6 +113,31 @@ export default function TaskSubmissionPage() {
     }
   }
 
+  async function fetchTaskGrade() {
+    if (!courseId || !taskId || !studentId) return;
+    setIsLoading(true);
+    try {
+      const grade = await getTaskGrade(
+        courseId,
+        Number(taskId),
+        Number(studentId)
+      );
+      if (grade) {
+        temporalTaskGradeHook.setTaskGrade(grade);
+        setHasPreviousGrade(true);
+      } else {
+        temporalTaskGradeHook.setTaskGrade(
+          new TaskGrade(Number(taskId), Number(studentId), 0, "")
+        );
+        setHasPreviousGrade(false);
+      }
+    } catch (error) {
+      setErrorMessage((error as Error).message);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
   const handleStudentPress = () => {
     router.push({
       pathname: `/users/[userId]`,
@@ -98,12 +147,30 @@ export default function TaskSubmissionPage() {
     });
   };
 
+  const handleSaveGrade = async () => {
+    if (!courseId || !taskId || !studentId) return;
+    setIsLoading(true);
+    try {
+      await gradeTask(courseId, temporalTaskGrade);
+      setHasPreviousGrade(true);
+      setIsEditing(false);
+    } catch (error) {
+      setErrorMessage((error as Error).message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchStudentSubmission();
+  }, [teacherTask]);
+
   useFocusEffect(
     useCallback(() => {
       fetchTeacherTask();
       fetchStudent();
-      fetchStudentSubmission();
-    }, [courseId, taskId, studentId]),
+      fetchTaskGrade();
+    }, [courseId, taskId, studentId])
   );
 
   return (
@@ -120,7 +187,8 @@ export default function TaskSubmissionPage() {
       !teacherTask ||
       !studentSubmission ||
       !student ||
-      !taskDetails ? (
+      !taskDetails ||
+      !temporalTaskGrade ? (
         <View
           style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
         >
@@ -129,57 +197,107 @@ export default function TaskSubmissionPage() {
             size="large"
             color={theme.colors.primary}
           />
+          {/* <Text>taskGrade {JSON.stringify(temporalTaskGrade, null, 2)}</Text> */}
         </View>
       ) : (
-        <ScrollView
-          contentContainerStyle={{
-            flex: 1,
-            backgroundColor: theme.colors.background,
-            justifyContent: "space-between",
-            padding: 16,
-          }}
-        >
-          <View
-            style={{
-              gap: 16,
+        <>
+          <ScrollView
+            contentContainerStyle={{
+              backgroundColor: theme.colors.background,
+              padding: 16,
             }}
           >
             <View
               style={{
-                flexDirection: "row",
+                flex: 1,
+                gap: 16,
               }}
             >
-              <UserCard user={student} onPress={handleStudentPress} />
+              <View
+                style={{
+                  flexDirection: "row",
+                }}
+              >
+                <UserCard user={student} onPress={handleStudentPress} />
+              </View>
+
+              <TextField label="Título" value={taskDetails.title} />
+
+              <TextField
+                label="Fecha límite"
+                value={formatDateTime(taskDetails.dueDate)}
+              />
+
+              {studentSubmission && studentSubmission.submited ? (
+                <>
+                  <TextField
+                    label="Fecha de entrega"
+                    value={formatDateTime(studentSubmission.submissionDate)}
+                  />
+
+                  <Text>Archivos de la entrega</Text>
+
+                  <ToggleableFileInput
+                    files={submittedFiles}
+                    editable={false}
+                    onChange={() => {}}
+                    maxFiles={1}
+                  />
+                </>
+              ) : (
+                <Text variant="titleSmall">El alumno no entregó la tarea</Text>
+              )}
+              <Divider />
+              <Text>Calificación de la entrega</Text>
+              {!hasPreviousGrade && !isEditing && (
+                <AlertText text="La entrega no ha sido calificada todavía." />
+              )}
+
+              {(hasPreviousGrade || isEditing) && (
+                <View style={{ flex: 1, gap: 16 }}>
+                  <ToggleableNumberInput
+                    label="Nota"
+                    value={temporalTaskGrade.mark}
+                    editable={isEditing}
+                    onChange={(mark) => temporalTaskGradeHook.setMark(mark)}
+                    minValue={0}
+                    maxValue={10}
+                  />
+                  <ToggleableTextInput
+                    label="Comentario de retroalimentación"
+                    placeholder="Escriba un comentario para el estudiante"
+                    value={temporalTaskGrade.feedback_message}
+                    editable={isEditing}
+                    onChange={(feedback) =>
+                      temporalTaskGradeHook.setFeedbackMessage(feedback)
+                    }
+                  />
+                </View>
+              )}
             </View>
-
-            <TextField label="Título" value={taskDetails.title} />
-
-            <TextField
-              label="Fecha límite"
-              value={formatDateTime(taskDetails.dueDate)}
-            />
-
-            {studentSubmission && studentSubmission.submited ? (
-              <>
-                <TextField
-                  label="Fecha de entrega"
-                  value={formatDateTime(studentSubmission.submissionDate)}
-                />
-
-                <Text>Archivos de la entrega</Text>
-
-                <ToggleableFileInput
-                  files={submittedFiles}
-                  editable={false}
-                  onChange={() => {}}
-                  maxFiles={1}
-                />
-              </>
+          </ScrollView>
+          <View style={{ padding: 16 }}>
+            {isEditing ? (
+              <Button
+                icon="note-check"
+                mode="contained"
+                onPress={() => handleSaveGrade()}
+                disabled={isLoading}
+              >
+                Confirmar calificación
+              </Button>
             ) : (
-              <Text variant="titleSmall">El alumno no entregó el examen</Text>
+              <Button
+                icon="note-check"
+                mode="contained"
+                onPress={() => setIsEditing(true)}
+                disabled={isLoading}
+              >
+                {hasPreviousGrade ? "Editar calificación" : "Calificar entrega"}
+              </Button>
             )}
           </View>
-        </ScrollView>
+        </>
       )}
       <ErrorMessageSnackbar
         message={errorMessage}
