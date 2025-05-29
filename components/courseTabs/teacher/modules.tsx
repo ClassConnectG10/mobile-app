@@ -55,7 +55,7 @@ export const ModulesTab: React.FC<ModulesTabProps> = ({ course }) => {
   useFocusEffect(
     useCallback(() => {
       fetchModules();
-    }, [course.courseId])
+    }, [course.courseId]),
   );
 
   const handleEditModulesOrder = async () => {

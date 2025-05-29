@@ -18,6 +18,7 @@ import { View } from "react-native";
 import ActivitiesTab from "../../../../components/courseTabs/teacher/activities";
 import { ParticipantsTab } from "../../../../components/courseTabs/teacher/participants";
 import { ModulesTab } from "@/components/courseTabs/teacher/modules";
+import { StatisticsTab } from "@/components/courseTabs/teacher/statistics.";
 
 export default function CoursePage() {
   const router = useRouter();
@@ -50,7 +51,7 @@ export default function CoursePage() {
       unfocusedIcon: "account-multiple",
     },
     {
-      key: "stats",
+      key: "statistics",
       title: "Estadísticas",
       focusedIcon: "chart-bar",
       unfocusedIcon: "chart-bar",
@@ -72,6 +73,12 @@ export default function CoursePage() {
         return null;
       }
       return <ModulesTab course={courseContext.course} />;
+    },
+    statistics: () => {
+      if (!courseContext.course) {
+        return null;
+      }
+      return <StatisticsTab course={courseContext.course} />;
     },
   });
 
@@ -122,7 +129,7 @@ export default function CoursePage() {
   useFocusEffect(
     useCallback(() => {
       fetchCourse();
-    }, [courseId])
+    }, [courseId]),
   );
 
   return (
