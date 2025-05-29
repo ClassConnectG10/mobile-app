@@ -1,12 +1,18 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { useTheme } from "react-native-paper";
-import Svg, { Line, Path, G, Text as SvgText } from "react-native-svg";
+import Svg, { Line, Path, Circle, G, Text as SvgText } from "react-native-svg";
+
+export type LineChartDataPoint = {
+  x: number;
+  y: number;
+};
 
 export type LineChartSeries = {
   label: string;
   color: string;
-  data: { x: number; y: number }[];
+  data: LineChartDataPoint[];
+  showPoints?: boolean;
 };
 
 export type LineChartProps = {
@@ -16,15 +22,25 @@ export type LineChartProps = {
   height?: number;
   xLabel?: string;
   yLabel?: string;
+  showAllXLabels?: boolean;
+  xLabelSteps?: number;
+  showAllYLabels?: boolean;
+  yLabelSteps?: number;
+  titleColor?: string;
 };
 
 export default function LineChart({
   title,
   series,
-  width: propWidth = 340,
+  width = 340,
   height = 220,
   xLabel,
   yLabel,
+  showAllXLabels = false,
+  xLabelSteps = 5,
+  showAllYLabels = false,
+  yLabelSteps = 3,
+  titleColor = "#888", // por defecto gris
 }: LineChartProps) {
   const theme = useTheme();
   // Unificar todos los puntos X
@@ -39,8 +55,47 @@ export default function LineChart({
   const margin = 32;
   // chartW y chartH se calculan en px, pero el SVG se ajusta al 100% del contenedor
   // Por eso, el SVG debe tener width="100%" y el View debe tener style={{ width: '100%' }}
-  const chartW = 400 - margin * 2; // valor base para proporción
+  const chartW = width - margin * 2; // valor base para proporción
   const chartH = height - margin * 2;
+
+  // Escala X basada en valores, no en cantidad de puntos
+  const xMin = Math.min(...allX);
+  const xMax = Math.max(...allX);
+
+  // Función para escalar X (ahora depende del valor, no del índice)
+  const getX = (x: number) => {
+    if (xMax === xMin) return margin + chartW / 2;
+    return margin + ((x - xMin) / (xMax - xMin)) * chartW;
+  };
+  // Función para escalar Y
+  const getY = (y: number) => {
+    if (yMax === yMin) return margin + chartH / 2;
+    return margin + chartH - ((y - yMin) / (yMax - yMin)) * chartH;
+  };
+
+  // Para labels de X: todos o solo algunos
+  let xLabelIndexes: number[];
+  if (showAllXLabels) {
+    xLabelIndexes = allX.map((_, i) => i);
+  } else {
+    const steps = Math.min(xLabelSteps, allX.length);
+    xLabelIndexes = Array.from({ length: steps }, (_, i) =>
+      Math.round((i * (allX.length - 1)) / (steps - 1)),
+    );
+  }
+
+  // Para labels de Y: todos o solo algunos
+  let yLabelValues: number[];
+  if (showAllYLabels) {
+    // Mostrar todos los valores únicos de Y (ordenados de mayor a menor)
+    yLabelValues = Array.from(new Set(allY)).sort((a, b) => b - a);
+  } else {
+    const steps = Math.max(2, yLabelSteps);
+    yLabelValues = Array.from(
+      { length: steps },
+      (_, i) => yMin + ((yMax - yMin) * (steps - 1 - i)) / (steps - 1),
+    );
+  }
 
   return (
     <View
@@ -49,16 +104,16 @@ export default function LineChart({
         { backgroundColor: theme.colors.surface, width: "100%" },
       ]}
     >
-      <Text style={styles.title}>{title}</Text>
+      <Text style={[styles.title, { color: titleColor }]}>{title}</Text>
       <View style={{ width: "100%" }}>
-        <Svg width="100%" height={height} viewBox={`0 0 340 ${height}`}>
+        <Svg width="100%" height={height} viewBox={`0 0 ${width} ${height}`}>
           {/* Ejes */}
           <G>
             {/* Eje X */}
             <Line
               x1={margin}
               y1={height - margin}
-              x2={340 - margin}
+              x2={width - margin}
               y2={height - margin}
               stroke="#888"
               strokeWidth={1}
@@ -79,17 +134,8 @@ export default function LineChart({
               key={serie.label}
               d={serie.data
                 .map((d, i) => {
-                  const x =
-                    margin +
-                    (allX.length === 1
-                      ? chartW / 2
-                      : (allX.indexOf(d.x) / (allX.length - 1)) * chartW);
-                  const y =
-                    yMax === yMin
-                      ? margin + chartH / 2
-                      : margin +
-                        chartH -
-                        ((d.y - yMin) / (yMax - yMin)) * chartH;
+                  const x = getX(d.x);
+                  const y = getY(d.y);
                   return i === 0 ? `M${x},${y}` : `L${x},${y}`;
                 })
                 .join(" ")}
@@ -98,41 +144,59 @@ export default function LineChart({
               strokeWidth={2}
             />
           ))}
+          {/* Puntos de datos */}
+          {series
+            .filter((serie) => serie.showPoints)
+            .map((serie) =>
+              serie.data.map((d, i) => (
+                <Circle
+                  key={`${serie.label}-point-${i}`}
+                  cx={getX(d.x)}
+                  cy={getY(d.y)}
+                  r={4}
+                  fill={serie.color}
+                  stroke="#fff"
+                  strokeWidth={1}
+                />
+              )),
+            )}
           {/* Labels de eje Y */}
-          {[0, 0.5, 1].map((t, i) => (
+          {yLabelValues.map((yValue, i) => (
             <SvgText
               key={i}
               x={margin - 10}
-              y={margin + chartH - t * chartH + 4}
+              y={getY(yValue) + 4}
               fontSize={12}
               fill="#888"
               textAnchor="end"
               alignmentBaseline="middle"
-              fontWeight={i === 0 || i === 2 ? "bold" : "normal"}
+              fontWeight={
+                i === 0 || i === yLabelValues.length - 1 ? "bold" : "normal"
+              }
             >
-              {Number((yMin + (yMax - yMin) * t).toFixed(1))}
+              {Number(yValue.toFixed(1))}
             </SvgText>
           ))}
           {/* Labels de eje X */}
-          {allX.map((x, i) => (
-            <SvgText
-              key={i}
-              x={
-                margin +
-                (allX.length === 1
-                  ? chartW / 2
-                  : (i / (allX.length - 1)) * chartW)
-              }
-              y={height - margin + 22}
-              fontSize={12}
-              fill="#888"
-              textAnchor="middle"
-              alignmentBaseline="hanging"
-              fontWeight={i === 0 || i === allX.length - 1 ? "bold" : "normal"}
-            >
-              {xLabel ? `${xLabel} ${x}` : x}
-            </SvgText>
-          ))}
+          {xLabelIndexes.map((i) => {
+            const x = allX[i];
+            return (
+              <SvgText
+                key={i}
+                x={getX(x)}
+                y={height - margin + 22}
+                fontSize={12}
+                fill="#888"
+                textAnchor="middle"
+                alignmentBaseline="hanging"
+                fontWeight={
+                  i === 0 || i === allX.length - 1 ? "bold" : "normal"
+                }
+              >
+                {xLabel ? `${xLabel} ${x}` : x}
+              </SvgText>
+            );
+          })}
           {/* Label de eje Y principal ARRIBA */}
           {yLabel && (
             <SvgText

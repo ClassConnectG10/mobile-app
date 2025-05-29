@@ -50,20 +50,22 @@ export default function TestPage() {
       data: [
         { x: 1, y: 20 },
         { x: 2, y: 22 },
-        { x: 3, y: 19 },
-        { x: 4, y: 25 },
+        // { x: 4, y: 19 },
         { x: 5, y: -2 },
       ],
+      showPoints: true,
     },
     {
       label: "Humedad",
       color: "#FF9800",
       data: [
         { x: 1, y: 1 },
-        { x: 2, y: 2 },
-        { x: 3, y: 3 },
-        { x: 4, y: 4 },
+        { x: 2, y: 10 },
+        // { x: 3, y: 3 },
+        // { x: 4, y: 4 },
+        { x: 5, y: 5 },
       ],
+      showPoints: true,
     },
   ];
 
@@ -128,7 +130,13 @@ export default function TestPage() {
           displayValue={(value) => `${(value / 1000000).toFixed(1)} M`}
           sortOrder="asc"
         />
-        <LineChart title="Clima" series={series} yLabel="°C" xLabel="Día" />
+        <LineChart
+          titleColor={theme.colors.primary}
+          title="Clima"
+          series={series}
+          yLabel="°C"
+          xLabel="Día"
+        />
       </ScrollView>
     </>
   );

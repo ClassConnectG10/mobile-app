@@ -106,7 +106,7 @@ const styles = StyleSheet.create({
   },
   barColumn: {
     alignItems: "center",
-    width: 70,
+    width: 60,
     height: "100%",
     gap: 4,
   },
