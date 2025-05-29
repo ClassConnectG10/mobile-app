@@ -1,14 +1,22 @@
 import React, { useState } from "react";
 import { ScrollView } from "react-native";
-import { Appbar, Divider } from "react-native-paper";
+import { Appbar, Divider, useTheme } from "react-native-paper";
 import { useRouter } from "expo-router";
 import { File } from "@/types/file";
 import { Link } from "@/types/link";
 import { ToggleableFileInput } from "@/components/forms/ToggleableFileInput";
 import { ToggleableLinkInput } from "@/components/forms/ToggleableLinkInput";
 
+import HorizontalBarChart from "@/components/charts/HorizontalBarChart";
+import VerticalBarChart from "@/components/charts/VerticalBarChart";
+import DoubleAxisLineChart, {
+  LineChartSeries,
+} from "@/components/charts/LineChart";
+import LineChart from "@/components/charts/LineChart";
+
 export default function TestPage() {
   const router = useRouter();
+  const theme = useTheme();
   const [files, setFiles] = useState([
     new File(
       "1.pdf",
@@ -21,15 +29,53 @@ export default function TestPage() {
     new Link("Google", "https://www.google.com"),
   ]);
 
+  const data = [
+    { label: "Argentina", value: 45000000 },
+    { label: "Brasil", value: 213000000 },
+    { label: "Chile", value: 19000000 },
+    { label: "Uruguay", value: 3500000 },
+    { label: "MIGUEZ", value: 2 },
+    { label: "Paraguay", value: 7000000 },
+    { label: "Paraguay", value: 7000000 },
+    { label: "Paraguay", value: 7000000 },
+    { label: "Paraguay", value: 7000000 },
+    { label: "Paraguay", value: 7000000 },
+    { label: "Paraguay", value: 7000000 },
+  ];
+
+  const series: LineChartSeries[] = [
+    {
+      label: "Temperatura",
+      color: "#6C63FF",
+      data: [
+        { x: 1, y: 20 },
+        { x: 2, y: 22 },
+        { x: 3, y: 19 },
+        { x: 4, y: 25 },
+        { x: 5, y: -2 },
+      ],
+    },
+    {
+      label: "Humedad",
+      color: "#FF9800",
+      data: [
+        { x: 1, y: 1 },
+        { x: 2, y: 2 },
+        { x: 3, y: 3 },
+        { x: 4, y: 4 },
+      ],
+    },
+  ];
+
   return (
     <>
       <Appbar.Header>
         <Appbar.Action icon="arrow-left" onPress={() => router.back()} />
-        <Appbar.Content title="Testing file structure" />
+        <Appbar.Content title="Testing" />
       </Appbar.Header>
 
-      <ScrollView contentContainerStyle={{ flex: 1, padding: 16, gap: 16 }}>
-        <ToggleableFileInput
+      <ScrollView contentContainerStyle={{ padding: 16, gap: 16 }}>
+        {/* <ToggleableFileInput
           files={files}
           editable={true}
           onChange={setFiles}
@@ -53,7 +99,36 @@ export default function TestPage() {
           editable={false}
           onChange={setLinks}
           maxLinks={5}
+        /> */}
+        <HorizontalBarChart
+          data={data}
+          barColor={theme.colors.primary}
+          title="Población (desc)"
+          displayValue={(value) => `${(value / 1000000).toFixed(1)} M`}
+          sortOrder="desc"
         />
+        <HorizontalBarChart
+          data={data}
+          barColor={theme.colors.primary}
+          title="Población (asc)"
+          displayValue={(value) => `${(value / 1000000).toFixed(1)} M`}
+          sortOrder="asc"
+        />
+        <VerticalBarChart
+          data={data}
+          barColor={theme.colors.primary}
+          title="Población (desc)"
+          displayValue={(value) => `${(value / 1000000).toFixed(1)} M`}
+          sortOrder="desc"
+        />
+        <VerticalBarChart
+          data={data}
+          barColor={theme.colors.primary}
+          title="Población (asc)"
+          displayValue={(value) => `${(value / 1000000).toFixed(1)} M`}
+          sortOrder="asc"
+        />
+        <LineChart title="Clima" series={series} yLabel="°C" xLabel="Día" />
       </ScrollView>
     </>
   );
