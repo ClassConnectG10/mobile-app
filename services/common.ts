@@ -42,6 +42,7 @@ export function postFile(
   file: File
 ): Promise<any> {
   const formData = new FormData();
+
   formData.append("file", {
     uri: file.localUri,
     name: file.name,
@@ -381,8 +382,6 @@ export async function syncResourceAttachments(
 }
 
 export function getAttachmentFromBackend(attachmentData: any): Attachment {
-  console.log("attachmentData", attachmentData);
-
   if (attachmentData.type === AttachmentType.FILE) {
     const file = getFileFromBackend(
       attachmentData.external_ref,

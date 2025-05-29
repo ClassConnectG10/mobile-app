@@ -108,9 +108,8 @@ export const createDeleteTaskFileRequest = (
   courseId: string,
   taskId: number
 ) => {
-  console.log(`/courses/${courseId}/activities/tasks/${taskId}/file`);
   return createRequest({
-    uri: `/courses/${courseId}/activities/tasks/${taskId}/file`,
+    uri: `courses/${courseId}/activities/tasks/${taskId}/file`,
   });
 };
 

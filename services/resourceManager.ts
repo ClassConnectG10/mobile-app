@@ -193,12 +193,6 @@ export async function getResource(
         )
       )
     );
-
-    console.log(
-      "Resource fetched attachments:",
-      resource.resourceDetails.attachments
-    );
-
     return resource;
   } catch (error) {
     throw handleError(error, "obtener los recursos del curso");

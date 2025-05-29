@@ -78,7 +78,7 @@ export const ToggleableFileInput: React.FC<ToggleableFileInputProps> = ({
           await downloadAndOpenFile(index);
         } else {
           console.error(
-            "No se puede abrir el archivo, no hay URI local ni URL de Firebase",
+            "No se puede abrir el archivo, no hay URI local ni URL de Firebase"
           );
         }
       } else {
@@ -97,7 +97,7 @@ export const ToggleableFileInput: React.FC<ToggleableFileInputProps> = ({
       }
 
       const newFile = results.map(
-        (result: any) => new File(result.name, result.type, result.uri),
+        (result: any) => new File(result.name, result.type, result.uri)
       )[0];
 
       const newFiles = [...files, newFile];
