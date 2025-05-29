@@ -1,31 +1,70 @@
-export const levels = [
-  "Primaria",
-  "Secundaria",
-  "Universitario",
-  "Postgrado",
-] as const;
+import { BiMap } from "../bimap";
 
-export const categories = [
-  "Arte", // 0
-  "Biología", // 1
-  "Ciencias Sociales", // 2
-  "Educación Física", // 3
-  "Física", // 4
-  "Geografía", // 5
-  "Historia", // 6
-  "Idiomas", // 7
-  "Lengua", // 8
-  "Matemáticas", // 9
-  "Música", // 10
-  "Otros", // 11
-  "Programación", // 12
-  "Química", // 13
-  "Robótica", // 14
-  "Tecnología", // 15
-] as const;
+// HUMANITIES = "HUMANITIES";
+// BUSINESS = "BUSINESS";
+// ENGINEERING = "ENGINEERING";
+// HEALTH_SCIENCES = "HEALTH_SCIENCES";
+// LAW = "LAW";
+// ECONOMICS = "ECONOMICS";
+// PSYCHOLOGY = "PSYCHOLOGY";
+// EDUCATION = "EDUCATION";
 
-export const modalities = ["PRESENCIAL", "VIRTUAL", "HIBRIDO"] as const;
+export const LEVELS = new BiMap([
+  ["Primaria", "PRIMARY"],
+  ["Secundaria", "SECONDARY"],
+  ["Universitario", "UNIVERSITY"],
+  ["Postgrado", "POSTGRADUATE"],
+]);
 
-export const defaultLevel = levels[0];
-export const defaultCategory = categories[0];
-export const defaultModality = modalities[0];
+// export const CATEGORIES = new BiMap([
+//   ["Arte", "ARTS"],
+//   ["Biología", "NATURAL_SCIENCES"],
+//   ["Ciencias Sociales", "SOCIAL_SCIENCES"],
+//   ["Educación Física", "PHYSICAL_EDUCATION"],
+//   // ["Física", "PHYSICAL_SCIENCES"],
+//   // ["Geografía", "GEOGRAPHY"],
+//   // ["Historia", "HISTORY"],
+//   ["Idiomas", "LANGUAGES"],
+//   ["Matemáticas", "MATHEMATICS"],
+//   // ["Música", "MUSIC"],
+//   ["Otros", "OTHER"],
+//   ["Programación", "COMPUTER_SCIENCE"],
+//   // ["Química", "CHEMISTRY"],
+//   // ["Robótica", "ROBOTICS"],
+//   // ["Tecnología", "TECHNOLOGY"],
+// ]);
+
+export const CATEGORIES = new BiMap([
+  ["Arte", "ARTS"],
+  ["Biología", "NATURAL_SCIENCES"],
+  ["Ciencias de la Salud", "HEALTH_SCIENCES"],
+  ["Ciencias Sociales", "SOCIAL_SCIENCES"],
+  // ["Diseño", "DESIGN"],
+  ["Economía", "ECONOMICS"],
+  ["Educación", "EDUCATION"],
+  ["Educación Física", "PHYSICAL_EDUCATION"],
+  // ["Electrónica", "ELECTRONICS"],
+  // ["Física", "PHYSICAL_SCIENCES"],
+  // ["Geografía", "GEOGRAPHY"],
+  // ["Historia", "HISTORY"],
+  ["Idiomas", "LANGUAGES"],
+  ["Leyes", "LAW"],
+  ["Matemáticas", "MATHEMATICS"],
+  // ["Música", "MUSIC"],
+  ["Otros", "OTHER"],
+  ["Programación", "COMPUTER_SCIENCE"],
+  // ["Psicología", "PSYCOLOGY"],
+  //  ["Química", "CHEMISTRY"],
+  // ["Robótica", "ROBOTICS"],
+  // ["Tecnología", "TECHNOLOGY"],
+]);
+
+export const MODALITIES = new BiMap([
+  ["Presencial", "PRESENCIAL"],
+  ["Virtual", "VIRTUAL"],
+  ["Híbrido", "HIBRIDO"],
+]);
+
+export const defaultLevel = "UNIVERSITY";
+export const defaultCategory = "OTHER";
+export const defaultModality = "VIRTUAL";

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { countries } from "../utils/constants/countries";
+import { COUNTRIES } from "../utils/constants/countries";
 
 export const loginSchema = z.object({
   email: z.string().email("Dirección de correo electrónico inválida"),
@@ -48,8 +48,8 @@ export const userDetailsSchema = z.object({
     .string()
     .nonempty("El país es obligatorio")
     .min(2, "El país debe tener al menos 2 caracteres")
-    .refine((val) => countries.includes(val), {
-      message: "Nombre de país inválido",
+    .refine((val) => COUNTRIES.hasBackValue(val), {
+      message: "País inválido",
     }),
 });
 

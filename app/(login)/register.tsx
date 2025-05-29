@@ -63,7 +63,12 @@ export default function RegisterPage() {
     setButtonDisabled(true);
     try {
       await GoogleSignin.hasPlayServices(); // Verifica que los servicios de Google Play estén disponibles
-      const signInData = (await GoogleSignin.signIn()).data; // Obtiene el token de Google
+      const signInResponse = await GoogleSignin.signIn();
+      if (signInResponse.type === "cancelled") {
+        setButtonDisabled(false);
+        return;
+      }
+      const signInData = signInResponse.data; // Obtiene el token de Google
       const idToken = signInData.idToken;
       const googleEmail = signInData.user.email;
 

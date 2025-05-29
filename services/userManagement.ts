@@ -1,11 +1,13 @@
 import { userDetailsSchema, userSchema } from "@/validations/users";
 import { User, UserInformation } from "@/types/user";
-import { handleError } from "./errorHandling";
+import { handleError } from "./common";
 import {
   createRegisterUserRequest,
   createLoginUserRequest,
   createEditUserProfileRequest,
   createUserRequest,
+  createBulkUserRequest,
+  createUsersRequest,
 } from "@/api/user";
 
 /**
@@ -19,7 +21,7 @@ import {
  */
 export async function registerUser(
   uid: string,
-  userInformation: UserInformation,
+  userInformation: UserInformation
 ) {
   try {
     userDetailsSchema.parse(userInformation);
@@ -38,8 +40,8 @@ export async function registerUser(
         response.data.data.name,
         response.data.data.surname,
         response.data.data.email,
-        response.data.data.country,
-      ),
+        response.data.data.country
+      )
     );
     return user;
   } catch (error) {
@@ -64,7 +66,7 @@ export async function loginUser(uid: string): Promise<User | null> {
       response.data.data.name,
       response.data.data.surname,
       response.data.data.email,
-      response.data.data.country,
+      response.data.data.country
     );
 
     const user = {
@@ -108,7 +110,7 @@ export async function editUserProfile(user: User) {
       response.data.data.name,
       response.data.data.surname,
       response.data.data.email,
-      response.data.data.country,
+      response.data.data.country
     );
     return updatedUserInfo;
   } catch (error) {
@@ -123,8 +125,7 @@ export async function getUser(userId: number): Promise<User> {
     const userInfo = new UserInformation(
       response.data.data.name,
       response.data.data.surname,
-      response.data.data.email,
-      response.data.data.country,
+      response.data.data.email
     );
 
     const user = {
@@ -135,5 +136,45 @@ export async function getUser(userId: number): Promise<User> {
     return user;
   } catch (error) {
     throw handleError(error, "obtener el usuario");
+  }
+}
+
+export async function getBulkUsers(userIds: number[]): Promise<User[]> {
+  try {
+    if (userIds.length === 0) {
+      return [];
+    }
+
+    const request = await createBulkUserRequest();
+
+    const response = await request.post("", {
+      Ids: userIds,
+    });
+
+    const users = response.data.data.map((user: any) => {
+      return new User(
+        user.id,
+        new UserInformation(user.name, user.surname, user.email)
+      );
+    });
+    return users;
+  } catch (error) {
+    throw handleError(error, "obtener los usuarios");
+  }
+}
+
+export async function getUsers(): Promise<User[]> {
+  try {
+    const request = await createUsersRequest();
+    const response = await request.get("");
+    const users = response.data.data.map((user: any) => {
+      return new User(
+        user.id,
+        new UserInformation(user.name, user.surname, user.email)
+      );
+    });
+    return users;
+  } catch (error) {
+    throw handleError(error, "obtener los usuarios");
   }
 }

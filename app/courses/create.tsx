@@ -8,20 +8,21 @@ import {
   useTheme,
 } from "react-native-paper";
 import { useRouter } from "expo-router";
-import OptionPicker from "@/components/OptionPicker";
+import OptionPicker from "@/components/forms/OptionPicker";
 import {
-  levels,
-  modalities,
-  categories,
+  LEVELS,
+  MODALITIES,
+  CATEGORIES,
 } from "@/utils/constants/courseDetails";
 import { useCourseDetails } from "@/hooks/useCourseDetails";
 import { globalStyles } from "@/styles/globalStyles";
-import { DatePickerButton } from "@/components/DatePickerButton";
+import { DatePickerButton } from "@/components/forms/DatePickerButton";
 import { createCourse } from "@/services/courseManagement";
 import { useRequiredCoursesContext } from "@/utils/storage/requiredCoursesContext";
-import CourseCard from "@/components/CourseCard";
-import { ToggleableNumberInput } from "@/components/ToggleableNumberInput";
+import CourseCard from "@/components/cards/CourseCard";
+import { ToggleableNumberInput } from "@/components/forms/ToggleableNumberInput";
 import { useCourseContext } from "@/utils/storage/courseContext";
+import { Course, UserRole } from "@/types/course";
 
 export default function CreateCoursePage() {
   const theme = useTheme();
@@ -37,23 +38,23 @@ export default function CreateCoursePage() {
   const handleCreateCourse = async () => {
     try {
       courseDetails.dependencies = requiredCourses.map(
-        (course) => course.courseId
+        (course) => course.courseId,
       );
       const createdCourse = await createCourse(courseDetails);
       courseContext.setCourse(createdCourse);
       router.replace({
         pathname: "/courses/[courseId]",
-        params: { courseId: createdCourse.courseId },
+        params: { courseId: createdCourse.courseId, role: UserRole.OWNER },
       });
     } catch (error) {
       console.error("Error al crear el curso:", error);
     }
   };
 
-  const handleRequiredCoursePress = (courseId: string) => {
+  const handleRequiredCoursePress = (course: Course) => {
     router.push({
       pathname: "/courses/[courseId]",
-      params: { courseId },
+      params: { courseId: course.courseId, role: course.currentUserRole },
     });
   };
 
@@ -97,31 +98,33 @@ export default function CreateCoursePage() {
               label="Fecha de inicio"
               value={courseDetails.startDate}
               onChange={courseDetailsHook.setStartDate}
+              horizontal={true}
             />
             <DatePickerButton
               label="Fecha de finalización"
               value={courseDetails.endDate}
               onChange={courseDetailsHook.setEndDate}
+              horizontal={true}
             />
           </View>
           <OptionPicker
             label="Nivel"
             value={courseDetails.level}
-            items={levels}
+            items={LEVELS}
             setValue={courseDetailsHook.setLevel}
           />
 
           <OptionPicker
             label="Categoría"
             value={courseDetails.category}
-            items={categories}
+            items={CATEGORIES}
             setValue={courseDetailsHook.setCategory}
           />
 
           <OptionPicker
             label="Modalidad"
             value={courseDetails.modality}
-            items={modalities}
+            items={MODALITIES}
             setValue={courseDetailsHook.setModality}
           />
           <View style={{ gap: 10 }}>
@@ -137,9 +140,10 @@ export default function CreateCoursePage() {
                 }}
               >
                 <CourseCard
-                  name={course.courseDetails.title}
-                  category={course.courseDetails.category}
-                  onPress={() => handleRequiredCoursePress(course.courseId)}
+                  course={course}
+                  small={true}
+                  onPress={() => handleRequiredCoursePress(course)}
+                  horizontal={true}
                 />
                 <IconButton
                   icon="delete"

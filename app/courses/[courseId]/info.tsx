@@ -9,16 +9,16 @@ import {
   ActivityIndicator,
 } from "react-native-paper";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import OptionPicker from "@/components/OptionPicker";
+import OptionPicker from "@/components/forms/OptionPicker";
 import {
-  levels,
-  modalities,
-  categories,
+  LEVELS,
+  MODALITIES,
+  CATEGORIES,
 } from "@/utils/constants/courseDetails";
 import { useCourseDetails } from "@/hooks/useCourseDetails";
-import { DatePickerButton } from "@/components/DatePickerButton";
+import { DatePickerButton } from "@/components/forms/DatePickerButton";
 import { useRequiredCoursesContext } from "@/utils/storage/requiredCoursesContext";
-import CourseCard from "@/components/CourseCard";
+import CourseCard from "@/components/cards/CourseCard";
 import { useCourseContext } from "@/utils/storage/courseContext";
 import { useEffect, useState } from "react";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
@@ -26,13 +26,15 @@ import {
   deleteCourse,
   editCourse,
   getCourse,
+  startCourse,
 } from "@/services/courseManagement";
-import { ToggleableNumberInput } from "@/components/ToggleableNumberInput";
-import { ToggleableTextInput } from "@/components/ToggleableTextInput";
+import { ToggleableNumberInput } from "@/components/forms/ToggleableNumberInput";
+import { ToggleableTextInput } from "@/components/forms/ToggleableTextInput";
 import { getUser } from "@/services/userManagement";
 import { useUserContext } from "@/utils/storage/userContext";
-import UserCard from "@/components/UserCard";
-import { SeatsField } from "@/components/SeatsField";
+import UserCard from "@/components/cards/UserCard";
+import { SeatsField } from "@/components/courses/SeatsField";
+import { Course, CourseStatus, UserRole } from "@/types/course";
 
 export default function CreateCoursePage() {
   const theme = useTheme();
@@ -45,6 +47,7 @@ export default function CreateCoursePage() {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [showConfirmationDelete, setShowConfirmationDelete] = useState(false);
+  const [showConfirmationStart, setShowConfirmationStart] = useState(false);
   const [isOwner, setIsOwner] = useState(false);
   const [courseOwner, setCourseOwner] = useState(null);
 
@@ -98,8 +101,8 @@ export default function CreateCoursePage() {
   };
 
   const handleDeleteCourse = async () => {
-    setIsLoading(true);
     if (!courseContext.course) return;
+    setIsLoading(true);
 
     try {
       await deleteCourse(courseContext.course.courseId);
@@ -111,6 +114,25 @@ export default function CreateCoursePage() {
     } finally {
       setIsLoading(false);
       setShowConfirmationDelete(false);
+    }
+  };
+
+  const handleStartCourse = async () => {
+    if (!courseContext.course) return;
+    setIsLoading(true);
+
+    try {
+      await startCourse(courseContext.course.courseId);
+      courseContext.setCourse({
+        ...courseContext.course,
+        courseStatus: CourseStatus.STARTED,
+      });
+      router.back();
+    } catch (error) {
+      setErrorMessage((error as Error).message);
+    } finally {
+      setIsLoading(false);
+      setShowConfirmationStart(false);
     }
   };
 
@@ -175,22 +197,18 @@ export default function CreateCoursePage() {
     }
   }, [courseContext.course]);
 
-  const handleRequiredCoursePress = (requiredCourseId: string) => {
+  const handleRequiredCoursePress = (requiredCourse: Course) => {
     router.push({
-      pathname: "/courses/[courseId]/inscription",
-      params: { courseId: requiredCourseId },
+      pathname: "/courses/[courseId]",
+      params: { courseId: requiredCourse.courseId, role: UserRole.OWNER },
     });
   };
 
   const handleOwnerPress = () => {
-    if (isOwner) {
-      router.push("/users/me");
-    } else {
-      router.push({
-        pathname: "/users/[userId]",
-        params: { userId: courseContext.course.ownerId },
-      });
-    }
+    router.push({
+      pathname: "/users/[userId]",
+      params: { userId: courseContext.course.ownerId },
+    });
   };
 
   return (
@@ -276,18 +294,20 @@ export default function CreateCoursePage() {
                 value={courseDetails.startDate}
                 editable={isEditing}
                 onChange={courseDetailsHook.setStartDate}
+                horizontal={true}
               />
               <DatePickerButton
                 label="Fecha de finalización"
                 value={courseDetails.endDate}
                 editable={isEditing}
                 onChange={courseDetailsHook.setEndDate}
+                horizontal={true}
               />
             </View>
             <OptionPicker
               label="Nivel"
               value={courseDetails.level}
-              items={levels}
+              items={LEVELS}
               editable={isEditing}
               setValue={courseDetailsHook.setLevel}
             />
@@ -295,7 +315,7 @@ export default function CreateCoursePage() {
             <OptionPicker
               label="Categoría"
               value={courseDetails.category}
-              items={categories}
+              items={CATEGORIES}
               editable={isEditing}
               setValue={courseDetailsHook.setCategory}
             />
@@ -303,7 +323,7 @@ export default function CreateCoursePage() {
             <OptionPicker
               label="Modalidad"
               value={courseDetails.modality}
-              items={modalities}
+              items={MODALITIES}
               editable={isEditing}
               setValue={courseDetailsHook.setModality}
             />
@@ -318,19 +338,20 @@ export default function CreateCoursePage() {
                     style={{
                       flexDirection: "row",
                       justifyContent: "space-between",
-                      alignItems: "center",
                       gap: 10,
                     }}
                   >
                     <CourseCard
-                      name={course.courseDetails.title}
-                      category={course.courseDetails.category}
-                      onPress={() => handleRequiredCoursePress(course.courseId)}
+                      course={course}
+                      small={true}
+                      onPress={() => handleRequiredCoursePress(course)}
+                      horizontal={true}
                     />
                     {isEditing && (
                       <IconButton
                         icon="delete"
                         mode="contained"
+                        size={20}
                         onPress={() => {
                           requiredCoursesContext.deleteRequiredCourse(course);
                         }}
@@ -351,7 +372,7 @@ export default function CreateCoursePage() {
               </View>
             )}
 
-            {isEditing && (
+            {isEditing && isOwner && (
               <Button
                 onPress={() => setShowConfirmationDelete(true)}
                 mode="contained"
@@ -361,9 +382,22 @@ export default function CreateCoursePage() {
                 Eliminar curso
               </Button>
             )}
+
+            {!isEditing &&
+              isOwner &&
+              courseContext.course.courseStatus === CourseStatus.NEW && (
+                <Button
+                  onPress={() => setShowConfirmationStart(true)}
+                  mode="contained"
+                  icon="play"
+                  disabled={isLoading}
+                >
+                  Iniciar curso
+                </Button>
+              )}
           </ScrollView>
         )}
-        {/* Confirmation Dialog */}
+        {/* Delete confirmation Dialog */}
 
         <Dialog
           visible={showConfirmationDelete}
@@ -380,6 +414,26 @@ export default function CreateCoursePage() {
               Cancelar
             </Button>
             <Button onPress={handleDeleteCourse}>Eliminar</Button>
+          </Dialog.Actions>
+        </Dialog>
+
+        {/* Start confirmation Dialog */}
+
+        <Dialog
+          visible={showConfirmationStart}
+          onDismiss={() => setShowConfirmationStart(false)}
+        >
+          <Dialog.Title>Atención</Dialog.Title>
+          <Dialog.Content>
+            <Text variant="bodyMedium">
+              ¿Deseas iniciar el curso '{courseDetails.title}'?
+            </Text>
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button onPress={() => setShowConfirmationStart(false)}>
+              Cancelar
+            </Button>
+            <Button onPress={handleStartCourse}>Iniciar</Button>
           </Dialog.Actions>
         </Dialog>
       </View>

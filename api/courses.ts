@@ -3,7 +3,7 @@ import { createRequest, formatDate } from "./common";
 
 export const createCoursesRequest = () => {
   return createRequest({
-    uri: `courses`,
+    uri: `courses/`,
   });
 };
 
@@ -64,5 +64,74 @@ export const createSearchCoursesRequest = (
 export const createFavoriteCourseRequest = (courseId: string) => {
   return createRequest({
     uri: `courses/${courseId}/favorite`,
+  });
+};
+
+export const createStartCourseRequest = (courseId: string) => {
+  return createRequest({
+    uri: `courses/${courseId}/start`,
+  });
+};
+
+export const createAssistantsRequest = (courseId: string) => {
+  return createRequest({
+    uri: `courses/${courseId}/instructors`,
+  });
+};
+
+export const createAddAssistantRequest = (
+  courseId: string,
+  assistantId: number,
+) => {
+  return createRequest({
+    uri: `courses/${courseId}/instructors`,
+    params: {
+      user_id: assistantId.toString(),
+    },
+  });
+};
+
+export const createAssistantRequest = (
+  courseId: string,
+  assistantId: number,
+) => {
+  return createRequest({
+    uri: `courses/${courseId}/instructors/${assistantId}`,
+  });
+};
+
+export const createStudentsRequest = (courseId: string) => {
+  return createRequest({
+    uri: `courses/${courseId}/students`,
+  });
+};
+
+export const createStudentRequest = (courseId: string, studentId: number) => {
+  return createRequest({
+    uri: `courses/${courseId}/students/${studentId}`,
+  });
+};
+
+export const createStudentMarkRequest = (
+  courseId: string,
+  studentId: number,
+) => {
+  return createRequest({
+    uri: `courses/${courseId}/marks/students/${studentId}`,
+  });
+};
+
+export const createMarksRequest = (courseId: string) => {
+  return createRequest({
+    uri: `courses/${courseId}/marks`,
+  });
+};
+
+export const createAssistantLogsRequest = (
+  courseId: string,
+  assistantId: number,
+) => {
+  return createRequest({
+    uri: `courses/${courseId}/instructors/${assistantId}/logs`,
   });
 };

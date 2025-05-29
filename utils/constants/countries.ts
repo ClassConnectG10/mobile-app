@@ -1,12 +1,14 @@
-export const countries = [
-  "Argentina",
-  "Brazil",
-  "Chile",
-  "Colombia",
-  "Mexico",
-  "USA",
-  "Canada",
-  "Peru",
-];
+import { BiMap } from "../bimap";
 
-export const defaultCountry = countries[0];
+export const COUNTRIES = new BiMap([
+  ["Argentina", "Argentina"],
+  ["Brasil", "Brazil"],
+  ["Chile", "Chile"],
+  ["Colombia", "Colombia"],
+  ["México", "Mexico"],
+  ["Estados Unidos", "USA"],
+  ["Canadá", "Canada"],
+  ["Perú", "Peru"],
+]);
+
+export const defaultCountry = "Argentina";

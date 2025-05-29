@@ -4,23 +4,38 @@ import {
   SearchFilters,
   SearchOption,
 } from "@/types/course";
-import { handleError } from "./errorHandling";
-import { courseDetailsSchema } from "@/validations/courses";
-import { createModuleRequest } from "@/api/activities";
+import { handleError } from "./common";
 import {
+  courseDetailsSchema,
+  courseDetailsUpdateSchema,
+} from "@/validations/courses";
+import {
+  createAddAssistantRequest,
+  createAssistantLogsRequest,
+  createAssistantRequest,
+  createAssistantsRequest,
   createCourseRequest,
   createCoursesRequest,
   createEnrollCourseRequest,
   createFavoriteCourseRequest,
+  createMarksRequest,
   createSearchCoursesRequest,
+  createStartCourseRequest,
+  createStudentMarkRequest,
+  createStudentRequest,
+  createStudentsRequest,
 } from "@/api/courses";
+import { User } from "@/types/user";
+import { getBulkUsers } from "./userManagement";
+import { AssistantLog } from "@/types/assistantLog";
+import { getDateFromBackend } from "@/utils/date";
 
 function formatDate(date: Date): string {
   return date.toISOString().split("T")[0];
 }
 
 export async function createCourse(
-  courseDetails: CourseDetails,
+  courseDetails: CourseDetails
 ): Promise<Course> {
   try {
     courseDetailsSchema.parse(courseDetails);
@@ -53,19 +68,17 @@ export async function createCourse(
         courseData.level,
         courseData.modality,
         courseData.category,
-        courseDetails.dependencies,
+        courseDetails.dependencies
       ),
+      courseData.user_role,
+      courseData.status,
       0,
-      false,
+      false
     );
 
-    const moduleRequest = await createModuleRequest(course.courseId);
-    await moduleRequest.post("", {
-      title: "Módulo 1",
-      description: "Descripción del módulo 1",
-    }); // TODO: Sacarlo cuando tengamos todo listo
     return course;
   } catch (error) {
+    console.error("Error al crear el curso:", error);
     throw handleError(error, "crear el curso");
   }
 }
@@ -88,10 +101,12 @@ export async function getCourse(courseId: string): Promise<Course> {
         courseData.level,
         courseData.modality,
         courseData.category,
-        courseData.dependencies.map((dep: any) => dep.course_id),
+        courseData.dependencies.map((dep: any) => dep.course_id)
       ),
+      courseData.user_role,
+      courseData.status,
       courseData.students ? courseData.students : 0,
-      courseData.is_favorite,
+      courseData.is_favorite
     );
     return course;
   } catch (error) {
@@ -101,31 +116,45 @@ export async function getCourse(courseId: string): Promise<Course> {
 
 export async function searchCourses(
   searchFilters: SearchFilters,
-  searchOption: SearchOption,
+  searchOption: SearchOption
 ): Promise<Course[]> {
-  const request = await createSearchCoursesRequest(searchFilters, searchOption);
-  const response = await request.get("");
-  const coursesData = response.data.data;
-  const courses: Course[] = coursesData.map((courseData: any) => {
-    return new Course(
-      courseData.id,
-      courseData.ownerId,
-      new CourseDetails(
-        courseData.title,
-        courseData.description,
-        courseData.capacity,
-        new Date(courseData.start_date),
-        new Date(courseData.end_date),
-        courseData.level,
-        courseData.modality,
-        courseData.category,
-      ),
-      courseData.students ? courseData.students : 0,
-      courseData.is_favorite,
+  try {
+    const request = await createSearchCoursesRequest(
+      searchFilters,
+      searchOption
     );
-  });
+    const response = await request.get("");
+    const coursesData = response.data.data;
 
-  return courses;
+    const courses: Course[] = await Promise.all(
+      coursesData.map(async (courseData: any) => await getCourse(courseData.id))
+    ); // TODO: Cambiar esto cuando tengamos el endpoint de cursos bien hecho
+
+    // const courses: Course[] = coursesData.map((courseData: any) => {
+    //   return new Course(
+    //     courseData.id,
+    //     null,
+    //     new CourseDetails(
+    //       courseData.title,
+    //       courseData.description,
+    //       courseData.capacity,
+    //       new Date(courseData.start_date),
+    //       new Date(courseData.end_date),
+    //       courseData.level,
+    //       courseData.modality,
+    //       courseData.category
+    //     ),
+    //     null,
+    //     null,
+    //     courseData.students ? courseData.students : 0,
+    //     courseData.is_favorite
+    //   );
+    // });
+
+    return courses;
+  } catch (error) {
+    throw handleError(error, "buscar cursos");
+  }
 }
 
 export async function enrollCourse(courseId: string) {
@@ -139,14 +168,14 @@ export async function enrollCourse(courseId: string) {
 
 export async function editCourse(
   course: Course,
-  newCourseDetails: CourseDetails,
+  newCourseDetails: CourseDetails
 ): Promise<Course> {
   try {
-    courseDetailsSchema.parse(newCourseDetails);
+    courseDetailsUpdateSchema.parse(newCourseDetails);
 
     if (course.numberOfStudens > newCourseDetails.maxNumberOfStudents) {
       throw new Error(
-        "El nuevo número máximo de estudiantes no puede ser menor que el número actual de estudiantes",
+        "El nuevo número máximo de estudiantes no puede ser menor que el número actual de estudiantes"
       );
     }
 
@@ -178,10 +207,12 @@ export async function editCourse(
         courseData.level,
         courseData.modality,
         courseData.category,
-        newCourseDetails.dependencies,
+        newCourseDetails.dependencies
       ),
+      course.currentUserRole,
+      course.courseStatus,
       course.numberOfStudens,
-      course.isFavorite,
+      course.isFavorite
     );
     return updatedCourse;
   } catch (error) {
@@ -208,12 +239,146 @@ export async function addCourseToFavorites(courseId: string): Promise<void> {
 }
 
 export async function removeCourseFromFavorites(
-  courseId: string,
+  courseId: string
 ): Promise<void> {
   try {
     const request = await createFavoriteCourseRequest(courseId);
     await request.delete("");
   } catch (error) {
     throw handleError(error, "eliminar el curso de favoritos");
+  }
+}
+
+export async function startCourse(courseId: string): Promise<void> {
+  try {
+    const request = await createStartCourseRequest(courseId);
+    await request.post("");
+  } catch (error) {
+    throw handleError(error, "iniciar el curso");
+  }
+}
+
+export async function getCourseAssistants(courseId: string): Promise<User[]> {
+  try {
+    const request = await createAssistantsRequest(courseId);
+    const response = await request.get("");
+    const assistantsData = response.data.data;
+
+    const assistants: User[] = await getBulkUsers(
+      assistantsData.map((assistant) => assistant.user_id)
+    );
+
+    return assistants;
+  } catch (error) {
+    throw handleError(error, "obtener los asistentes del curso");
+  }
+}
+
+export async function addAssistantToCourse(
+  courseId: string,
+  assistantId: number
+): Promise<void> {
+  try {
+    const request = await createAddAssistantRequest(courseId, assistantId);
+    await request.post("", {});
+  } catch (error) {
+    throw handleError(error, "agregar asistente al curso");
+  }
+}
+
+export async function removeAssistantFromCourse(
+  courseId: string,
+  assistantId: number
+): Promise<void> {
+  try {
+    const request = await createAssistantRequest(courseId, assistantId);
+    await request.delete("");
+  } catch (error) {
+    throw handleError(error, "eliminar asistente del curso");
+  }
+}
+
+export async function getCourseStudents(courseId: string): Promise<User[]> {
+  try {
+    const request = await createStudentsRequest(courseId);
+    const response = await request.get("");
+    const studentsData = response.data.data;
+
+    const students: User[] = await getBulkUsers(
+      studentsData.map((student: any) => student.user_id)
+    );
+
+    return students;
+  } catch (error) {
+    throw handleError(error, "obtener los estudiantes del curso");
+  }
+}
+
+export async function removeStudentFromCourse(
+  courseId: string,
+  studentId: number
+): Promise<void> {
+  try {
+    const request = await createStudentRequest(courseId, studentId);
+    await request.delete("");
+  } catch (error) {
+    throw handleError(error, "eliminar estudiante del curso");
+  }
+}
+
+export async function getStudentMark(
+  courseId: string,
+  studentId: number
+): Promise<number | null> {
+  try {
+    const request = await createStudentMarkRequest(courseId, studentId);
+    const response = await request.get("");
+    return response.data.data.mark;
+  } catch (error) {
+    if (error.response.status === 404 || error.response.status === 403) {
+      return null; // No se encontró la calificación o no pertenece al curso
+    }
+    throw handleError(error, "obtener la calificación del estudiante");
+  }
+}
+
+export async function setStudentMark(
+  courseId: string,
+  studentId: number,
+  mark: number
+): Promise<void> {
+  try {
+    const request = await createMarksRequest(courseId);
+    await request.post("", {
+      user_id: studentId,
+      mark: mark,
+    });
+  } catch (error) {
+    throw handleError(error, "establecer la calificación del estudiante");
+  }
+}
+
+export async function getAssistantLogs(
+  courseId: string,
+  assistantId: number
+): Promise<AssistantLog[]> {
+  try {
+    const request = await createAssistantLogsRequest(courseId, assistantId);
+    const response = await request.get("");
+    const logsData = response.data.data;
+
+    const logs: AssistantLog[] = logsData.map(
+      (log: any) =>
+        new AssistantLog(
+          log.log_id,
+          log.user_id,
+          getDateFromBackend(log.timestamp),
+          log.log
+        )
+    );
+
+    return logs;
+  } catch (error) {
+    throw handleError(error, "obtener los registros del asistente");
   }
 }

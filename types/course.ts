@@ -6,6 +6,19 @@ export enum SearchOption {
   ENROLLED = "enrolled",
 }
 
+export enum UserRole {
+  OWNER = "OWNER",
+  ASSISTANT = "INSTRUCTOR",
+  STUDENT = "STUDENT",
+  NON_PARTICIPANT = "NON_PARTICIPANT",
+}
+
+export enum CourseStatus {
+  NEW = "NEW",
+  STARTED = "STARTED",
+  FINISHED = "FINISHED",
+}
+
 export class SearchFilters {
   constructor(
     public searchQuery: string,
@@ -23,6 +36,8 @@ export class Course {
     public courseId: string,
     public ownerId: number,
     public courseDetails: CourseDetails,
+    public currentUserRole: UserRole,
+    public courseStatus: CourseStatus,
     public numberOfStudens?: number,
     public isFavorite?: boolean,
   ) {}

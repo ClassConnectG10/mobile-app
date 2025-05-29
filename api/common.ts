@@ -26,7 +26,7 @@ async function getAccessToken(): Promise<string> {
 }
 
 export async function createRequest(
-  axiosRequestConfig: AxiosRequestConfig
+  axiosRequestConfig: AxiosRequestConfig,
 ): Promise<AxiosInstance> {
   const token = await getAccessToken();
   return axios.create({

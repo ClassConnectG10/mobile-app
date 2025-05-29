@@ -1,16 +1,16 @@
 import { View, FlatList, StyleSheet } from "react-native";
 import { ActivityIndicator, Appbar, Text, useTheme } from "react-native-paper";
-import { useRouter } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 import { globalStyles } from "@/styles/globalStyles";
-import { useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { Course, SearchFilters, SearchOption } from "@/types/course";
 import { searchCourses } from "@/services/courseManagement";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
-import CourseCard from "@/components/CourseCard";
+import CourseCard from "@/components/cards/CourseCard";
 import { useRequiredCoursesContext } from "@/utils/storage/requiredCoursesContext";
 import { useCourseContext } from "@/utils/storage/courseContext";
-import { CoursesSearchBar } from "@/components/CoursesSearchBar";
-import { CourseFilterModal } from "@/components/CourseFilterModal";
+import { SearchBar } from "@/components/forms/SearchBar";
+import { CourseFilterModal } from "@/components/courses/CourseFilterModal";
 
 export default function SearchCoursesPage() {
   const theme = useTheme();
@@ -70,9 +70,11 @@ export default function SearchCoursesPage() {
     }));
   };
 
-  useEffect(() => {
-    fetchCourses();
-  }, [searchFilters]);
+  useFocusEffect(
+    useCallback(() => {
+      fetchCourses();
+    }, [searchFilters]),
+  );
 
   return (
     <>
@@ -88,7 +90,7 @@ export default function SearchCoursesPage() {
       </Appbar.Header>
 
       <View style={[globalStyles.mainContainer, styles.mainContainer]}>
-        <CoursesSearchBar onSearch={handleSearch} />
+        <SearchBar placeholder="Buscar cursos" onSearch={handleSearch} />
 
         <View style={{ marginVertical: 16 }}>
           <FlatList
@@ -96,9 +98,7 @@ export default function SearchCoursesPage() {
             keyExtractor={(item) => item.courseId.toString()}
             renderItem={({ item }) => (
               <CourseCard
-                name={item.courseDetails.title}
-                description={item.courseDetails.description}
-                category={item.courseDetails.category}
+                course={item}
                 onPress={() => handleSelectCourse(item)}
               />
             )}

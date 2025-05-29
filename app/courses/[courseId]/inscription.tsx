@@ -1,6 +1,6 @@
-import { Course } from "@/types/course";
-import { useRouter, useLocalSearchParams } from "expo-router";
-import { useEffect, useState } from "react";
+import { Course, CourseStatus, UserRole } from "@/types/course";
+import { useRouter, useLocalSearchParams, useFocusEffect } from "expo-router";
+import { useCallback, useEffect, useState } from "react";
 import { ScrollView, View } from "react-native";
 import {
   ActivityIndicator,
@@ -11,39 +11,57 @@ import {
   Text,
   Icon,
 } from "react-native-paper";
-import { enrollCourse, getCourse } from "@/services/courseManagement";
+import {
+  enrollCourse,
+  getCourse,
+  getStudentMark,
+} from "@/services/courseManagement";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
-import { TextField } from "@/components/TextField";
-import CourseCard from "@/components/CourseCard";
-import UserCard from "@/components/UserCard";
+import { TextField } from "@/components/forms/TextField";
+import CourseCard from "@/components/cards/CourseCard";
+import UserCard from "@/components/cards/UserCard";
 import { getUser } from "@/services/userManagement";
 import { useUserContext } from "@/utils/storage/userContext";
 import { formatDate } from "@/utils/date";
-import { hasNoSeats, SeatsField } from "@/components/SeatsField";
+import { hasNoSeats, SeatsField } from "@/components/courses/SeatsField";
+import {
+  CATEGORIES,
+  LEVELS,
+  MODALITIES,
+} from "@/utils/constants/courseDetails";
+import { customColors } from "@/utils/constants/colors";
+import { AlertText } from "@/components/AlertText";
+
+const MINIMUM_APPROVAL_MARK = 4;
+
 export default function CourseIncriptionDetails() {
   const router = useRouter();
   const theme = useTheme();
+
   const { courseId: courseIdParam } = useLocalSearchParams();
   const courseId = courseIdParam as string;
 
   const [errorMessage, setErrorMessage] = useState("");
   const [dependencies, setDependencies] = useState<Course[]>([]);
   const [courseOwner, setCourseOwner] = useState(null);
-  const [isOwner, setIsOwner] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [course, setCourse] = useState<Course | null>(null);
+  const [marks, setMarks] = useState<Record<string, number>>(null);
 
   const userContext = useUserContext();
 
   async function fetchCourse() {
+    if (!courseId) return;
+    setIsLoading(true);
+
     try {
       const fetchedCourse = await getCourse(courseId);
       setCourse(fetchedCourse);
 
       const courseDependencies = await Promise.all(
         fetchedCourse.courseDetails.dependencies.map((dependency) =>
-          getCourse(dependency)
-        )
+          getCourse(dependency),
+        ),
       );
 
       setDependencies(courseDependencies);
@@ -53,12 +71,36 @@ export default function CourseIncriptionDetails() {
     }
   }
 
-  async function fetchCourseOwner() {
+  async function fetchCourseDependenciesMarks() {
+    if (!course) return;
+    setIsLoading(true);
+
     try {
-      setIsLoading(true);
+      const courseDependenciesMarks = await Promise.all(
+        course.courseDetails.dependencies.map(async (dependency) => {
+          const mark = await getStudentMark(dependency, userContext.user?.id);
+          return { courseId: dependency, mark };
+        }),
+      );
+      const marks = courseDependenciesMarks.reduce((acc, curr) => {
+        acc[curr.courseId] = curr.mark;
+        return acc;
+      }, {});
+      setMarks(marks);
+    } catch (error) {
+      setErrorMessage((error as Error).message);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  async function fetchCourseOwner() {
+    if (!course) return;
+    setIsLoading(true);
+
+    try {
       if (!course) return;
       const courseOwner = await getUser(course.ownerId);
-      setIsOwner(courseOwner.id === userContext.user?.id);
       setCourseOwner(courseOwner);
     } catch (error) {
       setErrorMessage((error as Error).message);
@@ -68,43 +110,56 @@ export default function CourseIncriptionDetails() {
   }
 
   const handleEnrollCourse = async () => {
+    if (!courseId) return;
+    setIsLoading(true);
+
     try {
       await enrollCourse(courseId as string);
       router.replace({
         pathname: "/courses/[courseId]",
-        params: { courseId: courseId },
+        params: { courseId: courseId, role: UserRole.STUDENT },
       });
     } catch (error) {
       setErrorMessage(
-        `Error al inscribirse al curso: ${(error as Error).message}`
+        `Error al inscribirse al curso: ${(error as Error).message}`,
       );
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleOwnerPress = () => {
-    if (courseOwner) {
-      if (isOwner) {
-        router.push({
-          pathname: "/users/me",
-        });
-      } else {
-        router.push({
-          pathname: "/users/[userId]",
-          params: { userId: courseOwner.id },
-        });
-      }
-    }
+    if (!courseOwner) return;
+
+    router.push({
+      pathname: "/users/[userId]",
+      params: { userId: courseOwner.id },
+    });
   };
 
   useEffect(() => {
     fetchCourse();
   }, []);
 
-  useEffect(() => {
-    if (course) {
+  // TODO: Chequear si esto funciona bien y no spammea a lo loco
+  // useFocusEffect(
+  //   useCallback(() => {
+  //     fetchCourse();
+  //   }, [])
+  // );
+
+  useFocusEffect(
+    useCallback(() => {
       fetchCourseOwner();
-    }
-  }, [course]);
+      fetchCourseDependenciesMarks();
+    }, [course]),
+  );
+
+  function hasDependencyApproval(dependency: string) {
+    if (!marks) return false;
+    const mark = marks[dependency];
+    return mark !== null && mark >= MINIMUM_APPROVAL_MARK;
+  }
 
   return (
     <>
@@ -112,7 +167,7 @@ export default function CourseIncriptionDetails() {
         <Appbar.BackAction onPress={() => router.back()} />
         <Appbar.Content title="Detalles de inscripción" />
       </Appbar.Header>
-      {isLoading || !course || !courseOwner || !dependencies ? (
+      {isLoading || !course || !courseOwner || !dependencies || !marks ? (
         <View
           style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
         >
@@ -155,10 +210,22 @@ export default function CourseIncriptionDetails() {
             value={formatDate(course.courseDetails.endDate)}
           />
 
-          <TextField label="Nivel" value={course.courseDetails.level} />
-          <TextField label="Modalidad" value={course.courseDetails.modality} />
-
-          <TextField label="Categoría" value={course.courseDetails.category} />
+          <TextField
+            label="Nivel"
+            value={LEVELS.getFrontValue(course.courseDetails.level) || ""}
+          />
+          <TextField
+            label="Modalidad"
+            value={
+              MODALITIES.getFrontValue(course.courseDetails.modality) || ""
+            }
+          />
+          <TextField
+            label="Categoría"
+            value={
+              CATEGORIES.getFrontValue(course.courseDetails.category) || ""
+            }
+          />
 
           {dependencies.length > 0 && (
             <View
@@ -180,30 +247,37 @@ export default function CourseIncriptionDetails() {
                     key={dependency.courseId}
                     style={{
                       flexDirection: "row",
-                      gap: 10,
+                      gap: 8,
                       alignItems: "center",
                       justifyContent: "space-between",
                     }}
                   >
                     <CourseCard
-                      name={dependency.courseDetails.title}
-                      category={dependency.courseDetails.category}
+                      course={dependency}
+                      small={true}
                       onPress={() =>
-                        false
-                          ? router.push({
-                              pathname: `/courses/[courseId]`,
-                              params: { courseId: dependency.courseId },
-                            })
-                          : router.push({
-                              pathname: `/courses/[courseId]/inscription`,
-                              params: { courseId: dependency.courseId },
-                            })
-                      } //TODO: Cambiar por el estado de completado
+                        router.push({
+                          pathname: `/courses/[courseId]`,
+                          params: {
+                            courseId: dependency.courseId,
+                            role: dependency.currentUserRole,
+                          },
+                        })
+                      }
+                      horizontal={true}
                     />
                     <Icon
-                      source={false ? "check-circle" : "alert-circle"} //TODO: Cambiar por el estado de completado
-                      color={false ? theme.colors.primary : theme.colors.error} //TODO: Cambiar por el estado de completado
-                      size={30}
+                      source={
+                        hasDependencyApproval(dependency.courseId)
+                          ? "check-circle"
+                          : "alert-circle"
+                      }
+                      color={
+                        hasDependencyApproval(dependency.courseId)
+                          ? customColors.success
+                          : theme.colors.error
+                      }
+                      size={20}
                     />
                   </View>
                 ))}
@@ -217,15 +291,26 @@ export default function CourseIncriptionDetails() {
             icon="notebook-multiple"
             disabled={
               isLoading ||
+              course.courseStatus !== CourseStatus.NEW ||
               hasNoSeats(
                 course.courseDetails.maxNumberOfStudents,
                 course.numberOfStudens || 0,
+              ) ||
+              course.courseDetails.dependencies.some(
+                (dependency) => !hasDependencyApproval(dependency),
               )
             }
             onPress={handleEnrollCourse}
           >
             Inscribirse al curso
           </Button>
+
+          {course.courseStatus !== CourseStatus.NEW && (
+            <AlertText
+              text="El curso ha comenzado, no puedes inscribirte."
+              error={true}
+            />
+          )}
         </ScrollView>
       )}
 

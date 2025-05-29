@@ -1,14 +1,14 @@
 import { View, FlatList, StyleSheet } from "react-native";
 import { ActivityIndicator, Appbar, useTheme, Text } from "react-native-paper";
-import { useRouter } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 import { globalStyles } from "@/styles/globalStyles";
-import { useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { Course, SearchFilters, SearchOption } from "@/types/course";
 import { searchCourses } from "@/services/courseManagement";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
-import CourseCard from "@/components/CourseCard";
-import { CourseFilterModal } from "@/components/CourseFilterModal";
-import { CoursesSearchBar } from "@/components/CoursesSearchBar";
+import CourseCard from "@/components/cards/CourseCard";
+import { CourseFilterModal } from "@/components/courses/CourseFilterModal";
+import { SearchBar } from "@/components/forms/SearchBar";
 
 export default function SearchCoursesPage() {
   const theme = useTheme();
@@ -20,7 +20,7 @@ export default function SearchCoursesPage() {
   const [searchFiltersModalVisible, setSearchFiltersModalVisible] =
     useState(false);
   const [searchFilters, setSearchFilters] = useState(
-    new SearchFilters("", null, null, "", "", ""),
+    new SearchFilters("", null, null, "", "", "")
   );
 
   const fetchCourses = async () => {
@@ -28,7 +28,7 @@ export default function SearchCoursesPage() {
       setIsLoading(true);
       const coursesData = await searchCourses(
         searchFilters,
-        SearchOption.NOT_RELATED,
+        SearchOption.NOT_RELATED
       );
       setCourses(coursesData);
     } catch (error) {
@@ -40,8 +40,8 @@ export default function SearchCoursesPage() {
 
   const handleSelectCourse = (course: Course) => {
     router.push({
-      pathname: "/courses/[courseId]/inscription",
-      params: { courseId: course.courseId },
+      pathname: "/courses/[courseId]",
+      params: { courseId: course.courseId, role: course.currentUserRole },
     });
   };
 
@@ -61,9 +61,11 @@ export default function SearchCoursesPage() {
     }
   };
 
-  useEffect(() => {
-    fetchCourses();
-  }, [searchFilters]);
+  useFocusEffect(
+    useCallback(() => {
+      fetchCourses();
+    }, [searchFilters])
+  );
 
   return (
     <>
@@ -79,7 +81,7 @@ export default function SearchCoursesPage() {
       </Appbar.Header>
 
       <View style={[globalStyles.mainContainer, styles.mainContainer]}>
-        <CoursesSearchBar onSearch={handleSearch} />
+        <SearchBar placeholder="Buscar cursos" onSearch={handleSearch} />
 
         <View style={{ marginVertical: 16 }}>
           <FlatList
@@ -87,9 +89,7 @@ export default function SearchCoursesPage() {
             keyExtractor={(item) => item.courseId.toString()}
             renderItem={({ item }) => (
               <CourseCard
-                name={item.courseDetails.title}
-                description={item.courseDetails.description}
-                category={item.courseDetails.category}
+                course={item}
                 onPress={() => handleSelectCourse(item)}
               />
             )}

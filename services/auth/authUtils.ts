@@ -6,7 +6,6 @@ import {
   signInWithEmailAndPassword,
   sendPasswordResetEmail,
 } from "@react-native-firebase/auth";
-import { FirebaseError } from "@firebase/util";
 
 /**
  * Signs up a new user using the provided email and password.
@@ -22,10 +21,13 @@ export async function signUp(email: string, password: string) {
   try {
     await createUserWithEmailAndPassword(auth, email, password);
   } catch (error) {
-    if (error instanceof FirebaseError && error.code in authErrorMessages) {
-      const errorMessage =
-        authErrorMessages[error.code as keyof typeof authErrorMessages];
-      throw new Error(errorMessage);
+    if (typeof error === "object" && error !== null && "code" in error) {
+      const code = (error as { code: string }).code;
+      if (code in authErrorMessages) {
+        const errorMessage =
+          authErrorMessages[code as keyof typeof authErrorMessages];
+        throw new Error(errorMessage);
+      }
     }
     throw error;
   }
@@ -50,10 +52,13 @@ export async function signIn(email: string, password: string) {
     );
     return userCredential.user.uid;
   } catch (error) {
-    if (error instanceof FirebaseError && error.code in authErrorMessages) {
-      const errorMessage =
-        authErrorMessages[error.code as keyof typeof authErrorMessages];
-      throw new Error(errorMessage);
+    if (typeof error === "object" && error !== null && "code" in error) {
+      const code = (error as { code: string }).code;
+      if (code in authErrorMessages) {
+        const errorMessage =
+          authErrorMessages[code as keyof typeof authErrorMessages];
+        throw new Error(errorMessage);
+      }
     }
     throw error;
   }
@@ -86,10 +91,13 @@ export async function passwordReset(email: string) {
   try {
     await sendPasswordResetEmail(auth, email);
   } catch (error) {
-    if (error instanceof FirebaseError && error.code in authErrorMessages) {
-      const errorMessage =
-        authErrorMessages[error.code as keyof typeof authErrorMessages];
-      throw new Error(errorMessage);
+    if (typeof error === "object" && error !== null && "code" in error) {
+      const code = (error as { code: string }).code;
+      if (code in authErrorMessages) {
+        const errorMessage =
+          authErrorMessages[code as keyof typeof authErrorMessages];
+        throw new Error(errorMessage);
+      }
     }
     throw error;
   }
