@@ -20,13 +20,13 @@ export type LineChartProps = {
   series: LineChartSeries[];
   width?: number;
   height?: number;
-  xLabel?: string;
   yLabel?: string;
   showAllXLabels?: boolean;
   xLabelSteps?: number;
   showAllYLabels?: boolean;
   yLabelSteps?: number;
   titleColor?: string;
+  renderXLabel?: (x: number) => string;
 };
 
 export default function LineChart({
@@ -34,13 +34,13 @@ export default function LineChart({
   series,
   width = 340,
   height = 220,
-  xLabel,
   yLabel,
   showAllXLabels = false,
   xLabelSteps = 5,
   showAllYLabels = false,
   yLabelSteps = 3,
   titleColor = "#888", // por defecto gris
+  renderXLabel,
 }: LineChartProps) {
   const theme = useTheme();
   // Unificar todos los puntos X
@@ -192,7 +192,7 @@ export default function LineChart({
                   i === 0 || i === allX.length - 1 ? "bold" : "normal"
                 }
               >
-                {xLabel ? `${xLabel} ${x}` : x}
+                {renderXLabel(x)}
               </SvgText>
             );
           })}
