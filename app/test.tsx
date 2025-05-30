@@ -25,45 +25,75 @@ export default function TestPage() {
       "/course/16b8c2e6-3239-4f18-9165-364d713fadbe/1",
     ),
   ]);
-  const [links, setLinks] = useState([
-    new Link("Google", "https://www.google.com"),
-  ]);
+  // const [links, setLinks] = useState([
+  //   new Link("Google", "https://www.google.com"),
+  // ]);
 
   const data = [
     { label: "Argentina", value: 45000000 },
     { label: "Brasil", value: 213000000 },
     { label: "Chile", value: 19000000 },
     { label: "Uruguay", value: 3500000 },
-    { label: "MIGUEZ", value: 2 },
     { label: "Paraguay", value: 7000000 },
-    { label: "Paraguay", value: 7000000 },
-    { label: "Paraguay", value: 7000000 },
-    { label: "Paraguay", value: 7000000 },
-    { label: "Paraguay", value: 7000000 },
-    { label: "Paraguay", value: 7000000 },
+    { label: "Bolivia", value: 12000000 },
+    { label: "Perú", value: 33000000 },
+    { label: "Colombia", value: 51000000 },
+    { label: "Venezuela", value: 28000000 },
+    { label: "Ecuador", value: 17000000 },
+    { label: "Guyana", value: 800000 },
+    { label: "Surinam", value: 600000 },
+    { label: "Guayana Francesa", value: 300000 },
   ];
 
   const series: LineChartSeries[] = [
     {
-      label: "Temperatura",
+      label: "Argentina",
       color: "#6C63FF",
       data: [
         { x: 1, y: 20 },
         { x: 2, y: 22 },
-        // { x: 4, y: 19 },
+        { x: 3, y: 21 },
+        { x: 4, y: 19 },
         { x: 5, y: -2 },
+        { x: 6, y: 5 },
+        { x: 7, y: 10 },
+        { x: 8, y: 15 },
+        { x: 9, y: 18 },
+        { x: 10, y: 23 },
       ],
       showPoints: true,
     },
     {
-      label: "Humedad",
+      label: "Brasil",
       color: "#FF9800",
       data: [
         { x: 1, y: 1 },
         { x: 2, y: 10 },
-        // { x: 3, y: 3 },
-        // { x: 4, y: 4 },
+        { x: 3, y: 3 },
+        { x: 4, y: 4 },
         { x: 5, y: 5 },
+        { x: 6, y: 8 },
+        { x: 7, y: 12 },
+        { x: 8, y: 15 },
+        { x: 9, y: 13 },
+        { x: 10, y: 9 },
+      ],
+      showPoints: true,
+    },
+    {
+      label: "Chile",
+      color: "#4CAF50",
+      data: [
+        { x: 1, y: 5 },
+        { x: 2, y: 7 },
+        { x: 3, y: 6 },
+        { x: 4, y: 8 },
+        { x: 5, y: 10 },
+        { x: 6, y: 12 },
+        { x: 7, y: 9 },
+        { x: 8, y: 7 },
+        { x: 9, y: 6 },
+        { x: 10, y: 5 },
       ],
       showPoints: true,
     },
@@ -105,20 +135,12 @@ export default function TestPage() {
         <HorizontalBarChart
           data={data}
           barColor={theme.colors.primary}
-          title="Población (desc)"
+          title="Población"
           displayValue={(value) => `${(value / 1000000).toFixed(1)} M`}
-          sortOrder="desc"
         />
         <HorizontalBarChart
           data={data}
           barColor={theme.colors.primary}
-          title="Población (asc)"
-          displayValue={(value) => `${(value / 1000000).toFixed(1)} M`}
-          sortOrder="asc"
-        />
-        <VerticalBarChart
-          data={data}
-          barColor={theme.colors.primary}
           title="Población (desc)"
           displayValue={(value) => `${(value / 1000000).toFixed(1)} M`}
           sortOrder="desc"
@@ -126,9 +148,15 @@ export default function TestPage() {
         <VerticalBarChart
           data={data}
           barColor={theme.colors.primary}
-          title="Población (asc)"
+          title="Población"
           displayValue={(value) => `${(value / 1000000).toFixed(1)} M`}
-          sortOrder="asc"
+        />
+        <VerticalBarChart
+          data={data}
+          barColor={theme.colors.primary}
+          title="Población (desc)"
+          displayValue={(value) => `${(value / 1000000).toFixed(1)} M`}
+          sortOrder="desc"
         />
         <LineChart
           titleColor={theme.colors.primary}

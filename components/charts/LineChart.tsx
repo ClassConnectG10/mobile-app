@@ -75,19 +75,18 @@ export default function LineChart({
 
   // Para labels de X: todos o solo algunos
   let xLabelIndexes: number[];
-  if (showAllXLabels) {
+  if (showAllXLabels || allX.length <= 1) {
     xLabelIndexes = allX.map((_, i) => i);
   } else {
     const steps = Math.min(xLabelSteps, allX.length);
     xLabelIndexes = Array.from({ length: steps }, (_, i) =>
-      Math.round((i * (allX.length - 1)) / (steps - 1)),
+      steps === 1 ? 0 : Math.round((i * (allX.length - 1)) / (steps - 1)),
     );
   }
 
   // Para labels de Y: todos o solo algunos
   let yLabelValues: number[];
-  if (showAllYLabels) {
-    // Mostrar todos los valores únicos de Y (ordenados de mayor a menor)
+  if (showAllYLabels || yMin === yMax) {
     yLabelValues = Array.from(new Set(allY)).sort((a, b) => b - a);
   } else {
     const steps = Math.max(2, yLabelSteps);
