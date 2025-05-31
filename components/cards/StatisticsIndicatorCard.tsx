@@ -19,14 +19,13 @@ export const StatCard: React.FC<StatCardProps> = ({
   return (
     <View
       style={{
-        backgroundColor: theme.colors.elevation.level1,
+        backgroundColor: theme.colors.surface,
         borderRadius: 16,
         padding: 10,
         shadowColor: theme.colors.primary,
         shadowRadius: 4,
         flexDirection: "row",
         justifyContent: "space-between",
-        // gap: 12,
         flex: 1,
       }}
     >

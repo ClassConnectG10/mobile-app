@@ -12,6 +12,7 @@ type DatePickerProps = {
   canReset?: boolean;
   onChange: (date: Date) => void;
   horizontal?: boolean;
+  style?: "default" | "white";
 };
 
 export const DatePickerButton: React.FC<DatePickerProps> = ({
@@ -22,6 +23,7 @@ export const DatePickerButton: React.FC<DatePickerProps> = ({
   canReset = false,
   onChange,
   horizontal = false,
+  style = "default",
 }) => {
   const [showPicker, setShowPicker] = useState<"date" | "time" | null>(null);
 
@@ -124,6 +126,9 @@ export const DatePickerButton: React.FC<DatePickerProps> = ({
             value={formatValue()}
             editable={false}
             pointerEvents="none"
+            style={{
+              backgroundColor: style === "white" ? "#fff" : undefined,
+            }}
           />
         </Pressable>
       )}

@@ -16,8 +16,6 @@ export const ListStatCard: React.FC<ListStatCardProps> = ({
       style={{
         fontWeight: "bold",
         fontSize: 18,
-        marginTop: 16,
-        marginBottom: 8,
       }}
     >
       {title}

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { View, Pressable } from "react-native";
 import { Menu, IconButton } from "react-native-paper";
-import { TextField } from "./TextField";
+import { TextInput } from "react-native-paper";
 import { BiMap } from "@/utils/bimap";
 
 interface OptionPickerProps {
@@ -10,6 +10,7 @@ interface OptionPickerProps {
   items: BiMap;
   editable?: boolean;
   setValue: (value: string) => void;
+  style?: "default" | "white";
 }
 
 const OptionPicker: React.FC<OptionPickerProps> = ({
@@ -18,6 +19,7 @@ const OptionPicker: React.FC<OptionPickerProps> = ({
   items,
   editable = true,
   setValue,
+  style = "default",
 }) => {
   const [menuVisible, setMenuVisible] = useState(false);
 
@@ -35,9 +37,14 @@ const OptionPicker: React.FC<OptionPickerProps> = ({
                 style={{ flex: 1 }}
                 onPress={() => setMenuVisible(true)}
               >
-                <TextField
+                <TextInput
                   label={label}
                   value={items.getFrontValue(value) || ""}
+                  editable={false}
+                  pointerEvents="none"
+                  style={{
+                    backgroundColor: style === "white" ? "#fff" : undefined,
+                  }}
                 />
               </Pressable>
               <IconButton
@@ -47,6 +54,9 @@ const OptionPicker: React.FC<OptionPickerProps> = ({
                 onPress={() => {
                   setValue("");
                   setMenuVisible(false);
+                }}
+                style={{
+                  backgroundColor: style === "white" ? "#fff" : undefined,
                 }}
               />
             </View>
@@ -64,7 +74,13 @@ const OptionPicker: React.FC<OptionPickerProps> = ({
           ))}
         </Menu>
       ) : (
-        <TextField label={label} value={items.getFrontValue(value) || ""} />
+        <TextInput
+          label={label}
+          value={items.getFrontValue(value) || ""}
+          editable={false}
+          pointerEvents="none"
+          style={{ backgroundColor: style === "white" ? "#fff" : undefined }}
+        />
       )}
     </View>
   );

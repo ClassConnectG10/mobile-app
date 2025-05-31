@@ -13,6 +13,8 @@ export type LineChartSeries = {
   color: string;
   data: LineChartDataPoint[];
   showPoints?: boolean;
+  strokeWidth?: number; // grosor de línea
+  strokeDasharray?: string; // patrón SVG para tipo de línea
 };
 
 export type LineChartProps = {
@@ -140,7 +142,8 @@ export default function LineChart({
                 .join(" ")}
               fill="none"
               stroke={serie.color}
-              strokeWidth={2}
+              strokeWidth={serie.strokeWidth ?? 2}
+              strokeDasharray={serie.strokeDasharray}
             />
           ))}
           {/* Puntos de datos */}
@@ -250,7 +253,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.06,
     shadowRadius: 4,
     elevation: 2,
-    marginVertical: 8,
     width: "100%",
   },
   title: {

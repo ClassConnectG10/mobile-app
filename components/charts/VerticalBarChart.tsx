@@ -1,6 +1,6 @@
-import React from "react";
+import React, { useState } from "react";
 import { View, Text, StyleSheet, ScrollView } from "react-native";
-import { useTheme } from "react-native-paper";
+import { useTheme, IconButton } from "react-native-paper";
 import Svg, { Rect } from "react-native-svg";
 
 type Item = {
@@ -10,36 +10,109 @@ type Item = {
 
 type Props = {
   data: Item[];
-  title: string;
+  title?: string;
+  titleColor?: string;
   barColor?: string;
   displayValue?: (value: number) => string;
   height?: number;
-  sortOrder?: "asc" | "desc"; // NUEVO: parámetro para ordenar
+  sortOrder?: "asc" | "desc";
 };
 
 export default function VerticalBarChart({
   data,
   barColor: propBarColor,
   title,
+  titleColor = "#1976d2",
   displayValue = (value) => value.toString(),
   height = 220,
-  sortOrder,
+  sortOrder: defaultSortOrder,
 }: Props) {
   const theme = useTheme();
   const accentColor = propBarColor || "#6C63FF";
-  // Ordenar si corresponde
-  const sortedData = sortOrder
-    ? [...data].sort((a, b) =>
-        sortOrder === "asc" ? a.value - b.value : b.value - a.value,
-      )
-    : data;
+
+  // Estado para el ordenamiento: inicia con el valor pasado por props, o null
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc" | null>(
+    defaultSortOrder ?? null,
+  );
+
+  let sortedData: Item[];
+  if (sortOrder === "asc") {
+    sortedData = [...data].sort((a, b) => a.value - b.value);
+  } else if (sortOrder === "desc") {
+    sortedData = [...data].sort((a, b) => b.value - a.value);
+  } else {
+    sortedData = data;
+  }
+
+  // Si no hay datos, mostrar mensaje y no mostrar botón de orden
+  if (!sortedData.length) {
+    return (
+      <View style={[styles.cardContainer, { backgroundColor: theme.colors.surface, minHeight: 120 }]}> 
+        {/* Título en la posición habitual */}
+        {title && (
+          <Text style={[styles.chartLabel, { color: titleColor, marginBottom: 0 }]}>{title}</Text>
+        )}
+        {/* Mensaje centrado */}
+        <View style={{ flex: 1, justifyContent: "center", alignItems: "center", minHeight: 80 }}>
+          <Text style={{ color: "#888", fontSize: 16, textAlign: "center" }}>No hay datos para mostrar</Text>
+        </View>
+      </View>
+    );
+  }
+
   const maxValue = Math.max(...sortedData.map((d) => d.value));
 
   return (
     <View
       style={[styles.cardContainer, { backgroundColor: theme.colors.surface }]}
     >
-      <Text style={[styles.chartLabel, { color: accentColor }]}>{title}</Text>
+      {/* Título y botón de ordenamiento en línea */}
+      <View
+        style={{
+          position: "relative",
+          marginBottom: 8,
+          minHeight: 32,
+          justifyContent: "center",
+        }}
+      >
+        {title && (
+          <Text
+            style={[styles.chartLabel, { color: titleColor, marginBottom: 0 }]}
+          >
+            {title}
+          </Text>
+        )}
+        <IconButton
+          icon={
+            sortOrder === "asc"
+              ? "sort-ascending"
+              : sortOrder === "desc"
+              ? "sort-descending"
+              : "sort"
+          }
+          size={20}
+          iconColor={accentColor}
+          containerColor={`${accentColor}22`}
+          onPress={() =>
+            setSortOrder(
+              sortOrder === "asc"
+                ? "desc"
+                : sortOrder === "desc"
+                ? null
+                : "asc",
+            )
+          }
+          accessibilityLabel="Cambiar orden"
+          style={{
+            position: "absolute",
+            right: 0,
+            top: "50%",
+            marginTop: -20,
+            margin: 0,
+            padding: 0,
+          }}
+        />
+      </View>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator
@@ -102,7 +175,8 @@ const styles = StyleSheet.create({
   chartLabel: {
     fontWeight: "bold",
     fontSize: 16,
-    marginBottom: 12,
+    marginBottom: 8,
+    textAlign: "left",
   },
   barColumn: {
     alignItems: "center",
