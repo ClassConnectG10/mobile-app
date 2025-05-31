@@ -1,6 +1,5 @@
 import HorizontalBarChart from "@/components/charts/HorizontalBarChart";
 import LineChart, { LineChartDataPoint } from "@/components/charts/LineChart";
-import VerticalBarChart from "@/components/charts/VerticalBarChart";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import { DatePickerButton } from "@/components/forms/DatePickerButton";
 import OptionPicker from "@/components/forms/OptionPicker";
@@ -229,20 +228,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course }) => {
                 barColor={customColors.info}
                 displayValue={(value) => value.toFixed(2)}
               />
-              <VerticalBarChart
-                data={statistics.avgGradesPerActivity.map((activity) => ({
-                  label:
-                    activities?.find(
-                      (a) => a.activity.resourceId === activity.activityId,
-                    )?.activity.activityDetails.title ??
-                    `Actividad ${activity.activityId}`,
-                  value: activity.avgGrade,
-                }))}
-                title={"Promedio por actividad"}
-                titleColor="#000"
-                barColor={customColors.info}
-                displayValue={(value) => value.toFixed(2)}
-              />
+
               {/* Entregas */}
               <ListStatCard
                 title={"Entregas"}
