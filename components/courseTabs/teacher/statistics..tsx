@@ -150,6 +150,26 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course }) => {
     }, [submissionStatisticsParams]),
   );
 
+  const handleStartDateChange = (date: Date) => {
+    setStartDate(date);
+    if (date < submissionStatisticsParams.startDate) {
+      setSubmissionStatisticsParams((prev) => ({
+        ...prev,
+        startDate: date,
+      }));
+    }
+  };
+
+  const handleEndDateChange = (date: Date) => {
+    setEndDate(date);
+    if (date > submissionStatisticsParams.endDate) {
+      setSubmissionStatisticsParams((prev) => ({
+        ...prev,
+        endDate: date,
+      }));
+    }
+  };
+
   return (
     <View style={{ paddingHorizontal: 16, flex: 1 }}>
       {isLoading || !statistics || !activities ? (
@@ -242,10 +262,21 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course }) => {
                   {
                     icon: "timer-sand",
                     value:
-                      (statistics.avgTimeDifferenceHours?.toFixed(2) ?? "-") +
-                      " hs",
-                    label: "Retraso promedio",
-                    color: customColors.warning,
+                      (statistics.avgTimeDifferenceHours !== undefined
+                        ? Math.abs(statistics.avgTimeDifferenceHours).toFixed(2)
+                        : "-") + " hs",
+                    label:
+                      statistics.avgTimeDifferenceHours === undefined
+                        ? "Retraso promedio"
+                        : statistics.avgTimeDifferenceHours > 0
+                        ? "Anticipo promedio"
+                        : "Retraso promedio",
+                    color:
+                      statistics.avgTimeDifferenceHours === undefined
+                        ? customColors.warning
+                        : statistics.avgTimeDifferenceHours > 0
+                        ? customColors.success
+                        : customColors.warning,
                   },
                   {
                     icon: "clock-check",
@@ -279,12 +310,9 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course }) => {
                   label="Desde"
                   value={startDate}
                   onChange={(date) => {
-                    setStartDate(date);
-                    if (date < submissionStatisticsParams.startDate) {
-                      setSubmissionStatisticsParams((prev) => ({
-                        ...prev,
-                        startDate: date,
-                      }));
+                    handleStartDateChange(date);
+                    if (date > endDate) {
+                      handleEndDateChange(date);
                     }
                   }}
                   horizontal={true}
@@ -294,12 +322,9 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course }) => {
                   label="Hasta"
                   value={endDate}
                   onChange={(date) => {
-                    setEndDate(date);
-                    if (date > submissionStatisticsParams.endDate) {
-                      setSubmissionStatisticsParams((prev) => ({
-                        ...prev,
-                        endDate: date,
-                      }));
+                    handleEndDateChange(date);
+                    if (date < startDate) {
+                      handleStartDateChange(date);
                     }
                   }}
                   horizontal={true}
