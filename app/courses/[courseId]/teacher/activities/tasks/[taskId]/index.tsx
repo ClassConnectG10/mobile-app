@@ -27,7 +27,6 @@ import {
 import { useTaskDetails } from "@/hooks/useTaskDetails";
 import { ToggleableFileInput } from "@/components/forms/ToggleableFileInput";
 import { File } from "@/types/file";
-import { set } from "zod";
 
 export default function TeacherExamPage() {
   const router = useRouter();
@@ -42,9 +41,8 @@ export default function TeacherExamPage() {
   const [isEditing, setIsEditing] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [teacherTask, setTeacherTask] = useState<TeacherActivity | null>(null);
-  const [taskFiles, setTaskFiles] = useState<File[]>([]);
+  // const [taskFiles, setTaskFiles] = useState<File[]>([]);
   const [taskFilesChanged, setTaskFilesChanged] = useState(false);
-  const [taskFilesDeleted, setTaskFilesDeleted] = useState(false);
 
   const [showConfirmationDelete, setShowConfirmationDelete] = useState(false);
   const [showConfirmationPublish, setShowConfirmationPublish] = useState(false);
@@ -69,23 +67,14 @@ export default function TeacherExamPage() {
   }
 
   async function fetchTeacherTask() {
+    if (!courseId || !taskId) return;
+    setIsLoading(true);
     try {
-      setIsLoading(true);
-      if (courseId && taskId) {
-        const teacherTask = await getTeacherTask(courseId, Number(taskId));
-        setTeacherTask(teacherTask);
-        taskDetailsHook.setTaskDetails(
-          teacherTask.activity.activityDetails as TaskDetails
-        );
-        setTaskFiles(
-          (teacherTask.activity.activityDetails as TaskDetails).instructionsFile
-            ? [
-                (teacherTask.activity.activityDetails as TaskDetails)
-                  .instructionsFile,
-              ]
-            : []
-        );
-      }
+      const fetchedTeacherTask = await getTeacherTask(courseId, Number(taskId));
+      setTeacherTask(fetchedTeacherTask);
+      taskDetailsHook.setTaskDetails(
+        fetchedTeacherTask.activity.activityDetails as TaskDetails
+      );
     } catch (error) {
       setErrorMessage((error as Error).message);
     } finally {
@@ -94,9 +83,13 @@ export default function TeacherExamPage() {
   }
 
   const handleTaskFilesChange = (files: File[]) => {
-    setTaskFiles(files);
+    if (files.length > 0) {
+      taskDetailsHook.setInstructionsFile(files[0]);
+    } else if (files.length === 0) {
+      taskDetailsHook.setInstructionsFile(null);
+    }
+
     setTaskFilesChanged(true);
-    setTaskFilesDeleted(files.length === 0);
   };
 
   const handleDiscardChanges = () => {
@@ -106,10 +99,6 @@ export default function TeacherExamPage() {
       );
     }
     setIsEditing(false);
-    setTaskFiles([
-      (teacherTask?.activity.activityDetails as TaskDetails)
-        .instructionsFile as File,
-    ]);
     setTaskFilesChanged(false);
   };
 
@@ -132,31 +121,23 @@ export default function TeacherExamPage() {
   };
 
   const handleEditTask = async () => {
+    if (!taskDetails) return;
     setIsLoading(true);
 
     try {
-      if (teacherTask) {
-        await updateTask(courseId, Number(taskId), taskDetails);
-        setTeacherTask({
-          ...teacherTask,
-          activity: {
-            ...teacherTask.activity,
-            activityDetails: taskDetails,
-          },
-        });
-        if (taskFilesChanged) {
-          console.log("taskFiles fffff", taskFiles);
-          if (!taskFilesDeleted) {
-            await uploadTaskFile(courseId, Number(taskId), taskFiles[0]);
-          } else {
-            console.log("AAAASDSD");
-            await deleteTaskFile(courseId, Number(taskId));
-          }
-          setTaskFilesChanged(false);
-        }
-        setIsEditing(false);
-      }
+      await updateTask(courseId, Number(taskId), taskDetails);
+
+      setTaskFilesChanged(false);
+      setTeacherTask({
+        ...teacherTask,
+        activity: {
+          ...teacherTask.activity,
+          activityDetails: taskDetails,
+        },
+      });
+      setIsEditing(false);
     } catch (error) {
+      console.error("Error al actualizar la tarea:", error);
       setErrorMessage((error as Error).message);
       handleDiscardChanges();
     } finally {
@@ -265,7 +246,11 @@ export default function TeacherExamPage() {
             />
 
             <ToggleableFileInput
-              files={taskFiles}
+              files={
+                taskDetails.instructionsFile
+                  ? [taskDetails.instructionsFile]
+                  : []
+              }
               editable={isEditing}
               onChange={handleTaskFilesChange}
               maxFiles={1}

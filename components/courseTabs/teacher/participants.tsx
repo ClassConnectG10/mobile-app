@@ -90,7 +90,8 @@ export const ParticipantsTab: React.FC<ParticipantsTabProps> = ({ course }) => {
 
     if (isOwner) {
       router.push({
-        pathname: "/courses/[courseId]/teacher/participants/[assistantId]",
+        pathname:
+          "/courses/[courseId]/teacher/participants/assistants/[assistantId]",
         params: { courseId: course.courseId, assistantId: teacher.id },
       });
     } else {
@@ -103,7 +104,7 @@ export const ParticipantsTab: React.FC<ParticipantsTabProps> = ({ course }) => {
 
   const handleStudentPress = (student: User) => {
     router.push({
-      pathname: "/courses/[courseId]/teacher/participants/[studentId]",
+      pathname: "/courses/[courseId]/teacher/participants/students/[studentId]",
       params: { courseId: course.courseId, studentId: student.id },
     });
   };

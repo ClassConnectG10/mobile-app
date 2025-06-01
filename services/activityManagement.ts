@@ -469,7 +469,7 @@ export async function getExamSubmission(
 export async function createTask(
   courseId: string,
   taskDetails: TaskDetails
-): Promise<number> {
+): Promise<void> {
   try {
     activityDetailsSchema.parse(taskDetails);
 
@@ -484,7 +484,11 @@ export async function createTask(
     };
 
     const response = await request.post("", body);
-    return response.data.data.resource_id;
+    const resource_id = response.data.data.resource_id;
+
+    if (taskDetails.instructionsFile) {
+      await uploadTaskFile(courseId, resource_id, taskDetails.instructionsFile);
+    }
   } catch (error) {
     throw handleError(error, "crear la actividad");
   }

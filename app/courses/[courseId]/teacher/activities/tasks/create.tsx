@@ -28,9 +28,8 @@ export default function CreateTaskPage() {
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [courseModulesBiMap, setCourseModulesBiMap] = useState<BiMap>(
-    new BiMap(),
+    new BiMap()
   );
-  const [taskFiles, setTaskFiles] = useState<File[]>([]);
 
   const courseId = courseIdParam as string;
 
@@ -46,7 +45,7 @@ export default function CreateTaskPage() {
         courseModules.map((module) => [
           module.courseModuleDetails.title,
           module.moduleId.toString(),
-        ]),
+        ])
       );
       setCourseModulesBiMap(bimap);
     } catch (error) {
@@ -59,11 +58,7 @@ export default function CreateTaskPage() {
   const handleCreateTask = async () => {
     setIsLoading(true);
     try {
-      const createdTaskId = await createTask(courseId, taskDetails);
-      if (taskFiles.length > 0) {
-        await uploadTaskFile(courseId, createdTaskId, taskFiles[0]);
-      }
-
+      await createTask(courseId, taskDetails);
       router.back();
     } catch (error) {
       setErrorMessage((error as Error).message);
@@ -72,10 +67,18 @@ export default function CreateTaskPage() {
     }
   };
 
+  const handleFileChange = (files: File[]) => {
+    if (files.length > 0) {
+      taskDetailsHook.setInstructionsFile(files[0]);
+    } else {
+      taskDetailsHook.setInstructionsFile(null);
+    }
+  };
+
   useFocusEffect(
     useCallback(() => {
       fetchCourseModules();
-    }, [courseId]),
+    }, [courseId])
   );
 
   return (
@@ -168,9 +171,13 @@ export default function CreateTaskPage() {
               <Divider />
 
               <ToggleableFileInput
-                files={taskFiles}
+                files={
+                  taskDetails.instructionsFile
+                    ? [taskDetails.instructionsFile]
+                    : []
+                }
                 editable={true}
-                onChange={setTaskFiles}
+                onChange={handleFileChange}
                 maxFiles={1}
               />
             </View>
