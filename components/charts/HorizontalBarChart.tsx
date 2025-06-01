@@ -45,14 +45,32 @@ export default function HorizontalBarChart({
   // Si no hay datos, mostrar mensaje y no mostrar botón de orden
   if (!sortedData.length) {
     return (
-      <View style={[styles.cardContainer, { backgroundColor: theme.colors.surface, minHeight: 120 }]}> 
+      <View
+        style={[
+          styles.cardContainer,
+          { backgroundColor: theme.colors.surface, minHeight: 120 },
+        ]}
+      >
         {/* Título en la posición habitual */}
         {title && (
-          <Text style={[styles.chartLabel, { color: titleColor, marginBottom: 0 }]}>{title}</Text>
+          <Text
+            style={[styles.chartLabel, { color: titleColor, marginBottom: 0 }]}
+          >
+            {title}
+          </Text>
         )}
         {/* Mensaje centrado */}
-        <View style={{ flex: 1, justifyContent: "center", alignItems: "center", minHeight: 80 }}>
-          <Text style={{ color: "#888", fontSize: 16, textAlign: "center" }}>No hay datos para mostrar</Text>
+        <View
+          style={{
+            flex: 1,
+            justifyContent: "center",
+            alignItems: "center",
+            minHeight: 80,
+          }}
+        >
+          <Text style={{ color: "#888", fontSize: 16, textAlign: "center" }}>
+            No hay datos para mostrar
+          </Text>
         </View>
       </View>
     );

@@ -6,7 +6,11 @@ import OptionPicker from "@/components/forms/OptionPicker";
 import { ListStatCard } from "@/components/ListStatCard";
 import { getCourseTeacherActivities } from "@/services/activityManagement";
 import { getStatistics, getSubmissionStatistics } from "@/services/statistics";
-import { ActivitiesOption, TeacherActivity } from "@/types/activity";
+import {
+  ActivitiesOption,
+  ActivityType,
+  TeacherActivity,
+} from "@/types/activity";
 import { Course } from "@/types/course";
 import {
   Statistics,
@@ -107,11 +111,6 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course }) => {
   const fetchSubmissionStatistics = async () => {
     if (!course.courseId) return;
     // setIsLoading(true); Lo comento para que no me recargue toda la pantalla al cambiar los filtros
-
-    console.log(
-      "Fetching submission statistics with params:",
-      submissionStatisticsParams,
-    );
 
     try {
       const [
@@ -355,31 +354,57 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course }) => {
               <LineChart
                 title={"Entregas por día"}
                 titleColor="#000"
-                series={[
-                  {
-                    label: "Exámenes",
-                    color: theme.colors.primary,
-                    data: generateDailyPoints(
-                      examsSubmissionStatistics,
-                      startDate,
-                      endDate,
-                    ),
-                    showPoints: true,
-                    strokeWidth: 3,
-                    strokeDasharray: "12",
-                  },
-                  {
-                    label: "Tareas",
-                    color: customColors.warning,
-                    data: generateDailyPoints(
-                      tasksSubmissionStatistics,
-                      startDate,
-                      endDate,
-                    ),
-                    showPoints: true,
-                    strokeWidth: 2,
-                  },
-                ]}
+                series={(() => {
+                  if (submissionStatisticsParams.activityId) {
+                    const selectedActivity = activities?.find(
+                      (a) =>
+                        a.activity.resourceId ===
+                        submissionStatisticsParams.activityId,
+                    );
+                    if (!selectedActivity) return [];
+
+                    return [
+                      {
+                        label: selectedActivity.activity.activityDetails.title,
+                        color: theme.colors.primary,
+                        data: generateDailyPoints(
+                          selectedActivity.activity.type === ActivityType.EXAM
+                            ? examsSubmissionStatistics
+                            : tasksSubmissionStatistics,
+                          startDate,
+                          endDate,
+                        ),
+                        showPoints: true,
+                        strokeWidth: 2,
+                      },
+                    ];
+                  }
+                  return [
+                    {
+                      label: "Exámenes",
+                      color: theme.colors.primary,
+                      data: generateDailyPoints(
+                        examsSubmissionStatistics,
+                        startDate,
+                        endDate,
+                      ),
+                      showPoints: true,
+                      strokeWidth: 3,
+                      strokeDasharray: "5",
+                    },
+                    {
+                      label: "Tareas",
+                      color: customColors.warning,
+                      data: generateDailyPoints(
+                        tasksSubmissionStatistics,
+                        startDate,
+                        endDate,
+                      ),
+                      showPoints: true,
+                      strokeWidth: 2,
+                    },
+                  ];
+                })()}
                 showAllXLabels={false}
                 xLabelSteps={3}
                 renderXLabel={(timestamp) =>

@@ -13,8 +13,8 @@ export type LineChartSeries = {
   color: string;
   data: LineChartDataPoint[];
   showPoints?: boolean;
-  strokeWidth?: number; // grosor de línea
-  strokeDasharray?: string; // patrón SVG para tipo de línea
+  strokeWidth?: number;
+  strokeDasharray?: string;
 };
 
 export type LineChartProps = {
@@ -229,14 +229,18 @@ export default function LineChart({
             key={serie.label}
             style={{ flexDirection: "row", alignItems: "center", gap: 4 }}
           >
-            <View
-              style={{
-                width: 16,
-                height: 3,
-                backgroundColor: serie.color,
-                borderRadius: 2,
-              }}
-            />
+            <Svg width={20} height={6} style={{ marginRight: 2 }}>
+              <Line
+                x1={2}
+                y1={3}
+                x2={18}
+                y2={3}
+                stroke={serie.color}
+                strokeWidth={serie.strokeWidth ?? 3}
+                strokeDasharray={serie.strokeDasharray}
+                strokeLinecap="round"
+              />
+            </Svg>
             <Text style={{ fontSize: 12 }}>{serie.label}</Text>
           </View>
         ))}
