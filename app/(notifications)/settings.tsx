@@ -108,7 +108,7 @@ export default function NotificationsPage() {
           </View>
         ) : (
           <ScrollView contentContainerStyle={styles.contentContainer}>
-            <Text style={styles.sectionHeader}>Plataforma</Text>
+            <Text style={styles.sectionHeader}>MEDIOS HABILITADOS</Text>
             <ToggleableBooleanInput
               icon="email"
               label="Notificaciones por correo"
