@@ -1,33 +1,32 @@
-import React, { useState } from "react";
+import React from "react";
 import { ScrollView } from "react-native";
-import { Appbar, Divider, useTheme } from "react-native-paper";
+import { Appbar, Button, useTheme } from "react-native-paper";
 import { useRouter } from "expo-router";
-import { File } from "@/types/file";
-import { Link } from "@/types/link";
-import { ToggleableFileInput } from "@/components/forms/ToggleableFileInput";
-import { ToggleableLinkInput } from "@/components/forms/ToggleableLinkInput";
 
 import HorizontalBarChart from "@/components/charts/HorizontalBarChart";
 import VerticalBarChart from "@/components/charts/VerticalBarChart";
-import DoubleAxisLineChart, {
-  LineChartSeries,
-} from "@/components/charts/LineChart";
+import { LineChartSeries } from "@/components/charts/LineChart";
 import LineChart from "@/components/charts/LineChart";
+import { exportToExcel, openExcelFile } from "@/utils/exportToExcel";
 
 export default function TestPage() {
   const router = useRouter();
   const theme = useTheme();
-  const [files, setFiles] = useState([
-    new File(
-      "1.pdf",
-      "application/pdf",
-      null,
-      "/course/16b8c2e6-3239-4f18-9165-364d713fadbe/1",
-    ),
-  ]);
+  // const [files, setFiles] = useState([
+  //   new File(
+  //     "1.pdf",
+  //     "application/pdf",
+  //     null,
+  //     "/course/16b8c2e6-3239-4f18-9165-364d713fadbe/1",
+  //   ),
+  // ]);
   // const [links, setLinks] = useState([
   //   new Link("Google", "https://www.google.com"),
   // ]);
+
+  const [exportedFilePath, setExportedFilePath] = React.useState<string | null>(
+    null,
+  );
 
   const data = [
     { label: "Argentina", value: 45000000 },
@@ -99,6 +98,47 @@ export default function TestPage() {
     },
   ];
 
+  const tablas = [
+    {
+      nombre: "Indicadores",
+      tabla: [
+        { Métrica: "Estudiantes", Valor: 10 },
+        { Métrica: "Finalización", Valor: "100%" },
+        { Métrica: "Promedio", Valor: 8.6 },
+      ],
+    },
+    {
+      nombre: "Notas",
+      tabla: [
+        { Alumno: "Ana", Nota: 10, Observación: "Excelente" },
+        { Alumno: "Luis", Nota: 7, Observación: "Bien" },
+      ],
+    },
+  ];
+
+  const handleExport = async () => {
+    try {
+      const filePath = await exportToExcel(tablas, "estadisticas");
+      setExportedFilePath(filePath);
+      console.log("Archivo exportado:", filePath);
+    } catch (error) {
+      console.error("Error al exportar:", error);
+    }
+  };
+
+  const handleOpenFile = async () => {
+    if (!exportedFilePath) {
+      console.warn("No hay archivo exportado para abrir.");
+      return;
+    }
+    try {
+      await openExcelFile(exportedFilePath);
+      console.log("Archivo abierto correctamente:", exportedFilePath);
+    } catch (error) {
+      console.error("Error al abrir el archivo:", error);
+    }
+  };
+
   return (
     <>
       <Appbar.Header>
@@ -132,7 +172,18 @@ export default function TestPage() {
           onChange={setLinks}
           maxLinks={5}
         /> */}
-        <HorizontalBarChart
+        <Button icon="file-excel" mode="contained" onPress={handleExport}>
+          Exportar
+        </Button>
+        <Button
+          icon="file-excel"
+          mode="outlined"
+          onPress={handleOpenFile}
+          disabled={!exportedFilePath}
+        >
+          Abrir archivo
+        </Button>
+        {/* <HorizontalBarChart
           data={data}
           barColor={theme.colors.primary}
           title="Población"
@@ -164,7 +215,7 @@ export default function TestPage() {
           series={series}
           yLabel="°C"
           renderXLabel={(x) => `Día ${x}`}
-        />
+        /> */}
       </ScrollView>
     </>
   );

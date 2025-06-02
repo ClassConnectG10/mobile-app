@@ -26,11 +26,16 @@ import { getSimpleRelativeTimeFromNow } from "@/utils/date";
 import { useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import { View, ScrollView } from "react-native";
-import { ActivityIndicator, Text, useTheme } from "react-native-paper";
+import { ActivityIndicator, Button, Text, useTheme } from "react-native-paper";
+import { exportToExcel, openExcelFile } from "@/utils/exportToExcel";
+import { AlertDialog } from "@/components/AlertDialog";
 
 interface StatisticsTabProps {
   course: Course;
 }
+
+const INITIAL_RANGE_DAYS_DIFF = 7;
+const MAX_SHOW_POINTS_DAYS = 45;
 
 export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course }) => {
   // const router = useRouter();
@@ -49,13 +54,19 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course }) => {
     SubmissionStatistic[] | null
   >(null);
   const [startDate, setStartDate] = useState<Date>(
-    new Date(new Date().setDate(new Date().getDate() - 7)),
+    new Date(
+      new Date().setDate(new Date().getDate() - INITIAL_RANGE_DAYS_DIFF),
+    ),
   );
   const [endDate, setEndDate] = useState<Date>(new Date());
   const [submissionStatisticsParams, setSubmissionStatisticsParams] =
     useState<SubmissionStatisticsParams>(
       new SubmissionStatisticsParams(startDate, endDate),
     );
+
+  const [exportedFilePath, setExportedFilePath] = useState<string | null>(null);
+  const [showExportDialog, setShowExportDialog] = useState(false);
+  const [exportSuccess, setExportSuccess] = useState(false);
 
   const fetchStatistics = async () => {
     if (!course.courseId) return;
@@ -144,6 +155,203 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course }) => {
         ...prev,
         endDate: date,
       }));
+    }
+  };
+
+  // Función para normalizar nombres de archivo
+  const normalizeFileName = (name: string): string => {
+    return name
+      .toLowerCase()
+      .replace(/\s+/g, "_") // espacios -> guiones bajos
+      .replace(/-/g, "_") // guiones -> guiones bajos
+      .replace(/[^a-z0-9_]/g, "") // remover caracteres especiales
+      .replace(/_+/g, "_"); // múltiples guiones bajos -> uno solo
+  };
+
+  // Función para determinar si mostrar puntos basado en la diferencia de fechas
+  const shouldShowPoints = (): boolean => {
+    const diffTime = Math.abs(endDate.getTime() - startDate.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays < MAX_SHOW_POINTS_DAYS;
+  };
+
+  const handleExport = async () => {
+    if (!statistics || !activities) {
+      setErrorMessage("No hay datos disponibles para exportar");
+      return;
+    }
+
+    try {
+      const tables = [
+        {
+          sheetName: "Indicadores del Curso",
+          table: [
+            { Métrica: "Estudiantes", Valor: statistics.studentsCount },
+            {
+              Métrica: "Promedio General",
+              Valor: statistics.overallAvgGrade?.toFixed(2) ?? "-",
+            },
+            {
+              Métrica: "Tasa de Finalización",
+              Valor: `${(statistics.completionRate * 100).toFixed(2)}%`,
+            },
+            {
+              Métrica: "Actividades Publicadas",
+              Valor: statistics.publishedActivitiesCount,
+            },
+            {
+              Métrica: "Actividades Sin Publicar",
+              Valor: statistics.unpublishedActivitiesCount,
+            },
+          ],
+        },
+        {
+          sheetName: "Estadísticas de Entregas",
+          table: [
+            {
+              Métrica: "Total de Entregas",
+              Valor: statistics.completedSubmissionsCount,
+            },
+            {
+              Métrica: "Entregas a Tiempo",
+              Valor: statistics.onTimeSubmissions,
+            },
+            { Métrica: "Entregas Tardías", Valor: statistics.lateSubmissions },
+            {
+              Métrica: "Tiempo Promedio de Diferencia",
+              Valor:
+                statistics.avgTimeDifferenceHours !== undefined
+                  ? `${statistics.avgTimeDifferenceHours.toFixed(2)} horas`
+                  : "-",
+            },
+          ],
+        },
+        {
+          sheetName: "Promedio por Actividad",
+          table: statistics.avgGradesPerActivity.map((activity) => ({
+            Actividad:
+              activities?.find(
+                (a) => a.activity.resourceId === activity.activityId,
+              )?.activity.activityDetails.title ??
+              `Actividad ${activity.activityId}`,
+            "Promedio de Calificación": activity.avgGrade.toFixed(2),
+          })),
+        },
+      ];
+
+      // Unificar entregas de tareas y exámenes en una sola tabla
+      if (
+        (tasksSubmissionStatistics && tasksSubmissionStatistics.length > 0) ||
+        (examsSubmissionStatistics && examsSubmissionStatistics.length > 0)
+      ) {
+        // Generar todos los días del rango seleccionado
+        const generateDateRange = (start: Date, end: Date): string[] => {
+          const dates = [];
+          const current = new Date(start);
+          current.setHours(0, 0, 0, 0);
+          const endDay = new Date(end);
+          endDay.setHours(0, 0, 0, 0);
+
+          while (current <= endDay) {
+            dates.push(current.toDateString());
+            current.setDate(current.getDate() + 1);
+          }
+          return dates;
+        };
+
+        const allDates = generateDateRange(startDate, endDate);
+
+        // Verificar si hay una actividad específica seleccionada
+        if (submissionStatisticsParams.activityId) {
+          const selectedActivity = activities?.find(
+            (a) =>
+              a.activity.resourceId === submissionStatisticsParams.activityId,
+          );
+
+          if (selectedActivity) {
+            const isExam = selectedActivity.activity.type === ActivityType.EXAM;
+            const relevantStats = isExam
+              ? examsSubmissionStatistics
+              : tasksSubmissionStatistics;
+
+            // Mapear fecha a cantidad de entregas
+            const statsMap = new Map(
+              (relevantStats ?? []).map((stat) => [
+                stat.date.toDateString(),
+                stat.count,
+              ]),
+            );
+
+            // Construir la tabla con solo el tipo correspondiente
+            const columnName = isExam
+              ? "Entregas de Exámenes"
+              : "Entregas de Tareas";
+            const submissionsTable = allDates.map((date) => ({
+              Fecha: date,
+              [columnName]: statsMap.get(date) ?? 0,
+            }));
+
+            const sheetName = `Entregas por Día - ${selectedActivity.activity.activityDetails.title}`;
+            tables.push({
+              sheetName,
+              table: submissionsTable as any,
+            });
+          }
+        } else {
+          // Vista general: mostrar ambas columnas con todos los días del rango
+          const tasksMap = new Map(
+            (tasksSubmissionStatistics ?? []).map((stat) => [
+              stat.date.toDateString(),
+              stat.count,
+            ]),
+          );
+          const examsMap = new Map(
+            (examsSubmissionStatistics ?? []).map((stat) => [
+              stat.date.toDateString(),
+              stat.count,
+            ]),
+          );
+
+          // Construir la tabla combinada con todos los días
+          const combinedTable = allDates.map((date) => ({
+            Fecha: date,
+            "Entregas de Tareas": tasksMap.get(date) ?? 0,
+            "Entregas de Exámenes": examsMap.get(date) ?? 0,
+          }));
+
+          tables.push({
+            sheetName: "Entregas por Día",
+            table: combinedTable as any,
+          });
+        }
+      }
+
+      const timestamp = new Date().toISOString();
+      const normalizedCourseName = normalizeFileName(
+        course.courseDetails.title,
+      );
+      const fileName = `estadisticas_${normalizedCourseName}_${timestamp}`;
+      const filePath = await exportToExcel(tables, fileName);
+      setExportedFilePath(filePath);
+      setExportSuccess(true);
+      setShowExportDialog(true);
+    } catch (error) {
+      console.error("Error al exportar:", error);
+      setExportSuccess(false);
+      setShowExportDialog(true);
+    }
+  };
+
+  const handleOpenFile = async () => {
+    if (!exportedFilePath) {
+      console.warn("No hay archivo exportado para abrir.");
+      return;
+    }
+    try {
+      await openExcelFile(exportedFilePath);
+    } catch (error) {
+      console.error("Error al abrir el archivo:", error);
+      setErrorMessage("Error al abrir el archivo");
     }
   };
 
@@ -341,6 +549,8 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course }) => {
                 title={"Entregas por día"}
                 titleColor="#000"
                 series={(() => {
+                  const showPoints = shouldShowPoints();
+
                   if (submissionStatisticsParams.activityId) {
                     const selectedActivity = activities?.find(
                       (a) =>
@@ -360,7 +570,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course }) => {
                           startDate,
                           endDate,
                         ),
-                        showPoints: true,
+                        showPoints: showPoints,
                         strokeWidth: 2,
                       },
                     ];
@@ -374,7 +584,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course }) => {
                         startDate,
                         endDate,
                       ),
-                      showPoints: true,
+                      showPoints: showPoints,
                       strokeWidth: 3,
                       strokeDasharray: "5",
                     },
@@ -386,7 +596,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course }) => {
                         startDate,
                         endDate,
                       ),
-                      showPoints: true,
+                      showPoints: showPoints,
                       strokeWidth: 2,
                     },
                   ];
@@ -399,11 +609,38 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course }) => {
               />
             </>
           )}
+          <Button
+            icon="file-excel"
+            mode="contained"
+            onPress={handleExport}
+            style={{ flex: 1 }}
+          >
+            Exportar estadísticas
+          </Button>
         </ScrollView>
       )}
       <ErrorMessageSnackbar
         message={errorMessage}
         onDismiss={() => setErrorMessage("")}
+      />
+
+      {/* Export Dialog */}
+      <AlertDialog
+        visible={showExportDialog}
+        onDismiss={() => setShowExportDialog(false)}
+        onConfirm={async () => {
+          setShowExportDialog(false);
+          await handleOpenFile();
+        }}
+        content={
+          exportSuccess && exportedFilePath
+            ? `Las estadísticas del curso se han exportado correctamente en la carpeta de Descargas con el nombre "${exportedFilePath
+                .split("/")
+                .pop()}". ¿Desea abrir el archivo ahora?`
+            : "Ocurrió un error al exportar las estadísticas. Por favor, inténtelo de nuevo."
+        }
+        dismissText={exportSuccess ? "Más Tarde" : "Cerrar"}
+        confirmText={exportSuccess ? "Abrir" : undefined}
       />
     </View>
   );
