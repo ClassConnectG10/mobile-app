@@ -21,6 +21,7 @@ import { CourseFilterModal } from "@/components/courses/CourseFilterModal";
 import { SearchBar } from "@/components/forms/SearchBar";
 import { FullScreenModal } from "@/components/FullScreenModal";
 import { FloatingActionButton } from "@/components/FloatingActionButton";
+import { IconBadge } from "@/components/IconBadge";
 
 export default function HomePage() {
   const theme = useTheme();
@@ -33,7 +34,7 @@ export default function HomePage() {
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const [searchOption, setSearchOption] = useState<SearchOption>(
-    SearchOption.RELATED
+    SearchOption.RELATED,
   );
   const [searchFiltersModalVisible, setSearchFiltersModalVisible] =
     useState(false);
@@ -92,7 +93,7 @@ export default function HomePage() {
   useFocusEffect(
     useCallback(() => {
       fetchCourses();
-    }, [searchFilters, searchOption, userContext])
+    }, [searchFilters, searchOption, userContext]),
   );
 
   axios.defaults.headers.common["X-Caller-Id"] =
@@ -108,6 +109,14 @@ export default function HomePage() {
           icon="test-tube"
           onPress={() => {
             router.push("/test");
+          }}
+        />
+        <IconBadge
+          icon="bell"
+          count={1}
+          showBadge={true}
+          onPress={() => {
+            router.push("/notifications");
           }}
         />
         <Appbar.Action

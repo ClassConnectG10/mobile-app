@@ -1,30 +1,24 @@
-import React, { useState } from "react";
+import React from "react";
 import { ScrollView } from "react-native";
-import { Appbar, Divider, useTheme } from "react-native-paper";
+import { Appbar, useTheme } from "react-native-paper";
 import { useRouter } from "expo-router";
-import { File } from "@/types/file";
-import { Link } from "@/types/link";
-import { ToggleableFileInput } from "@/components/forms/ToggleableFileInput";
-import { ToggleableLinkInput } from "@/components/forms/ToggleableLinkInput";
 
 import HorizontalBarChart from "@/components/charts/HorizontalBarChart";
 import VerticalBarChart from "@/components/charts/VerticalBarChart";
-import DoubleAxisLineChart, {
-  LineChartSeries,
-} from "@/components/charts/LineChart";
+import { LineChartSeries } from "@/components/charts/LineChart";
 import LineChart from "@/components/charts/LineChart";
 
 export default function TestPage() {
   const router = useRouter();
   const theme = useTheme();
-  const [files, setFiles] = useState([
-    new File(
-      "1.pdf",
-      "application/pdf",
-      null,
-      "/course/16b8c2e6-3239-4f18-9165-364d713fadbe/1",
-    ),
-  ]);
+  // const [files, setFiles] = useState([
+  //   new File(
+  //     "1.pdf",
+  //     "application/pdf",
+  //     null,
+  //     "/course/16b8c2e6-3239-4f18-9165-364d713fadbe/1",
+  //   ),
+  // ]);
   // const [links, setLinks] = useState([
   //   new Link("Google", "https://www.google.com"),
   // ]);

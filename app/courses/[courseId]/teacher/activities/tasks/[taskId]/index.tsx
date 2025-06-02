@@ -4,11 +4,9 @@ import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import { ToggleableTextInput } from "@/components/forms/ToggleableTextInput";
 import {
   deleteTask,
-  deleteTaskFile,
   getTeacherTask,
   publishTask,
   updateTask,
-  uploadTaskFile,
 } from "@/services/activityManagement";
 import { getCourse } from "@/services/courseManagement";
 import { TaskDetails, TeacherActivity } from "@/types/activity";
@@ -73,7 +71,7 @@ export default function TeacherExamPage() {
       const fetchedTeacherTask = await getTeacherTask(courseId, Number(taskId));
       setTeacherTask(fetchedTeacherTask);
       taskDetailsHook.setTaskDetails(
-        fetchedTeacherTask.activity.activityDetails as TaskDetails
+        fetchedTeacherTask.activity.activityDetails as TaskDetails,
       );
     } catch (error) {
       setErrorMessage((error as Error).message);
@@ -95,7 +93,7 @@ export default function TeacherExamPage() {
   const handleDiscardChanges = () => {
     if (teacherTask) {
       taskDetailsHook.setTaskDetails(
-        teacherTask.activity.activityDetails as TaskDetails
+        teacherTask.activity.activityDetails as TaskDetails,
       );
     }
     setIsEditing(false);
@@ -106,7 +104,7 @@ export default function TeacherExamPage() {
     useCallback(() => {
       fetchTeacherTask();
       fetchCourse();
-    }, [courseId, taskId])
+    }, [courseId, taskId]),
   );
 
   const handleViewSubmissions = async () => {
