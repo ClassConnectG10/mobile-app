@@ -67,15 +67,15 @@ export default function TestPage() {
       color: "#FF9800",
       data: [
         { x: 1, y: 1 },
-        // { x: 2, y: 10 },
-        // { x: 3, y: 3 },
-        // { x: 4, y: 4 },
-        // { x: 5, y: 5 },
-        // { x: 6, y: 8 },
-        // { x: 7, y: 12 },
-        // { x: 8, y: 15 },
-        // { x: 9, y: 13 },
-        // { x: 10, y: 9 },
+        { x: 2, y: 10 },
+        { x: 3, y: 3 },
+        { x: 4, y: 4 },
+        { x: 5, y: 5 },
+        { x: 6, y: 8 },
+        { x: 7, y: 12 },
+        { x: 8, y: 15 },
+        { x: 9, y: 13 },
+        { x: 10, y: 9 },
       ],
       showPoints: true,
     },
@@ -98,18 +98,18 @@ export default function TestPage() {
     },
   ];
 
-  const tablas = [
+  const tables = [
     {
-      nombre: "Indicadores",
-      tabla: [
+      sheetName: "Indicadores",
+      table: [
         { Métrica: "Estudiantes", Valor: 10 },
         { Métrica: "Finalización", Valor: "100%" },
         { Métrica: "Promedio", Valor: 8.6 },
       ],
     },
     {
-      nombre: "Notas",
-      tabla: [
+      sheetName: "Notas",
+      table: [
         { Alumno: "Ana", Nota: 10, Observación: "Excelente" },
         { Alumno: "Luis", Nota: 7, Observación: "Bien" },
       ],
@@ -118,7 +118,7 @@ export default function TestPage() {
 
   const handleExport = async () => {
     try {
-      const filePath = await exportToExcel(tablas, "estadisticas");
+      const filePath = await exportToExcel(tables, "estadisticas");
       setExportedFilePath(filePath);
       console.log("Archivo exportado:", filePath);
     } catch (error) {
@@ -183,7 +183,7 @@ export default function TestPage() {
         >
           Abrir archivo
         </Button>
-        {/* <HorizontalBarChart
+        <HorizontalBarChart
           data={data}
           barColor={theme.colors.primary}
           title="Población"
@@ -215,7 +215,7 @@ export default function TestPage() {
           series={series}
           yLabel="°C"
           renderXLabel={(x) => `Día ${x}`}
-        /> */}
+        />
       </ScrollView>
     </>
   );
