@@ -3,6 +3,32 @@ import { View, Text, StyleSheet } from "react-native";
 import { useTheme } from "react-native-paper";
 import Svg, { Line, Path, Circle, G, Text as SvgText } from "react-native-svg";
 
+// Helper for generating daily points for the chart
+export function generateDailyPoints(
+  stats: { date: Date; count: number }[] | null,
+  start: Date,
+  end: Date,
+): LineChartDataPoint[] {
+  if (!stats) return [];
+  const statMap = new Map(
+    stats.map((stat) => [new Date(stat.date).setHours(0, 0, 0, 0), stat.count]),
+  );
+  const points = [];
+  const current = new Date(start);
+  current.setHours(0, 0, 0, 0);
+  const endDay = new Date(end);
+  endDay.setHours(0, 0, 0, 0);
+  while (current <= endDay) {
+    const ts = current.getTime();
+    points.push({
+      x: ts,
+      y: statMap.get(ts) ?? 0,
+    });
+    current.setDate(current.getDate() + 1);
+  }
+  return points;
+}
+
 export type LineChartDataPoint = {
   x: number;
   y: number;

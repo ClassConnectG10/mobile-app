@@ -7,6 +7,15 @@ export const createStatisticsRequest = (courseId: string) => {
   });
 };
 
+export const createStudentStatisticsRequest = (
+  courseId: string,
+  studentId: number,
+) => {
+  return createRequest({
+    uri: `courses/${courseId}/statistics/students/${studentId}`,
+  });
+};
+
 export const createSubmissionStatisticsRequest = (
   courseId: string,
   submissionStatisticsParams: SubmissionStatisticsParams,

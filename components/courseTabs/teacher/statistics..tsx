@@ -1,11 +1,14 @@
 import HorizontalBarChart from "@/components/charts/HorizontalBarChart";
-import LineChart, { LineChartDataPoint } from "@/components/charts/LineChart";
+import LineChart, { generateDailyPoints } from "@/components/charts/LineChart";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import { DatePickerButton } from "@/components/forms/DatePickerButton";
 import OptionPicker from "@/components/forms/OptionPicker";
 import { ListStatCard } from "@/components/ListStatCard";
 import { getCourseTeacherActivities } from "@/services/activityManagement";
-import { getStatistics, getSubmissionStatistics } from "@/services/statistics";
+import {
+  getStatistics,
+  getSubmissionStatistics,
+} from "@/services/statisticsManagment";
 import {
   ActivitiesOption,
   ActivityType,
@@ -19,36 +22,11 @@ import {
 } from "@/types/statistics";
 import { BiMap } from "@/utils/bimap";
 import { customColors } from "@/utils/constants/colors";
+import { getSimpleRelativeTimeFromNow } from "@/utils/date";
 import { useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import { View, ScrollView } from "react-native";
 import { ActivityIndicator, Text, useTheme } from "react-native-paper";
-
-// Genera puntos diarios para el gráfico de líneas
-function generateDailyPoints(
-  stats: { date: Date; count: number }[] | null,
-  start: Date,
-  end: Date,
-): LineChartDataPoint[] {
-  if (!stats) return [];
-  const statMap = new Map(
-    stats.map((stat) => [new Date(stat.date).setHours(0, 0, 0, 0), stat.count]),
-  );
-  const points = [];
-  const current = new Date(start);
-  current.setHours(0, 0, 0, 0);
-  const endDay = new Date(end);
-  endDay.setHours(0, 0, 0, 0);
-  while (current <= endDay) {
-    const ts = current.getTime();
-    points.push({
-      x: ts,
-      y: statMap.get(ts) ?? 0,
-    });
-    current.setDate(current.getDate() + 1);
-  }
-  return points;
-}
 
 interface StatisticsTabProps {
   course: Course;
@@ -261,21 +239,29 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course }) => {
                   {
                     icon: "timer-sand",
                     value:
-                      (statistics.avgTimeDifferenceHours !== undefined
-                        ? Math.abs(statistics.avgTimeDifferenceHours).toFixed(2)
-                        : "-") + " hs",
+                      statistics.avgTimeDifferenceHours !== undefined
+                        ? getSimpleRelativeTimeFromNow(
+                            new Date(
+                              Date.now() +
+                                statistics.avgTimeDifferenceHours *
+                                  60 *
+                                  60 *
+                                  1000,
+                            ),
+                          )
+                        : "-",
                     label:
-                      statistics.avgTimeDifferenceHours === undefined
+                      -statistics.avgTimeDifferenceHours === undefined
                         ? "Retraso promedio"
-                        : statistics.avgTimeDifferenceHours > 0
+                        : statistics.avgTimeDifferenceHours >= 0
                         ? "Anticipo promedio"
                         : "Retraso promedio",
                     color:
-                      statistics.avgTimeDifferenceHours === undefined
-                        ? customColors.warning
-                        : statistics.avgTimeDifferenceHours > 0
+                      -statistics.avgTimeDifferenceHours === undefined
+                        ? customColors.error
+                        : statistics.avgTimeDifferenceHours >= 0
                         ? customColors.success
-                        : customColors.warning,
+                        : customColors.error,
                   },
                   {
                     icon: "clock-check",
@@ -299,7 +285,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course }) => {
               fontSize: 18,
             }}
           >
-            Entregas por actividad
+            Entregas a lo largo del tiempo
           </Text>
           {/* Entregas por actividad */}
           {examsSubmissionStatistics && tasksSubmissionStatistics && (

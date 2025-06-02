@@ -4,7 +4,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { ModuleDetails } from "@/types/resources";
 import { useState } from "react";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
-import { createModule } from "@/services/resourceManager";
+import { createModule } from "@/services/resourceManagment";
 
 export default function CreateModulePage() {
   const theme = useTheme();

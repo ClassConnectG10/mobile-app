@@ -5,7 +5,7 @@ import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import { ToggleableTextInput } from "@/components/forms/ToggleableTextInput";
-import { getModule } from "@/services/resourceManager";
+import { getModule } from "@/services/resourceManagment";
 
 export default function CreateCoursePage() {
   const theme = useTheme();

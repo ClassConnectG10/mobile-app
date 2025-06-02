@@ -3,7 +3,7 @@ import ModuleCard from "@/components/cards/ModuleCard";
 import ResourceCard from "@/components/cards/ResourceCard";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import { getModuleStudentActivities } from "@/services/activityManagement";
-import { getModule, getResources } from "@/services/resourceManager";
+import { getModule, getResources } from "@/services/resourceManagment";
 import { ActivityType, StudentActivity } from "@/types/activity";
 import { Module, Resource } from "@/types/resources";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
@@ -26,7 +26,7 @@ class ModuleElement {
   constructor(
     public id: number,
     public type: ModuleElementType,
-    public element: Resource | StudentActivity
+    public element: Resource | StudentActivity,
   ) {}
 }
 
@@ -86,8 +86,8 @@ export default function ModulePage() {
           new ModuleElement(
             resource.resourceId,
             ModuleElementType.RESOURCE,
-            resource
-          )
+            resource,
+          ),
       );
       setResourcesDisplayElements(fetchedModuleResources);
     } catch (error) {
@@ -108,9 +108,9 @@ export default function ModulePage() {
           return new ModuleElement(
             activity.activity.resourceId,
             ModuleElementType.ACTIVITY,
-            activity
+            activity,
           );
-        })
+        }),
       );
     } catch (error) {
       setErrorMessage((error as Error).message);
@@ -157,7 +157,7 @@ export default function ModulePage() {
       fetchModule();
       fetchActivities();
       fetchResources();
-    }, [courseId, moduleId])
+    }, [courseId, moduleId]),
   );
 
   return (

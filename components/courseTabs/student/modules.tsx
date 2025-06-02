@@ -1,4 +1,4 @@
-import { getModules } from "@/services/resourceManager";
+import { getModules } from "@/services/resourceManagment";
 import { Course } from "@/types/course";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useState, useCallback } from "react";

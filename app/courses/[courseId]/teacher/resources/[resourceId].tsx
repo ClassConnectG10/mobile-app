@@ -16,7 +16,7 @@ import {
   deleteResource,
   getResource,
   updateResource,
-} from "@/services/resourceManager";
+} from "@/services/resourceManagment";
 import { useResourceDetails } from "@/hooks/useResourceDetails";
 import {
   AttachmentType,
@@ -67,12 +67,12 @@ export default function EditResourcePage() {
       setTemporalFilesAttachments(
         fetchedResource.resourceDetails.attachments
           ?.filter((a) => a.attachmentType === AttachmentType.FILE)
-          .map((a) => a as FileAttachment) || []
+          .map((a) => a as FileAttachment) || [],
       );
       setTemporalLinksAttachments(
         fetchedResource.resourceDetails.attachments
           ?.filter((a) => a.attachmentType === AttachmentType.LINK)
-          .map((a) => a as LinkAttachment) || []
+          .map((a) => a as LinkAttachment) || [],
       );
     } catch (error) {
       setErrorMessage((error as Error).message);
@@ -90,12 +90,12 @@ export default function EditResourcePage() {
         moduleId,
         resourceId,
         temporalResourceDetails,
-        resource.resourceDetails.attachments
+        resource.resourceDetails.attachments,
       );
       setResource((prev) =>
         prev
           ? { ...prev, resourceDetails: { ...temporalResourceDetails } }
-          : prev
+          : prev,
       );
       setIsEditing(false);
     } catch (error) {
@@ -118,12 +118,12 @@ export default function EditResourcePage() {
     setTemporalFilesAttachments(
       resource.resourceDetails.attachments
         ?.filter((a) => a.attachmentType === AttachmentType.FILE)
-        .map((a) => a as FileAttachment) || []
+        .map((a) => a as FileAttachment) || [],
     );
     setTemporalLinksAttachments(
       resource.resourceDetails.attachments
         ?.filter((a) => a.attachmentType === AttachmentType.LINK)
-        .map((a) => a as LinkAttachment) || []
+        .map((a) => a as LinkAttachment) || [],
     );
     setIsEditing(false);
   };
@@ -143,7 +143,7 @@ export default function EditResourcePage() {
   useFocusEffect(
     useCallback(() => {
       fetchResource();
-    }, [courseId, moduleId, resourceId])
+    }, [courseId, moduleId, resourceId]),
   );
 
   return (
@@ -200,7 +200,7 @@ export default function EditResourcePage() {
               <Divider />
               <ToggleableFileInput
                 files={temporalFilesAttachments.map(
-                  (fileAttachment) => fileAttachment.file
+                  (fileAttachment) => fileAttachment.file,
                 )}
                 editable={isEditing}
                 onChange={(files) => {
@@ -209,7 +209,7 @@ export default function EditResourcePage() {
                       (a) =>
                         a.file === file ||
                         (a.file.firebaseUrl &&
-                          a.file.firebaseUrl === file.firebaseUrl)
+                          a.file.firebaseUrl === file.firebaseUrl),
                     );
                     return existing
                       ? { ...existing, file }
@@ -231,7 +231,7 @@ export default function EditResourcePage() {
                   const newAttachments = links.map(
                     (link) =>
                       temporalLinksAttachments.find((a) => a.link === link) ??
-                      new LinkAttachment(link)
+                      new LinkAttachment(link),
                   );
                   setTemporalLinksAttachments(newAttachments);
                   temporalResourceDetailsHook.setAttachments([

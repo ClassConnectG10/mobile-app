@@ -17,7 +17,7 @@ import { FullScreenModal } from "@/components/FullScreenModal";
 import { useExamDetails } from "@/hooks/useExamDetails";
 import { ExamItemCard } from "@/components/cards/examCards/ExamItemCard";
 import OptionPicker from "@/components/forms/OptionPicker";
-import { getModules } from "@/services/resourceManager";
+import { getModules } from "@/services/resourceManagment";
 import { BiMap } from "@/utils/bimap";
 import { AlertText } from "@/components/AlertText";
 import { useFocusEffect } from "@react-navigation/native";
@@ -32,7 +32,7 @@ export default function CreateExam() {
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [courseModulesBiMap, setCourseModulesBiMap] = useState<BiMap>(
-    new BiMap()
+    new BiMap(),
   );
 
   const courseId = courseIdParam as string;
@@ -54,7 +54,7 @@ export default function CreateExam() {
         courseModules.map((module) => [
           module.courseModuleDetails.title,
           module.moduleId.toString(),
-        ])
+        ]),
       );
       setCourseModulesBiMap(bimap);
     } catch (error) {
@@ -98,7 +98,7 @@ export default function CreateExam() {
   useFocusEffect(
     useCallback(() => {
       fetchCourseModules();
-    }, [courseId])
+    }, [courseId]),
   );
 
   return (
