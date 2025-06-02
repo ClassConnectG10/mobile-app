@@ -1,5 +1,8 @@
 import HorizontalBarChart from "@/components/charts/HorizontalBarChart";
-import LineChart, { generateDailyPoints } from "@/components/charts/LineChart";
+import LineChart, {
+  generateDailyPoints,
+  shouldShowPoints,
+} from "@/components/charts/LineChart";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import { DatePickerButton } from "@/components/forms/DatePickerButton";
 import OptionPicker from "@/components/forms/OptionPicker";
@@ -27,7 +30,11 @@ import { useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import { View, ScrollView } from "react-native";
 import { ActivityIndicator, Button, Text, useTheme } from "react-native-paper";
-import { exportToExcel, openExcelFile } from "@/utils/exportToExcel";
+import {
+  exportToExcel,
+  openExcelFile,
+  normalizeFileName,
+} from "@/utils/exportToExcel";
 import { AlertDialog } from "@/components/AlertDialog";
 
 interface StatisticsTabProps {
@@ -35,7 +42,6 @@ interface StatisticsTabProps {
 }
 
 const INITIAL_RANGE_DAYS_DIFF = 7;
-const MAX_SHOW_POINTS_DAYS = 45;
 
 export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course }) => {
   // const router = useRouter();
@@ -156,23 +162,6 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course }) => {
         endDate: date,
       }));
     }
-  };
-
-  // Función para normalizar nombres de archivo
-  const normalizeFileName = (name: string): string => {
-    return name
-      .toLowerCase()
-      .replace(/\s+/g, "_") // espacios -> guiones bajos
-      .replace(/-/g, "_") // guiones -> guiones bajos
-      .replace(/[^a-z0-9_]/g, "") // remover caracteres especiales
-      .replace(/_+/g, "_"); // múltiples guiones bajos -> uno solo
-  };
-
-  // Función para determinar si mostrar puntos basado en la diferencia de fechas
-  const shouldShowPoints = (): boolean => {
-    const diffTime = Math.abs(endDate.getTime() - startDate.getTime());
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays < MAX_SHOW_POINTS_DAYS;
   };
 
   const handleExport = async () => {
@@ -549,7 +538,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course }) => {
                 title={"Entregas por día"}
                 titleColor="#000"
                 series={(() => {
-                  const showPoints = shouldShowPoints();
+                  const showPoints = shouldShowPoints(startDate, endDate);
 
                   if (submissionStatisticsParams.activityId) {
                     const selectedActivity = activities?.find(
@@ -609,12 +598,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course }) => {
               />
             </>
           )}
-          <Button
-            icon="file-excel"
-            mode="contained"
-            onPress={handleExport}
-            style={{ flex: 1 }}
-          >
+          <Button icon="file-excel" mode="contained" onPress={handleExport}>
             Exportar estadísticas
           </Button>
         </ScrollView>

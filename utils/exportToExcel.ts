@@ -8,6 +8,20 @@ export type ExcelSheet = {
 };
 
 /**
+ * Normaliza un nombre para que sea seguro como nombre de archivo
+ * @param name - Nombre a normalizar
+ * @returns string - Nombre normalizado
+ */
+export function normalizeFileName(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/\s+/g, "_") // espacios -> guiones bajos
+    .replace(/-/g, "_") // guiones -> guiones bajos
+    .replace(/[^a-z0-9_]/g, "") // remover caracteres especiales
+    .replace(/_+/g, "_"); // múltiples guiones bajos -> uno solo
+}
+
+/**
  * Exporta hojas de datos a un archivo Excel
  * @param sheets - Array de hojas con nombre y datos
  * @param fileName - Nombre del archivo (sin extensión)
