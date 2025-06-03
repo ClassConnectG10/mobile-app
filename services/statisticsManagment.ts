@@ -41,8 +41,6 @@ export async function getStudentStatistics(
   const response = await request.get(``);
   const responseData = response.data.data;
 
-  console.log("Student Statistics Response:", responseData);
-
   return new StudentStatistics(
     responseData.published_activities_count,
     responseData.completed_submissions_count,

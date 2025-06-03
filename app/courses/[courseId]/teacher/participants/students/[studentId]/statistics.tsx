@@ -1,5 +1,8 @@
 import HorizontalBarChart from "@/components/charts/HorizontalBarChart";
-import LineChart, { generateDailyPoints } from "@/components/charts/LineChart";
+import LineChart, {
+  generateDailyPoints,
+  shouldShowPoints,
+} from "@/components/charts/LineChart";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import { ListStatCard } from "@/components/ListStatCard";
 import { DatePickerButton } from "@/components/forms/DatePickerButton";
@@ -26,12 +29,24 @@ import { getSimpleRelativeTimeFromNow } from "@/utils/date";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import { View, ScrollView } from "react-native";
-import { Appbar, useTheme, Text, ActivityIndicator } from "react-native-paper";
+import {
+  Appbar,
+  useTheme,
+  Text,
+  ActivityIndicator,
+  Button,
+} from "react-native-paper";
 import {
   getActivitiesGradesByStudent,
   getCourseTeacherActivities,
   getSubmissionsByStudent,
 } from "@/services/activityManagement";
+import {
+  exportToExcel,
+  openExcelFile,
+  normalizeFileName,
+} from "@/utils/exportToExcel";
+import { AlertDialog } from "@/components/AlertDialog";
 
 export default function StudentStatisticsPage() {
   const router = useRouter();
@@ -61,6 +76,11 @@ export default function StudentStatisticsPage() {
     new Date(new Date().setDate(new Date().getDate() - 7)),
   );
   const [endDate, setEndDate] = useState<Date>(new Date());
+
+  // Export state
+  const [exportedFilePath, setExportedFilePath] = useState<string | null>(null);
+  const [showExportDialog, setShowExportDialog] = useState(false);
+  const [exportSuccess, setExportSuccess] = useState(false);
 
   const fetchStudent = async () => {
     if (!studentId) return;
@@ -117,7 +137,6 @@ export default function StudentStatisticsPage() {
         courseId,
         Number(studentId),
       );
-      console.log("fetchedGrades", fetchedGrades);
       setGrades(fetchedGrades);
     } catch (error) {
       setErrorMessage((error as Error).message);
@@ -189,6 +208,208 @@ export default function StudentStatisticsPage() {
       fetchSubmissionStats();
     }, [startDate, endDate, courseId, studentId]),
   );
+
+  const handleExport = async () => {
+    if (!studentStatistics || !activities || !grades || !student) {
+      setErrorMessage("No hay datos disponibles para exportar");
+      return;
+    }
+
+    try {
+      const studentName = `${student.userInformation.firstName}_${student.userInformation.lastName}`;
+
+      const tables = [
+        // 1. Datos del estudiante
+        {
+          sheetName: "Datos del Estudiante",
+          table: [
+            {
+              Métrica: "Nombre",
+              Valor: `${student.userInformation.firstName} ${student.userInformation.lastName}`,
+            },
+            { Métrica: "Email", Valor: student.userInformation.email },
+          ],
+        },
+        // 2. Estadísticas generales
+        {
+          sheetName: "Estadísticas Generales",
+          table: [
+            {
+              Métrica: "Actividades Publicadas",
+              Valor: studentStatistics.publishedActivitiesCount,
+            },
+            {
+              Métrica: "Entregas Completadas",
+              Valor: studentStatistics.completedSubmissionsCount,
+            },
+            {
+              Métrica: "Tasa de Finalización",
+              Valor: `${(studentStatistics.completionRate * 100).toFixed(2)}%`,
+            },
+            {
+              Métrica: "Promedio General",
+              Valor: studentStatistics.overallAvgGrade?.toFixed(2) ?? "-",
+            },
+            {
+              Métrica: "Entregas a Tiempo",
+              Valor: studentStatistics.onTimeSubmissions,
+            },
+            {
+              Métrica: "Entregas Tardías",
+              Valor: studentStatistics.lateSubmissions,
+            },
+            {
+              Métrica: "Tiempo Promedio de Diferencia",
+              Valor:
+                studentStatistics.avgTimeDifferenceHours !== undefined
+                  ? `${studentStatistics.avgTimeDifferenceHours.toFixed(
+                      2,
+                    )} horas`
+                  : "-",
+            },
+          ],
+        },
+        // 3. Estadísticas para tareas
+        {
+          sheetName: "Estadísticas de Tareas",
+          table: [
+            {
+              Métrica: "Promedio de Tareas",
+              Valor: studentStatistics.avgTaskGrade?.toFixed(2) ?? "-",
+            },
+            {
+              Métrica: "Cantidad de Tareas",
+              Valor:
+                activities?.filter(
+                  (a) => a.activity.type === ActivityType.TASK && a.visible,
+                ).length ?? 0,
+            },
+          ],
+        },
+        // 4. Notas por tarea
+        {
+          sheetName: "Notas por Tarea",
+          table: grades
+            .filter((grade) => grade.type === ActivityType.TASK)
+            .map((grade) => {
+              const activity = activities?.find(
+                (a) => a.activity.resourceId === grade.resourceId,
+              );
+              return {
+                Actividad:
+                  activity?.activity.activityDetails.title ??
+                  `Actividad ${grade.resourceId}`,
+                Nota: grade.mark,
+              };
+            }),
+        },
+        // 5. Estadísticas para exámenes
+        {
+          sheetName: "Estadísticas de Exámenes",
+          table: [
+            {
+              Métrica: "Promedio de Exámenes",
+              Valor: studentStatistics.avgExamGrade?.toFixed(2) ?? "-",
+            },
+            {
+              Métrica: "Cantidad de Exámenes",
+              Valor:
+                activities?.filter(
+                  (a) => a.activity.type === ActivityType.EXAM && a.visible,
+                ).length ?? 0,
+            },
+          ],
+        },
+        // 6. Notas por examen
+        {
+          sheetName: "Notas por Examen",
+          table: grades
+            .filter((grade) => grade.type === ActivityType.EXAM)
+            .map((grade) => {
+              const activity = activities?.find(
+                (a) => a.activity.resourceId === grade.resourceId,
+              );
+              return {
+                Actividad:
+                  activity?.activity.activityDetails.title ??
+                  `Actividad ${grade.resourceId}`,
+                Nota: grade.mark,
+              };
+            }),
+        },
+      ];
+
+      // Add submission statistics if available
+      if (
+        (tasksSubmissionStatistics && tasksSubmissionStatistics.length > 0) ||
+        (examsSubmissionStatistics && examsSubmissionStatistics.length > 0)
+      ) {
+        const generateDateRange = (start: Date, end: Date): string[] => {
+          const dates = [];
+          const current = new Date(start);
+          current.setHours(0, 0, 0, 0);
+          const endDay = new Date(end);
+          endDay.setHours(0, 0, 0, 0);
+
+          while (current <= endDay) {
+            dates.push(current.toDateString());
+            current.setDate(current.getDate() + 1);
+          }
+          return dates;
+        };
+
+        const allDates = generateDateRange(startDate, endDate);
+        const tasksMap = new Map(
+          (tasksSubmissionStatistics ?? []).map((stat) => [
+            stat.date.toDateString(),
+            stat.count,
+          ]),
+        );
+        const examsMap = new Map(
+          (examsSubmissionStatistics ?? []).map((stat) => [
+            stat.date.toDateString(),
+            stat.count,
+          ]),
+        );
+
+        const submissionsTable = allDates.map((date) => ({
+          Fecha: date,
+          "Entregas de Tareas": tasksMap.get(date) ?? 0,
+          "Entregas de Exámenes": examsMap.get(date) ?? 0,
+        }));
+
+        tables.push({
+          sheetName: "Entregas por Día",
+          table: submissionsTable as any,
+        });
+      }
+
+      const timestamp = new Date().toISOString();
+      const normalizedStudentName = normalizeFileName(studentName);
+      const fileName = `estadisticas_estudiante_${normalizedStudentName}_${timestamp}`;
+      const filePath = await exportToExcel(tables, fileName);
+      setExportedFilePath(filePath);
+      setExportSuccess(true);
+      setShowExportDialog(true);
+    } catch (error) {
+      console.error("Error al exportar:", error);
+      setExportSuccess(false);
+      setShowExportDialog(true);
+    }
+  };
+
+  const handleOpenFile = async () => {
+    if (!exportedFilePath) {
+      console.warn("No hay archivo exportado para abrir.");
+      return;
+    }
+    try {
+      await openExcelFile(exportedFilePath);
+    } catch (error) {
+      console.error("Error al abrir el archivo:", error);
+      setErrorMessage("Error al abrir el archivo");
+    }
+  };
 
   return (
     <View style={{ flex: 1 }}>
@@ -598,42 +819,68 @@ export default function StudentStatisticsPage() {
           <LineChart
             title={"Entregas por día"}
             titleColor="#000"
-            series={[
-              {
-                label: "Exámenes",
-                color: theme.colors.primary,
-                data: generateDailyPoints(
-                  examsSubmissionStatistics,
-                  startDate,
-                  endDate,
-                ),
-                showPoints: true,
-                strokeWidth: 3,
-                strokeDasharray: "5",
-              },
-              {
-                label: "Tareas",
-                color: customColors.info,
-                data: generateDailyPoints(
-                  tasksSubmissionStatistics,
-                  startDate,
-                  endDate,
-                ),
-                showPoints: true,
-                strokeWidth: 2,
-              },
-            ]}
+            series={(() => {
+              const showPoints = shouldShowPoints(startDate, endDate);
+              return [
+                {
+                  label: "Exámenes",
+                  color: theme.colors.primary,
+                  data: generateDailyPoints(
+                    examsSubmissionStatistics,
+                    startDate,
+                    endDate,
+                  ),
+                  showPoints: showPoints,
+                  strokeWidth: 3,
+                  strokeDasharray: "5",
+                },
+                {
+                  label: "Tareas",
+                  color: customColors.info,
+                  data: generateDailyPoints(
+                    tasksSubmissionStatistics,
+                    startDate,
+                    endDate,
+                  ),
+                  showPoints: showPoints,
+                  strokeWidth: 2,
+                },
+              ];
+            })()}
             showAllXLabels={false}
             xLabelSteps={3}
             renderXLabel={(timestamp) =>
               new Date(timestamp).toLocaleDateString()
             }
           />
+
+          <Button icon="file-excel" mode="contained" onPress={handleExport}>
+            Exportar estadísticas del estudiante
+          </Button>
         </ScrollView>
       )}
       <ErrorMessageSnackbar
         message={errorMessage}
         onDismiss={() => setErrorMessage("")}
+      />
+
+      {/* Export Dialog */}
+      <AlertDialog
+        visible={showExportDialog}
+        onDismiss={() => setShowExportDialog(false)}
+        onConfirm={async () => {
+          setShowExportDialog(false);
+          await handleOpenFile();
+        }}
+        content={
+          exportSuccess && exportedFilePath
+            ? `Las estadísticas del estudiante se han exportado correctamente en la carpeta de Descargas con el nombre "${exportedFilePath
+                .split("/")
+                .pop()}". ¿Desea abrir el archivo ahora?`
+            : "Ocurrió un error al exportar las estadísticas. Por favor, inténtelo de nuevo."
+        }
+        dismissText={exportSuccess ? "Más Tarde" : "Cerrar"}
+        confirmText={exportSuccess ? "Abrir" : undefined}
       />
     </View>
   );

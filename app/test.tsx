@@ -1,12 +1,13 @@
 import React from "react";
 import { ScrollView } from "react-native";
-import { Appbar, useTheme } from "react-native-paper";
+import { Appbar, Button, useTheme } from "react-native-paper";
 import { useRouter } from "expo-router";
 
 import HorizontalBarChart from "@/components/charts/HorizontalBarChart";
 import VerticalBarChart from "@/components/charts/VerticalBarChart";
 import { LineChartSeries } from "@/components/charts/LineChart";
 import LineChart from "@/components/charts/LineChart";
+import { exportToExcel, openExcelFile } from "@/utils/exportToExcel";
 
 export default function TestPage() {
   const router = useRouter();
@@ -22,6 +23,10 @@ export default function TestPage() {
   // const [links, setLinks] = useState([
   //   new Link("Google", "https://www.google.com"),
   // ]);
+
+  const [exportedFilePath, setExportedFilePath] = React.useState<string | null>(
+    null,
+  );
 
   const data = [
     { label: "Argentina", value: 45000000 },
@@ -62,15 +67,15 @@ export default function TestPage() {
       color: "#FF9800",
       data: [
         { x: 1, y: 1 },
-        // { x: 2, y: 10 },
-        // { x: 3, y: 3 },
-        // { x: 4, y: 4 },
-        // { x: 5, y: 5 },
-        // { x: 6, y: 8 },
-        // { x: 7, y: 12 },
-        // { x: 8, y: 15 },
-        // { x: 9, y: 13 },
-        // { x: 10, y: 9 },
+        { x: 2, y: 10 },
+        { x: 3, y: 3 },
+        { x: 4, y: 4 },
+        { x: 5, y: 5 },
+        { x: 6, y: 8 },
+        { x: 7, y: 12 },
+        { x: 8, y: 15 },
+        { x: 9, y: 13 },
+        { x: 10, y: 9 },
       ],
       showPoints: true,
     },
@@ -92,6 +97,47 @@ export default function TestPage() {
       showPoints: true,
     },
   ];
+
+  const tables = [
+    {
+      sheetName: "Indicadores",
+      table: [
+        { Métrica: "Estudiantes", Valor: 10 },
+        { Métrica: "Finalización", Valor: "100%" },
+        { Métrica: "Promedio", Valor: 8.6 },
+      ],
+    },
+    {
+      sheetName: "Notas",
+      table: [
+        { Alumno: "Ana", Nota: 10, Observación: "Excelente" },
+        { Alumno: "Luis", Nota: 7, Observación: "Bien" },
+      ],
+    },
+  ];
+
+  const handleExport = async () => {
+    try {
+      const filePath = await exportToExcel(tables, "estadisticas");
+      setExportedFilePath(filePath);
+      console.log("Archivo exportado:", filePath);
+    } catch (error) {
+      console.error("Error al exportar:", error);
+    }
+  };
+
+  const handleOpenFile = async () => {
+    if (!exportedFilePath) {
+      console.warn("No hay archivo exportado para abrir.");
+      return;
+    }
+    try {
+      await openExcelFile(exportedFilePath);
+      console.log("Archivo abierto correctamente:", exportedFilePath);
+    } catch (error) {
+      console.error("Error al abrir el archivo:", error);
+    }
+  };
 
   return (
     <>
@@ -126,6 +172,17 @@ export default function TestPage() {
           onChange={setLinks}
           maxLinks={5}
         /> */}
+        <Button icon="file-excel" mode="contained" onPress={handleExport}>
+          Exportar
+        </Button>
+        <Button
+          icon="file-excel"
+          mode="outlined"
+          onPress={handleOpenFile}
+          disabled={!exportedFilePath}
+        >
+          Abrir archivo
+        </Button>
         <HorizontalBarChart
           data={data}
           barColor={theme.colors.primary}

@@ -4,10 +4,10 @@ import { View, StyleSheet, Dimensions } from "react-native";
 interface AlertDialogProps {
   visible: boolean;
   onDismiss: () => void;
-  onConfirm: () => void;
+  onConfirm?: () => void;
   content: string;
   dismissText: string;
-  confirmText: string;
+  confirmText?: string;
 }
 
 export const AlertDialog: React.FC<AlertDialogProps> = ({
@@ -29,7 +29,9 @@ export const AlertDialog: React.FC<AlertDialogProps> = ({
             </Dialog.Content>
             <Dialog.Actions>
               <Button onPress={onDismiss}>{dismissText}</Button>
-              <Button onPress={onConfirm}>{confirmText}</Button>
+              {confirmText && onConfirm && (
+                <Button onPress={onConfirm}>{confirmText}</Button>
+              )}
             </Dialog.Actions>
           </Dialog>
         </View>

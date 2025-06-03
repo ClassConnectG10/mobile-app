@@ -3,6 +3,23 @@ import { View, Text, StyleSheet } from "react-native";
 import { useTheme } from "react-native-paper";
 import Svg, { Line, Path, Circle, G, Text as SvgText } from "react-native-svg";
 
+/**
+ * Determina si se deben mostrar puntos en el gráfico basado en el rango de fechas
+ * @param startDate - Fecha de inicio
+ * @param endDate - Fecha de fin
+ * @param threshold - Umbral en días (por defecto 45)
+ * @returns boolean - true si se deben mostrar puntos
+ */
+export function shouldShowPoints(
+  startDate: Date,
+  endDate: Date,
+  threshold: number = 45,
+): boolean {
+  const diffTime = Math.abs(endDate.getTime() - startDate.getTime());
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  return diffDays < threshold;
+}
+
 // Helper for generating daily points for the chart
 export function generateDailyPoints(
   stats: { date: Date; count: number }[] | null,
