@@ -71,7 +71,7 @@ export default function TeacherExamPage() {
       const fetchedTeacherTask = await getTeacherTask(courseId, Number(taskId));
       setTeacherTask(fetchedTeacherTask);
       taskDetailsHook.setTaskDetails(
-        fetchedTeacherTask.activity.activityDetails as TaskDetails,
+        fetchedTeacherTask.activity.activityDetails as TaskDetails
       );
     } catch (error) {
       setErrorMessage((error as Error).message);
@@ -93,7 +93,7 @@ export default function TeacherExamPage() {
   const handleDiscardChanges = () => {
     if (teacherTask) {
       taskDetailsHook.setTaskDetails(
-        teacherTask.activity.activityDetails as TaskDetails,
+        teacherTask.activity.activityDetails as TaskDetails
       );
     }
     setIsEditing(false);
@@ -104,7 +104,7 @@ export default function TeacherExamPage() {
     useCallback(() => {
       fetchTeacherTask();
       fetchCourse();
-    }, [courseId, taskId]),
+    }, [courseId, taskId])
   );
 
   const handleViewSubmissions = async () => {
@@ -123,7 +123,7 @@ export default function TeacherExamPage() {
     setIsLoading(true);
 
     try {
-      await updateTask(courseId, Number(taskId), taskDetails);
+      await updateTask(courseId, Number(taskId), taskDetails, taskFilesChanged);
 
       setTaskFilesChanged(false);
       setTeacherTask({

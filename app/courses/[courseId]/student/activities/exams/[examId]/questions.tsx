@@ -1,7 +1,7 @@
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import { ExamDetails, ExamGrade, ExamItemAnswer } from "@/types/activity";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useCallback, useState, useEffect } from "react";
+import { useCallback, useState, useEffect, useRef } from "react";
 import { View, FlatList } from "react-native";
 import {
   Appbar,
@@ -23,6 +23,8 @@ import { ExamItemMode } from "@/components/cards/examCards/examItemMode";
 import { useUserContext } from "@/utils/storage/userContext";
 import { FullScreenModal } from "@/components/FullScreenModal";
 import { customColors } from "@/utils/constants/colors";
+import { AlertDialog } from "@/components/AlertDialog";
+import { getSimpleRelativeTimeFromNow } from "@/utils/date";
 
 export default function StudentFillExam() {
   const router = useRouter();
@@ -42,9 +44,75 @@ export default function StudentFillExam() {
   const [examGrade, setExamGrade] = useState<ExamGrade>(null);
 
   const [helpModalVisible, setHelpModalVisible] = useState(false);
+  const [remainingTimeModalVisible, setRemainingTimeModalVisible] =
+    useState(false);
+  const [remainingTime, setRemainingTime] = useState<number | null>(null);
 
   const userContextHook = useUserContext();
   const studentId = userContextHook.user.id;
+
+  const mode = examSubmission?.submited
+    ? examGrade
+      ? ExamItemMode.MARKED
+      : ExamItemMode.SENT
+    : ExamItemMode.FILL;
+
+  // const getIconByRemainingTime = () => {
+  //   if (remainingTime < 3600) {
+  //     return "timer"; // Alert icon for less than 5 minutes
+  //   } else {
+  //     return "timer-outline"; // Default timer icon for more than 1 hour
+  //   }
+  // };
+
+  const getIconColorByRemainingTime = () => {
+    if (remainingTime < 300) {
+      return customColors.error;
+    } else if (remainingTime < 3600) {
+      return customColors.warning;
+    } else {
+      return theme.colors.primary;
+    }
+  };
+
+  const formatRemainingTime = () => {
+    if (remainingTime < 3600) {
+      const minutes = Math.floor(remainingTime / 60);
+      const seconds = remainingTime % 60;
+      return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(
+        2,
+        "0"
+      )}`;
+    }
+    return "";
+  };
+
+  useEffect(() => {
+    if (!examDetails || mode !== ExamItemMode.FILL) return;
+
+    const calculateRemainingTime = () => {
+      const currentTime = new Date().getTime();
+      console.log("Current time:", currentTime);
+      const examEndTime = examDetails.dueDate;
+      const remaining = Math.max(
+        0,
+        Math.floor((examEndTime - currentTime) / 1000)
+      );
+      setRemainingTime(remaining);
+      if (remaining === 0 && intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+
+    const intervalRef = { current: null as NodeJS.Timeout | null };
+    intervalRef.current = setInterval(calculateRemainingTime, 500);
+
+    calculateRemainingTime();
+
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, [examDetails, mode]);
 
   const fetchStudentExam = async () => {
     if (!courseId || !examId) return;
@@ -160,7 +228,24 @@ export default function StudentFillExam() {
             examSubmission?.submited ? "Entrega realizada" : "Completar examen"
           }
         />
-        {examSubmission?.submited && examGrade && (
+
+        {mode === ExamItemMode.FILL && !isLoading && remainingTime !== null && (
+          <>
+            <Text
+              variant="titleMedium"
+              style={{ color: getIconColorByRemainingTime() }}
+            >
+              {formatRemainingTime()}
+            </Text>
+            <Appbar.Action
+              icon="timer"
+              color={getIconColorByRemainingTime()}
+              onPress={() => setRemainingTimeModalVisible(true)}
+            />
+          </>
+        )}
+
+        {mode === ExamItemMode.MARKED && (
           <Appbar.Action
             icon="help-circle"
             onPress={() => setHelpModalVisible(true)}
@@ -188,30 +273,20 @@ export default function StudentFillExam() {
           <FlatList
             data={examDetails.examItems}
             keyExtractor={(_item, index) => index.toString()}
-            renderItem={({ item, index }) => {
-              let mode;
-              if (examSubmission.submited) {
-                mode = examGrade ? ExamItemMode.MARKED : ExamItemMode.SENT;
-              } else {
-                mode = ExamItemMode.FILL;
-              }
-              return (
-                <ExamItemCard
-                  mode={mode}
-                  examItem={item}
-                  studentAnswer={
-                    examSubmission.submittedExamItems[index].answer
-                  }
-                  setStudentAnswer={(answer) => setStudentAnswer(index, answer)}
-                  answerOk={
-                    examGrade
-                      ? examGrade.correctExamItems[index]
-                      : examSubmission.submittedExamItems[index].correct
-                  }
-                  setAnswerOk={(correct) => setCorrectAnswer(index, correct)}
-                />
-              );
-            }}
+            renderItem={({ item, index }) => (
+              <ExamItemCard
+                mode={mode}
+                examItem={item}
+                studentAnswer={examSubmission.submittedExamItems[index].answer}
+                setStudentAnswer={(answer) => setStudentAnswer(index, answer)}
+                answerOk={
+                  examGrade
+                    ? examGrade.correctExamItems[index]
+                    : examSubmission.submittedExamItems[index].correct
+                }
+                setAnswerOk={(correct) => setCorrectAnswer(index, correct)}
+              />
+            )}
             ItemSeparatorComponent={() => (
               <View
                 style={{
@@ -323,6 +398,22 @@ export default function StudentFillExam() {
       <ErrorMessageSnackbar
         message={errorMessage}
         onDismiss={() => setErrorMessage("")}
+      />
+      <AlertDialog
+        visible={remainingTimeModalVisible}
+        onDismiss={() => setRemainingTimeModalVisible(false)}
+        title={"Tiempo restante"}
+        content={
+          examDetails
+            ? remainingTime > 0
+              ? `El examen debe ser entregado en ${getSimpleRelativeTimeFromNow(
+                  examDetails.dueDate
+                )}`
+              : "El examen está vencido"
+            : "El examen no tiene tiempo límite."
+        }
+        //content={`El examen ${remainingTime > 0}`}
+        dismissText={"Cerrar"}
       />
     </>
   );

@@ -5,6 +5,7 @@ interface AlertDialogProps {
   visible: boolean;
   onDismiss: () => void;
   onConfirm?: () => void;
+  title?: string;
   content: string;
   dismissText: string;
   confirmText?: string;
@@ -14,6 +15,7 @@ export const AlertDialog: React.FC<AlertDialogProps> = ({
   visible,
   onDismiss,
   onConfirm,
+  title = "Atención",
   content,
   dismissText,
   confirmText,
@@ -23,7 +25,7 @@ export const AlertDialog: React.FC<AlertDialogProps> = ({
       {visible && (
         <View style={styles.fullScreenOverlay}>
           <Dialog visible={visible} onDismiss={onDismiss} style={styles.dialog}>
-            <Dialog.Title>Atención</Dialog.Title>
+            <Dialog.Title>{title}</Dialog.Title>
             <Dialog.Content>
               <Text variant="bodyMedium">{content}</Text>
             </Dialog.Content>

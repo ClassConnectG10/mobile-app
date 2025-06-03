@@ -38,9 +38,6 @@ export default function StudentExamPage() {
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const [showConfirmationStartExam, setShowConfirmationStartExam] =
-    useState(false);
-
   const [, setStudentExam] = useState<StudentActivity>(null);
   const [examDetails, setExamDetails] = useState<ExamDetails>(null);
   const [examSubmission, setExamSubmission] = useState<ExamSubmission>(null);
@@ -85,7 +82,6 @@ export default function StudentExamPage() {
   };
 
   const handleViewQuestions = async () => {
-    setShowConfirmationStartExam(false);
     router.push({
       pathname:
         "/courses/[courseId]/student/activities/exams/[examId]/questions",
@@ -197,9 +193,7 @@ export default function StudentExamPage() {
               ) : (
                 <Button
                   mode="contained"
-                  onPress={() => {
-                    setShowConfirmationStartExam(true);
-                  }}
+                  onPress={handleViewQuestions}
                   disabled={isLoading}
                   icon="pen"
                 >
@@ -214,25 +208,6 @@ export default function StudentExamPage() {
         message={errorMessage}
         onDismiss={() => setErrorMessage("")}
       />
-      <Dialog
-        visible={showConfirmationStartExam}
-        onDismiss={() => setShowConfirmationStartExam(false)}
-      >
-        <Dialog.Title>Atención</Dialog.Title>
-        <Dialog.Content>
-          <Text variant="bodyMedium">
-            Está a punto de comenzar el examen. Una vez iniciado, no podrá
-            volver haca atrás y volver a abrirlo. ¿Está seguro de que desea
-            continuar?
-          </Text>
-        </Dialog.Content>
-        <Dialog.Actions>
-          <Button onPress={() => setShowConfirmationStartExam(false)}>
-            Cancelar
-          </Button>
-          <Button onPress={handleViewQuestions}>Empezar</Button>
-        </Dialog.Actions>
-      </Dialog>
     </>
   );
 }
