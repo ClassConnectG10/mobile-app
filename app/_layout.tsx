@@ -2,6 +2,8 @@ import { Stack } from "expo-router";
 import { StatusBar } from "react-native";
 import { MD3LightTheme, PaperProvider } from "react-native-paper";
 import { UserProvider } from "@/utils/storage/userContext";
+import { getMessaging } from "@react-native-firebase/messaging";
+import { useNotification } from "@/services/notifications";
 
 const DefaultTheme = {
   ...MD3LightTheme,
@@ -25,7 +27,14 @@ const DefaultTheme = {
   },
 };
 
+const messaging = getMessaging();
+messaging.setBackgroundMessageHandler(async (remoteMessage) => {
+  console.log("Message handled in the background!", remoteMessage);
+});
+
 export default function RootLayout() {
+  useNotification();
+
   return (
     <PaperProvider theme={DefaultTheme}>
       <UserProvider>

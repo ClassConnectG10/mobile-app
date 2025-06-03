@@ -1,5 +1,5 @@
-import React, { useCallback } from "react";
-import { FlatList, View } from "react-native";
+import React, { useCallback, useEffect } from "react";
+import { Alert, FlatList, View } from "react-native";
 import {
   ActivityIndicator,
   Appbar,
@@ -22,6 +22,7 @@ import { SearchBar } from "@/components/forms/SearchBar";
 import { FullScreenModal } from "@/components/FullScreenModal";
 import { FloatingActionButton } from "@/components/FloatingActionButton";
 import { IconBadge } from "@/components/IconBadge";
+import { getMessaging } from "@react-native-firebase/messaging";
 
 export default function HomePage() {
   const theme = useTheme();
@@ -34,7 +35,7 @@ export default function HomePage() {
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const [searchOption, setSearchOption] = useState<SearchOption>(
-    SearchOption.RELATED,
+    SearchOption.RELATED
   );
   const [searchFiltersModalVisible, setSearchFiltersModalVisible] =
     useState(false);
@@ -93,8 +94,17 @@ export default function HomePage() {
   useFocusEffect(
     useCallback(() => {
       fetchCourses();
-    }, [searchFilters, searchOption, userContext]),
+    }, [searchFilters, searchOption, userContext])
   );
+
+  useEffect(() => {
+    const messaging = getMessaging();
+    const unsubscribe = messaging.onMessage(async (remoteMessage) => {
+      Alert.alert("A new FCM message arrived!", JSON.stringify(remoteMessage));
+    });
+
+    return unsubscribe;
+  }, []);
 
   axios.defaults.headers.common["X-Caller-Id"] =
     userContextHook.user.id.toString();
