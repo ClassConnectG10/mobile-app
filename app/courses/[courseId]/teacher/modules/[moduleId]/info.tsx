@@ -17,7 +17,7 @@ import {
   deleteModule,
   getModule,
   updateModule,
-} from "@/services/resourceManager";
+} from "@/services/resourceManagment";
 
 export default function CreateCoursePage() {
   const theme = useTheme();
@@ -66,7 +66,7 @@ export default function CreateCoursePage() {
       setIsLoading(true);
       const newModuleDetails = new ModuleDetails(
         temporalModuleTitle,
-        temporalModuleDescription
+        temporalModuleDescription,
       );
       await updateModule(courseId, moduleId, newModuleDetails);
       setIsEditing(false);
@@ -96,7 +96,7 @@ export default function CreateCoursePage() {
   useFocusEffect(
     useCallback(() => {
       fetchModule();
-    }, [courseId])
+    }, [courseId]),
   );
 
   return (

@@ -15,7 +15,7 @@ import {
 import { useTaskDetails } from "@/hooks/useTaskDetails";
 import OptionPicker from "@/components/forms/OptionPicker";
 import { BiMap } from "@/utils/bimap";
-import { getModules } from "@/services/resourceManager";
+import { getModules } from "@/services/resourceManagment";
 import { AlertText } from "@/components/AlertText";
 import { ToggleableFileInput } from "@/components/forms/ToggleableFileInput";
 import { File } from "@/types/file";
@@ -28,7 +28,7 @@ export default function CreateTaskPage() {
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [courseModulesBiMap, setCourseModulesBiMap] = useState<BiMap>(
-    new BiMap()
+    new BiMap(),
   );
 
   const courseId = courseIdParam as string;
@@ -45,7 +45,7 @@ export default function CreateTaskPage() {
         courseModules.map((module) => [
           module.courseModuleDetails.title,
           module.moduleId.toString(),
-        ])
+        ]),
       );
       setCourseModulesBiMap(bimap);
     } catch (error) {
@@ -78,7 +78,7 @@ export default function CreateTaskPage() {
   useFocusEffect(
     useCallback(() => {
       fetchCourseModules();
-    }, [courseId])
+    }, [courseId]),
   );
 
   return (

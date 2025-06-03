@@ -5,7 +5,12 @@ export const createRegisterUserRequest = () => {
 };
 
 export const createLoginUserRequest = (uid: string) => {
-  return createRequest({ uri: `users/login/${uid}` });
+  return createRequest({
+    uri: `users/login/${uid}`,
+    params: {
+      platform: "app",
+    },
+  });
 };
 
 export const createEditUserProfileRequest = (userId: number) => {

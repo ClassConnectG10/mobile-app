@@ -1,4 +1,4 @@
-import { getModules, orderModules } from "@/services/resourceManager";
+import { getModules, orderModules } from "@/services/resourceManagment";
 import { Course } from "@/types/course";
 import { Module } from "@/types/resources";
 import { useFocusEffect, useRouter } from "expo-router";
@@ -55,7 +55,7 @@ export const ModulesTab: React.FC<ModulesTabProps> = ({ course }) => {
   useFocusEffect(
     useCallback(() => {
       fetchModules();
-    }, [course.courseId])
+    }, [course.courseId]),
   );
 
   const handleEditModulesOrder = async () => {

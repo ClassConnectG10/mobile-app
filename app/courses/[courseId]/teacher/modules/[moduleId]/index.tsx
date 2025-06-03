@@ -7,7 +7,7 @@ import {
   getModule,
   getResources,
   orderResources,
-} from "@/services/resourceManager";
+} from "@/services/resourceManagment";
 import { ActivityType, TeacherActivity } from "@/types/activity";
 import { Module, Resource } from "@/types/resources";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
@@ -31,7 +31,7 @@ class ModuleElement {
   constructor(
     public id: number,
     public type: ModuleElementType,
-    public element: Resource | TeacherActivity
+    public element: Resource | TeacherActivity,
   ) {}
 }
 
@@ -96,8 +96,8 @@ export default function ModulePage() {
           new ModuleElement(
             resource.resourceId,
             ModuleElementType.RESOURCE,
-            resource
-          )
+            resource,
+          ),
       );
       setResourcesDisplayElements(fetchedResources);
       setTemporalResourcesDisplayElements(fetchedResources);
@@ -119,9 +119,9 @@ export default function ModulePage() {
           return new ModuleElement(
             activity.activity.resourceId,
             ModuleElementType.ACTIVITY,
-            activity
+            activity,
           );
-        })
+        }),
       );
     } catch (error) {
       setErrorMessage((error as Error).message);
@@ -214,7 +214,7 @@ export default function ModulePage() {
       fetchModule();
       fetchActivities();
       fetchResources();
-    }, [courseId, moduleId])
+    }, [courseId, moduleId]),
   );
 
   return (

@@ -78,10 +78,19 @@ export default function TeacherStudentDetialsPage() {
     });
   };
 
-  // TODO: Solucionar el botón de actividades del alumno
   const handleStudentActivityPress = () => {
     router.push({
-      pathname: `/courses/[courseId]/teacher/activities/[studentId]`,
+      pathname: `/courses/[courseId]/teacher/participants/students/[studentId]/activities`,
+      params: {
+        courseId,
+        studentId,
+      },
+    });
+  };
+
+  const handleStudentStatisticsPress = () => {
+    router.push({
+      pathname: `/courses/[courseId]/teacher/participants/students/[studentId]/statistics`,
       params: {
         courseId,
         studentId,
@@ -107,7 +116,7 @@ export default function TeacherStudentDetialsPage() {
     useCallback(() => {
       fetchStudent();
       fetchMark();
-    }, [courseId, studentId])
+    }, [courseId, studentId]),
   );
 
   return (
@@ -148,6 +157,16 @@ export default function TeacherStudentDetialsPage() {
               disabled={isLoading}
             >
               Ver actividades de {student.userInformation.firstName}{" "}
+              {student.userInformation.lastName}
+            </Button>
+
+            <Button
+              icon="chart-bar"
+              mode="outlined"
+              onPress={handleStudentStatisticsPress}
+              disabled={isLoading}
+            >
+              Ver estadísticas de {student.userInformation.firstName}{" "}
               {student.userInformation.lastName}
             </Button>
 

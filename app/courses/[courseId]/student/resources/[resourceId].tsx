@@ -10,7 +10,7 @@ import { useCallback, useState } from "react";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import { ToggleableFileInput } from "@/components/forms/ToggleableFileInput";
 import { ToggleableLinkInput } from "@/components/forms/ToggleableLinkInput";
-import { getResource } from "@/services/resourceManager";
+import { getResource } from "@/services/resourceManagment";
 import {
   AttachmentType,
   FileAttachment,
@@ -49,9 +49,9 @@ export default function EditResourcePage() {
       setFiles(
         fetchedResource.resourceDetails.attachments
           .filter(
-            (attachment) => attachment.attachmentType === AttachmentType.FILE
+            (attachment) => attachment.attachmentType === AttachmentType.FILE,
           )
-          .map((fileAttachment) => (fileAttachment as FileAttachment).file)
+          .map((fileAttachment) => (fileAttachment as FileAttachment).file),
       );
     } catch (error) {
       setErrorMessage((error as Error).message);
@@ -63,7 +63,7 @@ export default function EditResourcePage() {
   useFocusEffect(
     useCallback(() => {
       fetchResource();
-    }, [courseId, moduleId, resourceId])
+    }, [courseId, moduleId, resourceId]),
   );
 
   return (
@@ -115,10 +115,10 @@ export default function EditResourcePage() {
                 links={resource.resourceDetails.attachments
                   .filter(
                     (attachment) =>
-                      attachment.attachmentType === AttachmentType.LINK
+                      attachment.attachmentType === AttachmentType.LINK,
                   )
                   .map(
-                    (linkAttachment) => (linkAttachment as LinkAttachment).link
+                    (linkAttachment) => (linkAttachment as LinkAttachment).link,
                   )}
                 editable={false}
                 onChange={() => {}}

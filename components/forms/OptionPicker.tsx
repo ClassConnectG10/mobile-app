@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { View, Pressable } from "react-native";
 import { Menu, IconButton } from "react-native-paper";
 import { TextField } from "./TextField";
+
 import { BiMap } from "@/utils/bimap";
 
 interface OptionPickerProps {
@@ -10,6 +11,7 @@ interface OptionPickerProps {
   items: BiMap;
   editable?: boolean;
   setValue: (value: string) => void;
+  style?: "default" | "white";
 }
 
 const OptionPicker: React.FC<OptionPickerProps> = ({
@@ -18,6 +20,7 @@ const OptionPicker: React.FC<OptionPickerProps> = ({
   items,
   editable = true,
   setValue,
+  style = "default",
 }) => {
   const [menuVisible, setMenuVisible] = useState(false);
 
@@ -38,17 +41,33 @@ const OptionPicker: React.FC<OptionPickerProps> = ({
                 <TextField
                   label={label}
                   value={items.getFrontValue(value) || ""}
+                  style={style}
                 />
               </Pressable>
-              <IconButton
-                icon="close"
-                size={20}
-                mode="contained"
-                onPress={() => {
-                  setValue("");
-                  setMenuVisible(false);
-                }}
-              />
+              {style === "default" ? (
+                <IconButton
+                  icon="close"
+                  size={20}
+                  mode="contained"
+                  onPress={() => {
+                    setValue("");
+                    setMenuVisible(false);
+                  }}
+                />
+              ) : (
+                <IconButton
+                  icon="close"
+                  size={20}
+                  mode="contained"
+                  onPress={() => {
+                    setValue("");
+                    setMenuVisible(false);
+                  }}
+                  style={{
+                    backgroundColor: "#fff",
+                  }}
+                />
+              )}
             </View>
           }
         >
@@ -64,7 +83,11 @@ const OptionPicker: React.FC<OptionPickerProps> = ({
           ))}
         </Menu>
       ) : (
-        <TextField label={label} value={items.getFrontValue(value) || ""} />
+        <TextField
+          label={label}
+          value={items.getFrontValue(value) || ""}
+          style={style}
+        />
       )}
     </View>
   );

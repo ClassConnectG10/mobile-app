@@ -3,6 +3,7 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import { IconButton, TextInput } from "react-native-paper";
 import { Pressable, View } from "react-native";
 import { formatDate, formatDateTime } from "@/utils/date";
+import { TextField } from "./TextField";
 
 type DatePickerProps = {
   label: string;
@@ -12,6 +13,7 @@ type DatePickerProps = {
   canReset?: boolean;
   onChange: (date: Date) => void;
   horizontal?: boolean;
+  style?: "default" | "white";
 };
 
 export const DatePickerButton: React.FC<DatePickerProps> = ({
@@ -22,6 +24,7 @@ export const DatePickerButton: React.FC<DatePickerProps> = ({
   canReset = false,
   onChange,
   horizontal = false,
+  style = "default",
 }) => {
   const [showPicker, setShowPicker] = useState<"date" | "time" | null>(null);
 
@@ -119,12 +122,7 @@ export const DatePickerButton: React.FC<DatePickerProps> = ({
             flex: horizontal ? 1 : undefined,
           }}
         >
-          <TextInput
-            label={label}
-            value={formatValue()}
-            editable={false}
-            pointerEvents="none"
-          />
+          <TextField label={label} value={formatValue()} style={style} />
         </Pressable>
       )}
 

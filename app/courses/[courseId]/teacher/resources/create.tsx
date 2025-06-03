@@ -12,7 +12,7 @@ import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import { ToggleableTextInput } from "@/components/forms/ToggleableTextInput";
 import { ToggleableFileInput } from "@/components/forms/ToggleableFileInput";
 import { ToggleableLinkInput } from "@/components/forms/ToggleableLinkInput";
-import { createResource } from "@/services/resourceManager";
+import { createResource } from "@/services/resourceManagment";
 import { useResourceDetails } from "@/hooks/useResourceDetails";
 import { FileAttachment, LinkAttachment } from "@/types/resources";
 
