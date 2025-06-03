@@ -1,5 +1,5 @@
 import { userDetailsSchema, userSchema } from "@/validations/users";
-import { User, UserInformation } from "@/types/user";
+import { User, UserInformation, UserPreferences } from "@/types/user";
 import { handleError } from "./common";
 import {
   createRegisterUserRequest,
@@ -21,7 +21,7 @@ import {
  */
 export async function registerUser(
   uid: string,
-  userInformation: UserInformation
+  userInformation: UserInformation,
 ) {
   try {
     userDetailsSchema.parse(userInformation);
@@ -40,8 +40,8 @@ export async function registerUser(
         response.data.data.name,
         response.data.data.surname,
         response.data.data.email,
-        response.data.data.country
-      )
+        response.data.data.country,
+      ),
     );
     return user;
   } catch (error) {
@@ -66,7 +66,7 @@ export async function loginUser(uid: string): Promise<User | null> {
       response.data.data.name,
       response.data.data.surname,
       response.data.data.email,
-      response.data.data.country
+      response.data.data.country,
     );
 
     const user = {
@@ -110,7 +110,7 @@ export async function editUserProfile(user: User) {
       response.data.data.name,
       response.data.data.surname,
       response.data.data.email,
-      response.data.data.country
+      response.data.data.country,
     );
     return updatedUserInfo;
   } catch (error) {
@@ -125,7 +125,7 @@ export async function getUser(userId: number): Promise<User> {
     const userInfo = new UserInformation(
       response.data.data.name,
       response.data.data.surname,
-      response.data.data.email
+      response.data.data.email,
     );
 
     const user = {
@@ -154,7 +154,7 @@ export async function getBulkUsers(userIds: number[]): Promise<User[]> {
     const users = response.data.data.map((user: any) => {
       return new User(
         user.id,
-        new UserInformation(user.name, user.surname, user.email)
+        new UserInformation(user.name, user.surname, user.email),
       );
     });
     return users;
@@ -170,11 +170,33 @@ export async function getUsers(): Promise<User[]> {
     const users = response.data.data.map((user: any) => {
       return new User(
         user.id,
-        new UserInformation(user.name, user.surname, user.email)
+        new UserInformation(user.name, user.surname, user.email),
       );
     });
     return users;
   } catch (error) {
     throw handleError(error, "obtener los usuarios");
   }
+}
+
+export async function getUserPreferences(
+  userId: number,
+): Promise<UserPreferences> {
+  // TODO: Implement the actual API call to fetch user preferences
+  return {
+    notification_events_configuration: {
+      WELCOME: { mail: true, push: true },
+      USER_BLOCKED: { mail: true, push: true },
+      USER_UNBLOCKED: { mail: true, push: true },
+      STUDENT_ENROLLED: { mail: false, push: true },
+      ACTIVITY_DELIVERY: { mail: false, push: true },
+      AUXILIAR_ADDED: { mail: true, push: true },
+      AUXILIAR_REMOVED: { mail: true, push: true },
+      ACTIVITY_PUBLISHED: { mail: false, push: true },
+      ACTIVITY_GRADED: { mail: true, push: true },
+      COURSE_GRADE: { mail: true, push: true },
+      RESOURCE_PUBLISHED: { mail: false, push: true },
+      STUDENT_KICKED: { mail: true, push: true },
+    },
+  };
 }

@@ -1,5 +1,5 @@
-import React, { useCallback } from "react";
-import { FlatList, View } from "react-native";
+import React, { useCallback, useEffect } from "react";
+import { Alert, FlatList, View } from "react-native";
 import {
   ActivityIndicator,
   Appbar,
@@ -21,6 +21,8 @@ import { CourseFilterModal } from "@/components/courses/CourseFilterModal";
 import { SearchBar } from "@/components/forms/SearchBar";
 import { FullScreenModal } from "@/components/FullScreenModal";
 import { FloatingActionButton } from "@/components/FloatingActionButton";
+import { IconBadge } from "@/components/IconBadge";
+import { getMessaging } from "@react-native-firebase/messaging";
 
 export default function HomePage() {
   const theme = useTheme();
@@ -95,6 +97,15 @@ export default function HomePage() {
     }, [searchFilters, searchOption, userContext])
   );
 
+  useEffect(() => {
+    const messaging = getMessaging();
+    const unsubscribe = messaging.onMessage(async (remoteMessage) => {
+      Alert.alert("A new FCM message arrived!", JSON.stringify(remoteMessage));
+    });
+
+    return unsubscribe;
+  }, []);
+
   axios.defaults.headers.common["X-Caller-Id"] =
     userContextHook.user.id.toString();
 
@@ -108,6 +119,14 @@ export default function HomePage() {
           icon="test-tube"
           onPress={() => {
             router.push("/test");
+          }}
+        />
+        <IconBadge
+          icon="bell"
+          count={1}
+          showBadge={true}
+          onPress={() => {
+            router.push("/notifications");
           }}
         />
         <Appbar.Action

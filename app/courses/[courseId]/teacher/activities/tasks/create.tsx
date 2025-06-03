@@ -1,6 +1,6 @@
 import { DatePickerButton } from "@/components/forms/DatePickerButton";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
-import { createTask, uploadTaskFile } from "@/services/activityManagement";
+import { createTask } from "@/services/activityManagement";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import { View, ScrollView } from "react-native";
