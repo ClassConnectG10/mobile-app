@@ -15,14 +15,16 @@ export class UserInformation {
   ) {}
 }
 
+export class NotificationEventPreferences {
+  constructor(public mail: boolean, public push: boolean) {}
+}
+
 // TODO: rellenar esto cuando fetcheemos el usuario
 export class UserPreferences {
   constructor(
-    public mail_notifications: boolean,
-    public push_notifications: boolean,
     public notification_events_configuration: Record<
       NotificationEvent,
-      boolean
+      NotificationEventPreferences
     >,
   ) {}
 }

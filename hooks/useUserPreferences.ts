@@ -4,9 +4,10 @@ import { UserPreferences } from "@/types/user";
 export interface UserPreferencesHook {
   userPreferences: UserPreferences;
   setUserPreferences: (preferences: UserPreferences) => void;
-  setMailNotifications: (enabled: boolean) => void;
-  setPushNotifications: (enabled: boolean) => void;
-  setEventNotification: (event: string, enabled: boolean) => void;
+  setAllMailEventNotifications: (events: string[], enabled: boolean) => void;
+  setAllPushEventNotifications: (events: string[], enabled: boolean) => void;
+  setMailEventNotification: (event: string, enabled: boolean) => void;
+  setPushEventNotification: (event: string, enabled: boolean) => void;
 }
 
 export function useUserPreferences(): UserPreferencesHook {
@@ -16,25 +17,89 @@ export function useUserPreferences(): UserPreferencesHook {
     setPreferences(newPreferences);
   };
 
-  const setMailNotifications = (enabled: boolean) => {
+  const setAllMailEventNotifications = (events: string[], enabled: boolean) => {
     setPreferences((prev) => {
-      return { ...prev, mail_notifications: enabled };
+      if (!prev) return prev;
+      const updatedEvents = Object.keys(
+        prev.notification_events_configuration,
+      ).reduce((acc, event) => {
+        if (events.includes(event)) {
+          acc[event] = {
+            ...prev.notification_events_configuration[event],
+            mail: enabled,
+          };
+        } else {
+          acc[event] = prev.notification_events_configuration[event];
+        }
+        return acc;
+      }, {} as Record<string, { mail: boolean; push: boolean }>);
+      return {
+        ...prev,
+        notification_events_configuration: updatedEvents,
+      };
     });
   };
 
-  const setPushNotifications = (enabled: boolean) => {
+  const setAllPushEventNotifications = (events: string[], enabled: boolean) => {
     setPreferences((prev) => {
-      return { ...prev, push_notifications: enabled };
+      if (!prev) return prev;
+      const updatedEvents = Object.keys(
+        prev.notification_events_configuration,
+      ).reduce((acc, event) => {
+        if (events.includes(event)) {
+          acc[event] = {
+            ...prev.notification_events_configuration[event],
+            push: enabled,
+          };
+        } else {
+          acc[event] = prev.notification_events_configuration[event];
+        }
+        return acc;
+      }, {} as Record<string, { mail: boolean; push: boolean }>);
+      return {
+        ...prev,
+        notification_events_configuration: updatedEvents,
+      };
     });
   };
 
-  const setEventNotification = (event: string, enabled: boolean) => {
+  // const setMailNotifications = (enabled: boolean) => {
+  //   setPreferences((prev) => {
+  //     return { ...prev, mail_notifications: enabled };
+  //   });
+  // };
+
+  // const setPushNotifications = (enabled: boolean) => {
+  //   setPreferences((prev) => {
+  //     return { ...prev, push_notifications: enabled };
+  //   });
+  // };
+
+  const setMailEventNotification = (event: string, enabled: boolean) => {
     setPreferences((prev) => {
       return {
         ...prev,
         notification_events_configuration: {
           ...prev.notification_events_configuration,
-          [event]: enabled,
+          [event]: {
+            ...prev.notification_events_configuration[event],
+            mail: enabled,
+          },
+        },
+      };
+    });
+  };
+
+  const setPushEventNotification = (event: string, enabled: boolean) => {
+    setPreferences((prev) => {
+      return {
+        ...prev,
+        notification_events_configuration: {
+          ...prev.notification_events_configuration,
+          [event]: {
+            ...prev.notification_events_configuration[event],
+            push: enabled,
+          },
         },
       };
     });
@@ -43,8 +108,9 @@ export function useUserPreferences(): UserPreferencesHook {
   return {
     userPreferences: preferences,
     setUserPreferences,
-    setMailNotifications,
-    setPushNotifications,
-    setEventNotification,
+    setAllMailEventNotifications,
+    setAllPushEventNotifications,
+    setMailEventNotification,
+    setPushEventNotification,
   };
 }

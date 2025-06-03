@@ -184,21 +184,19 @@ export async function getUserPreferences(
 ): Promise<UserPreferences> {
   // TODO: Implement the actual API call to fetch user preferences
   return {
-    mail_notifications: true,
-    push_notifications: true,
     notification_events_configuration: {
-      WELCOME: true,
-      USER_BLOCKED: false,
-      USER_UNBLOCKED: false,
-      STUDENT_ENROLLED: true,
-      ACTIVITY_DELIVERY: true,
-      AUXILIAR_ADDED: false,
-      AUXILIAR_REMOVED: false,
-      ACTIVITY_PUBLISHED: true,
-      ACTIVITY_GRADED: true,
-      COURSE_GRADE: true,
-      RESOURCE_PUBLISHED: true,
-      STUDENT_KICKED: false,
+      WELCOME: { mail: true, push: true },
+      USER_BLOCKED: { mail: true, push: true },
+      USER_UNBLOCKED: { mail: true, push: true },
+      STUDENT_ENROLLED: { mail: false, push: true },
+      ACTIVITY_DELIVERY: { mail: false, push: true },
+      AUXILIAR_ADDED: { mail: true, push: true },
+      AUXILIAR_REMOVED: { mail: true, push: true },
+      ACTIVITY_PUBLISHED: { mail: false, push: true },
+      ACTIVITY_GRADED: { mail: true, push: true },
+      COURSE_GRADE: { mail: true, push: true },
+      RESOURCE_PUBLISHED: { mail: false, push: true },
+      STUDENT_KICKED: { mail: true, push: true },
     },
   };
 }
