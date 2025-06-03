@@ -30,11 +30,9 @@ export default function NotificationsPage() {
   const [userPreferencesContext, setUserPreferencesContext] =
     useState<UserPreferences | null>(null);
 
-  const configurableEventsMeta = Object.entries(notificationEventMeta)
-    .filter(
-      ([, meta]) => meta.configurable !== NotificationConfig.NO_CONFIGURABLE,
-    )
-    .map(([, meta]) => meta);
+  const configurableEventsMeta = notificationEventMeta.filter(
+    (meta) => meta.configurable !== NotificationConfig.NO_CONFIGURABLE,
+  );
 
   const userPreferencesHook = useUserPreferences();
   const userPreferences = userPreferencesHook.userPreferences;
@@ -76,22 +74,19 @@ export default function NotificationsPage() {
     setIsEditing(false);
   };
 
-  const groupedEvents = Object.values(notificationEventMeta).reduce(
-    (acc, meta) => {
-      const category = meta.audience;
-      if (!acc[category]) {
-        acc[category] = [];
-      }
-      acc[category].push(meta);
-      return acc;
-    },
-    {} as Record<string, NotificationEventMeta[]>,
-  );
+  const sections: { title: string; data: NotificationEventMeta[] }[] =
+    notificationEventMeta.reduce((acc, meta) => {
+      const audience = notificationAudienceBiMap.getFrontValue(meta.audience);
+      if (!audience) return acc;
 
-  const sections = Object.entries(groupedEvents).map(([category, events]) => ({
-    title: category,
-    data: events,
-  }));
+      const section = acc.find((s) => s.title === audience);
+      if (section) {
+        section.data.push(meta);
+      } else {
+        acc.push({ title: audience, data: [meta] });
+      }
+      return acc;
+    }, [] as { title: string; data: NotificationEventMeta[] }[]);
 
   return (
     <>
