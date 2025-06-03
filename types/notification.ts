@@ -44,7 +44,7 @@ export const notificationEventIconBiMap = new BiMap([
   ["human-greeting-variant", NotificationEvent.WELCOME],
   ["account-off", NotificationEvent.USER_BLOCKED],
   ["account-check", NotificationEvent.USER_UNBLOCKED],
-  ["account-plus", NotificationEvent.STUDENT_ENROLLED],
+  ["student", NotificationEvent.STUDENT_ENROLLED],
   ["file-upload", NotificationEvent.ACTIVITY_DELIVERY],
   ["account-plus", NotificationEvent.AUXILIAR_ADDED],
   ["account-minus", NotificationEvent.AUXILIAR_REMOVED],
