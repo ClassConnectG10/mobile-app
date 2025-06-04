@@ -79,7 +79,7 @@ export const CourseFilterModal: React.FC<CourseFilterModalProps> = ({
 
       <Divider />
 
-      <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+      <View style={{ flexDirection: "row", gap: 16 }}>
         <Button
           mode="contained"
           icon="filter-remove"
@@ -87,6 +87,7 @@ export const CourseFilterModal: React.FC<CourseFilterModalProps> = ({
             resetFilters();
             // onApplyFilters(searchFilters);
           }}
+          style={styles.modalButton}
         >
           Borrar filtros
         </Button>
@@ -97,6 +98,7 @@ export const CourseFilterModal: React.FC<CourseFilterModalProps> = ({
             onApplyFilters(searchFilters);
             onDismiss();
           }}
+          style={styles.modalButton}
         >
           Aplicar filtros
         </Button>
@@ -121,10 +123,6 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   modalButton: {
-    marginTop: 20,
-    backgroundColor: "#6200ee",
-    borderRadius: 4,
-    padding: 10,
-    color: "white",
+    flex: 1,
   },
 });

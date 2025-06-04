@@ -101,24 +101,12 @@ export default function HomePage() {
       <Appbar.Header>
         {/* <Appbar.Action icon="menu" /> */}
         <Appbar.Content title="Class Connect" />
-        <Appbar.Action
-          icon="test-tube"
-          onPress={() => {
-            router.push("/test");
-          }}
-        />
         <IconBadge
           icon="bell"
           count={1}
           showBadge={true}
           onPress={() => {
             router.push("/notifications");
-          }}
-        />
-        <Appbar.Action
-          icon="filter"
-          onPress={() => {
-            setSearchFiltersModalVisible(true);
           }}
         />
         <Appbar.Action
@@ -181,8 +169,25 @@ export default function HomePage() {
         </View>
 
         {/* Searchbar */}
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 8,
+          }}
+        >
+          <View style={{ flex: 1 }}>
+            <SearchBar placeholder="Buscar cursos" onSearch={handleSearch} />
+          </View>
 
-        <SearchBar placeholder="Buscar cursos" onSearch={handleSearch} />
+          <IconButton
+            icon="filter-variant"
+            onPress={() => {
+              setSearchFiltersModalVisible(true);
+            }}
+            disabled={isLoading}
+          />
+        </View>
 
         {/* Main scrollable content */}
         <FlatList
