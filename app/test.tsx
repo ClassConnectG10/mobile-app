@@ -7,7 +7,9 @@ import HorizontalBarChart from "@/components/charts/HorizontalBarChart";
 import VerticalBarChart from "@/components/charts/VerticalBarChart";
 import { LineChartSeries } from "@/components/charts/LineChart";
 import LineChart from "@/components/charts/LineChart";
-import { exportToExcel, openExcelFile } from "@/utils/exportToExcel";
+import { exportToExcel } from "@/utils/files/exportToExcel";
+import { openFile } from "@/utils/files/common";
+import { File } from "@/types/file";
 
 export default function TestPage() {
   const router = useRouter();
@@ -24,9 +26,7 @@ export default function TestPage() {
   //   new Link("Google", "https://www.google.com"),
   // ]);
 
-  const [exportedFilePath, setExportedFilePath] = React.useState<string | null>(
-    null,
-  );
+  const [exportedFile, setExportedFile] = React.useState<File | null>(null);
 
   const data = [
     { label: "Argentina", value: 45000000 },
@@ -118,22 +118,21 @@ export default function TestPage() {
 
   const handleExport = async () => {
     try {
-      const filePath = await exportToExcel(tables, "estadisticas");
-      setExportedFilePath(filePath);
-      console.log("Archivo exportado:", filePath);
+      const file = await exportToExcel(tables, "estadisticas");
+      setExportedFile(file);
     } catch (error) {
       console.error("Error al exportar:", error);
     }
   };
 
   const handleOpenFile = async () => {
-    if (!exportedFilePath) {
+    if (!exportedFile) {
       console.warn("No hay archivo exportado para abrir.");
       return;
     }
     try {
-      await openExcelFile(exportedFilePath);
-      console.log("Archivo abierto correctamente:", exportedFilePath);
+      await openFile(exportedFile);
+      console.log("Archivo abierto correctamente:", exportedFile.name);
     } catch (error) {
       console.error("Error al abrir el archivo:", error);
     }
@@ -179,7 +178,7 @@ export default function TestPage() {
           icon="file-excel"
           mode="outlined"
           onPress={handleOpenFile}
-          disabled={!exportedFilePath}
+          disabled={!exportedFile}
         >
           Abrir archivo
         </Button>

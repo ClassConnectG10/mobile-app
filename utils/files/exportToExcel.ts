@@ -1,6 +1,6 @@
 import XLSX from "xlsx";
-import { viewDocument } from "@react-native-documents/viewer";
 import * as FileSystem from "expo-file-system";
+import { File } from "@/types/file";
 
 export type ExcelSheet = {
   sheetName: string;
@@ -25,12 +25,12 @@ export function normalizeFileName(name: string): string {
  * Exporta hojas de datos a un archivo Excel
  * @param sheets - Array de hojas con nombre y datos
  * @param fileName - Nombre del archivo (sin extensión)
- * @returns Promise<string> - Ruta completa del archivo creado
+ * @returns Promise<File> - Ruta completa del archivo creado
  */
 export async function exportToExcel(
   sheets: ExcelSheet[],
-  fileName: string,
-): Promise<string> {
+  fileName: string
+): Promise<File> {
   if (sheets.length === 0) {
     throw new Error("No hay hojas para exportar.");
   }
@@ -59,27 +59,16 @@ export async function exportToExcel(
     await FileSystem.writeAsStringAsync(filePath, wbout, {
       encoding: FileSystem.EncodingType.Base64,
     });
-    return filePath;
+
+    const file: File = {
+      localUri: filePath,
+      name: `${fileName}.xlsx`,
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    };
+
+    return file;
   } catch (err) {
     console.error("Error al exportar el archivo:", err);
     throw new Error("No se pudo exportar el archivo.");
-  }
-}
-
-/**
- * Abre un archivo Excel utilizando el visor de documentos
- * @param filePath - Ruta completa del archivo a abrir
- */
-export async function openExcelFile(filePath: string): Promise<void> {
-  try {
-    await viewDocument({
-      uri: filePath,
-      mimeType:
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      headerTitle: "Exportación",
-    });
-  } catch (err) {
-    console.error("Error al abrir el archivo:", err);
-    throw new Error("No se pudo abrir el archivo.");
   }
 }

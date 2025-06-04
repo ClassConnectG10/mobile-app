@@ -15,8 +15,14 @@ import {
 import { User } from "@/types/user";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
-import { ActivityIndicator, FlatList, View, StyleSheet } from "react-native";
-import { Appbar, SegmentedButtons, useTheme, Text } from "react-native-paper";
+import { FlatList, View, StyleSheet } from "react-native";
+import {
+  ActivityIndicator,
+  Appbar,
+  SegmentedButtons,
+  useTheme,
+  Text,
+} from "react-native-paper";
 
 export default function StudentSubmissionsPage() {
   const router = useRouter();
@@ -169,7 +175,7 @@ export default function StudentSubmissionsPage() {
             />
           </View>
         ) : (
-          <View style={{ padding: 16, gap: 16 }}>
+          <View style={{ padding: 16, gap: 16, flex: 1 }}>
             <Text variant="titleLarge" style={{ fontWeight: "bold" }}>
               Entregas
             </Text>
@@ -201,7 +207,7 @@ export default function StudentSubmissionsPage() {
               ]}
             />
             <FlatList
-              style={styles.scrollContainer}
+              contentContainerStyle={styles.scrollContainer}
               data={filteredSubmissions}
               refreshing={isRefreshing}
               onRefresh={handleRefresh}
@@ -215,7 +221,6 @@ export default function StudentSubmissionsPage() {
                   activity={teacherActivities[item.resourceId]}
                 />
               )}
-              ItemSeparatorComponent={() => <View style={{ height: 16 }} />}
             />
           </View>
         )}
@@ -230,7 +235,6 @@ export default function StudentSubmissionsPage() {
 
 const styles = StyleSheet.create({
   scrollContainer: {
-    paddingBottom: 100,
     gap: 16,
   },
 });

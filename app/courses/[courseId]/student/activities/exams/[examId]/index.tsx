@@ -5,11 +5,11 @@ import {
 } from "@/services/activityManagement";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, ScrollView, View } from "react-native";
+import { ScrollView, View } from "react-native";
 import {
   Appbar,
+  ActivityIndicator,
   Button,
-  Dialog,
   useTheme,
   Text,
   Divider,

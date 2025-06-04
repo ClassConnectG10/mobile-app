@@ -1,4 +1,4 @@
-import { ActivitiesOption } from "./activity";
+import { ActivitiesOption, ActivityType } from "./activity";
 
 export class Statistics {
   constructor(
@@ -11,7 +11,7 @@ export class Statistics {
     public onTimeSubmissions: number,
     public lateSubmissions: number,
     public avgTimeDifferenceHours: number,
-    public completionRate: number,
+    public completionRate: number
   ) {}
 }
 
@@ -25,12 +25,25 @@ export class SubmissionStatisticsParams {
     public endDate: Date,
     public activityType?: ActivitiesOption,
     public activityId?: number,
-    public studentId?: number,
+    public studentId?: number
   ) {}
 }
 
 export class SubmissionStatistic {
   constructor(public date: Date, public count: number) {}
+}
+
+export class StudentActivityStatistics {
+  constructor(
+    public activityId: number,
+    public type: ActivityType,
+    public title: string,
+    public dueDate: Date,
+    public published: boolean,
+    public submited: boolean,
+    public grade?: number,
+    public submissionDate?: Date
+  ) {}
 }
 
 export class StudentStatistics {
@@ -44,5 +57,6 @@ export class StudentStatistics {
     public avgTaskGrade: number,
     public avgExamGrade: number,
     public completionRate: number,
+    public activities: StudentActivityStatistics[]
   ) {}
 }

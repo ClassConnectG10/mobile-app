@@ -130,7 +130,6 @@ export class TaskSubmission implements ActivitySubmission {
   constructor(
     public resourceId: number,
     public studentId: number,
-    // public response: string,
     public submited: boolean,
     public dueDate: Date,
     public responseFile?: File,

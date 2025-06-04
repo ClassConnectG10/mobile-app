@@ -1,4 +1,10 @@
-import { Avatar, Appbar, Button, useTheme } from "react-native-paper";
+import {
+  ActivityIndicator,
+  Avatar,
+  Appbar,
+  Button,
+  useTheme,
+} from "react-native-paper";
 import { COUNTRIES } from "@/utils/constants/countries";
 import { editUserProfile, getUser } from "@/services/userManagement";
 import { globalStyles } from "@/styles/globalStyles";
@@ -7,7 +13,7 @@ import { useRouter, useLocalSearchParams, useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { useUserContext } from "@/utils/storage/userContext";
 import { useUserInformation } from "@/hooks/useUserInformation";
-import { View, ScrollView, ActivityIndicator } from "react-native";
+import { View, ScrollView } from "react-native";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import OptionPicker from "@/components/forms/OptionPicker";
 import { signOut } from "@/services/auth/authUtils";
@@ -57,7 +63,7 @@ export default function UserProfilePage() {
   useFocusEffect(
     useCallback(() => {
       fetchUser();
-    }, [userId]),
+    }, [userId])
   );
 
   // Inicializar datos propios en el hook de edición
@@ -108,7 +114,7 @@ export default function UserProfilePage() {
         CommonActions.reset({
           index: 0,
           routes: [{ name: "(login)/login" }],
-        }),
+        })
       );
     } catch (error) {
       setErrorMessage(`Error al cerrar sesión: ${error}`);

@@ -49,12 +49,6 @@ export default function CoursePage() {
       focusedIcon: "account-multiple",
       unfocusedIcon: "account-multiple",
     },
-    {
-      key: "performance",
-      title: "Desempeño",
-      focusedIcon: "chart-bar",
-      unfocusedIcon: "chart-bar",
-    },
   ]);
   const courseContext = useCourseContext();
   const { setCourse } = courseContext;
@@ -122,7 +116,7 @@ export default function CoursePage() {
   useFocusEffect(
     useCallback(() => {
       fetchCourse();
-    }, [courseId]),
+    }, [courseId])
   );
 
   return (

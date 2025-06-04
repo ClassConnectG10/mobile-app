@@ -30,12 +30,8 @@ import { useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import { View, ScrollView } from "react-native";
 import { ActivityIndicator, Button, Text, useTheme } from "react-native-paper";
-import {
-  exportToExcel,
-  openExcelFile,
-  normalizeFileName,
-} from "@/utils/exportToExcel";
-import { AlertDialog } from "@/components/AlertDialog";
+import { exportToExcel, normalizeFileName } from "@/utils/files/exportToExcel";
+import { openFile } from "@/utils/files/common";
 
 interface StatisticsTabProps {
   course: Course;
@@ -60,19 +56,13 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course }) => {
     SubmissionStatistic[] | null
   >(null);
   const [startDate, setStartDate] = useState<Date>(
-    new Date(
-      new Date().setDate(new Date().getDate() - INITIAL_RANGE_DAYS_DIFF),
-    ),
+    new Date(new Date().setDate(new Date().getDate() - INITIAL_RANGE_DAYS_DIFF))
   );
   const [endDate, setEndDate] = useState<Date>(new Date());
   const [submissionStatisticsParams, setSubmissionStatisticsParams] =
     useState<SubmissionStatisticsParams>(
-      new SubmissionStatisticsParams(startDate, endDate),
+      new SubmissionStatisticsParams(startDate, endDate)
     );
-
-  const [exportedFilePath, setExportedFilePath] = useState<string | null>(null);
-  const [showExportDialog, setShowExportDialog] = useState(false);
-  const [exportSuccess, setExportSuccess] = useState(false);
 
   const fetchStatistics = async () => {
     if (!course.courseId) return;
@@ -93,7 +83,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course }) => {
     try {
       const fetchedActivities = await getCourseTeacherActivities(
         course.courseId,
-        ActivitiesOption.ALL,
+        ActivitiesOption.ALL
       );
       setActivities(fetchedActivities);
     } catch (error) {
@@ -135,13 +125,13 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course }) => {
     useCallback(() => {
       fetchStatistics();
       fetchActivities();
-    }, [course.courseId]),
+    }, [course.courseId])
   );
 
   useFocusEffect(
     useCallback(() => {
       fetchSubmissionStatistics();
-    }, [submissionStatisticsParams]),
+    }, [submissionStatisticsParams])
   );
 
   const handleStartDateChange = (date: Date) => {
@@ -220,7 +210,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course }) => {
           table: statistics.avgGradesPerActivity.map((activity) => ({
             Actividad:
               activities?.find(
-                (a) => a.activity.resourceId === activity.activityId,
+                (a) => a.activity.resourceId === activity.activityId
               )?.activity.activityDetails.title ??
               `Actividad ${activity.activityId}`,
             "Promedio de Calificación": activity.avgGrade.toFixed(2),
@@ -254,7 +244,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course }) => {
         if (submissionStatisticsParams.activityId) {
           const selectedActivity = activities?.find(
             (a) =>
-              a.activity.resourceId === submissionStatisticsParams.activityId,
+              a.activity.resourceId === submissionStatisticsParams.activityId
           );
 
           if (selectedActivity) {
@@ -268,7 +258,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course }) => {
               (relevantStats ?? []).map((stat) => [
                 stat.date.toDateString(),
                 stat.count,
-              ]),
+              ])
             );
 
             // Construir la tabla con solo el tipo correspondiente
@@ -292,13 +282,13 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course }) => {
             (tasksSubmissionStatistics ?? []).map((stat) => [
               stat.date.toDateString(),
               stat.count,
-            ]),
+            ])
           );
           const examsMap = new Map(
             (examsSubmissionStatistics ?? []).map((stat) => [
               stat.date.toDateString(),
               stat.count,
-            ]),
+            ])
           );
 
           // Construir la tabla combinada con todos los días
@@ -317,30 +307,13 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course }) => {
 
       const timestamp = new Date().toISOString();
       const normalizedCourseName = normalizeFileName(
-        course.courseDetails.title,
+        course.courseDetails.title
       );
       const fileName = `estadisticas_${normalizedCourseName}_${timestamp}`;
-      const filePath = await exportToExcel(tables, fileName);
-      setExportedFilePath(filePath);
-      setExportSuccess(true);
-      setShowExportDialog(true);
+      const file = await exportToExcel(tables, fileName);
+      await openFile(file);
     } catch (error) {
-      console.error("Error al exportar:", error);
-      setExportSuccess(false);
-      setShowExportDialog(true);
-    }
-  };
-
-  const handleOpenFile = async () => {
-    if (!exportedFilePath) {
-      console.warn("No hay archivo exportado para abrir.");
-      return;
-    }
-    try {
-      await openExcelFile(exportedFilePath);
-    } catch (error) {
-      console.error("Error al abrir el archivo:", error);
-      setErrorMessage("Error al abrir el archivo");
+      setErrorMessage((error as Error).message);
     }
   };
 
@@ -412,7 +385,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course }) => {
                 data={statistics.avgGradesPerActivity.map((activity) => ({
                   label:
                     activities?.find(
-                      (a) => a.activity.resourceId === activity.activityId,
+                      (a) => a.activity.resourceId === activity.activityId
                     )?.activity.activityDetails.title ??
                     `Actividad ${activity.activityId}`,
                   value: activity.avgGrade,
@@ -435,28 +408,18 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course }) => {
                   },
                   {
                     icon: "timer-sand",
-                    value:
-                      statistics.avgTimeDifferenceHours !== undefined
-                        ? getSimpleRelativeTimeFromNow(
-                            new Date(
-                              Date.now() +
-                                statistics.avgTimeDifferenceHours *
-                                  60 *
-                                  60 *
-                                  1000,
-                            ),
-                          )
-                        : "-",
+                    value: getSimpleRelativeTimeFromNow(
+                      new Date(
+                        Date.now() +
+                          statistics.avgTimeDifferenceHours * 60 * 60 * 1000
+                      )
+                    ),
                     label:
-                      -statistics.avgTimeDifferenceHours === undefined
-                        ? "Retraso promedio"
-                        : statistics.avgTimeDifferenceHours >= 0
+                      statistics.avgTimeDifferenceHours >= 0
                         ? "Anticipo promedio"
                         : "Retraso promedio",
                     color:
-                      -statistics.avgTimeDifferenceHours === undefined
-                        ? customColors.error
-                        : statistics.avgTimeDifferenceHours >= 0
+                      statistics.avgTimeDifferenceHours >= 0
                         ? customColors.success
                         : customColors.error,
                   },
@@ -523,7 +486,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course }) => {
                       .map((activity) => [
                         activity.activity.activityDetails.title,
                         activity.activity.resourceId.toString(),
-                      ]),
+                      ])
                   )
                 }
                 setValue={(value) => {
@@ -544,7 +507,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course }) => {
                     const selectedActivity = activities?.find(
                       (a) =>
                         a.activity.resourceId ===
-                        submissionStatisticsParams.activityId,
+                        submissionStatisticsParams.activityId
                     );
                     if (!selectedActivity) return [];
 
@@ -557,7 +520,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course }) => {
                             ? examsSubmissionStatistics
                             : tasksSubmissionStatistics,
                           startDate,
-                          endDate,
+                          endDate
                         ),
                         showPoints: showPoints,
                         strokeWidth: 2,
@@ -571,7 +534,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course }) => {
                       data: generateDailyPoints(
                         examsSubmissionStatistics,
                         startDate,
-                        endDate,
+                        endDate
                       ),
                       showPoints: showPoints,
                       strokeWidth: 3,
@@ -583,7 +546,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course }) => {
                       data: generateDailyPoints(
                         tasksSubmissionStatistics,
                         startDate,
-                        endDate,
+                        endDate
                       ),
                       showPoints: showPoints,
                       strokeWidth: 2,
@@ -606,25 +569,6 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course }) => {
       <ErrorMessageSnackbar
         message={errorMessage}
         onDismiss={() => setErrorMessage("")}
-      />
-
-      {/* Export Dialog */}
-      <AlertDialog
-        visible={showExportDialog}
-        onDismiss={() => setShowExportDialog(false)}
-        onConfirm={async () => {
-          setShowExportDialog(false);
-          await handleOpenFile();
-        }}
-        content={
-          exportSuccess && exportedFilePath
-            ? `Las estadísticas del curso se han exportado correctamente en la carpeta de Descargas con el nombre "${exportedFilePath
-                .split("/")
-                .pop()}". ¿Desea abrir el archivo ahora?`
-            : "Ocurrió un error al exportar las estadísticas. Por favor, inténtelo de nuevo."
-        }
-        dismissText={exportSuccess ? "Más Tarde" : "Cerrar"}
-        confirmText={exportSuccess ? "Abrir" : undefined}
       />
     </View>
   );

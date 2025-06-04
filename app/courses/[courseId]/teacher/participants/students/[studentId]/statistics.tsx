@@ -11,13 +11,7 @@ import {
   getSubmissionStatistics,
 } from "@/services/statisticsManagment";
 import { getUser } from "@/services/userManagement";
-import {
-  ActivitiesOption,
-  ActivityGrade,
-  ActivitySubmission,
-  TeacherActivity,
-  ActivityType,
-} from "@/types/activity";
+import { ActivitiesOption, ActivityType } from "@/types/activity";
 import {
   SubmissionStatisticsParams,
   SubmissionStatistic,
@@ -36,17 +30,8 @@ import {
   ActivityIndicator,
   Button,
 } from "react-native-paper";
-import {
-  getActivitiesGradesByStudent,
-  getCourseTeacherActivities,
-  getSubmissionsByStudent,
-} from "@/services/activityManagement";
-import {
-  exportToExcel,
-  openExcelFile,
-  normalizeFileName,
-} from "@/utils/exportToExcel";
-import { AlertDialog } from "@/components/AlertDialog";
+import { openFile } from "@/utils/files/common";
+import { exportToExcel, normalizeFileName } from "@/utils/files/exportToExcel";
 
 export default function StudentStatisticsPage() {
   const router = useRouter();
@@ -59,11 +44,7 @@ export default function StudentStatisticsPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [student, setStudent] = useState<User | null>(null);
-  const [submissions, setSubmissions] = useState<ActivitySubmission[] | null>(
-    null,
-  );
-  const [activities, setActivities] = useState<TeacherActivity[] | null>(null);
-  const [grades, setGrades] = useState<ActivityGrade[] | null>(null);
+
   const [studentStatistics, setStudentStatistics] =
     useState<StudentStatistics | null>(null);
   const [tasksSubmissionStatistics, setTasksSubmissionStatistics] = useState<
@@ -73,14 +54,9 @@ export default function StudentStatisticsPage() {
     SubmissionStatistic[] | null
   >(null);
   const [startDate, setStartDate] = useState<Date>(
-    new Date(new Date().setDate(new Date().getDate() - 7)),
+    new Date(new Date().setDate(new Date().getDate() - 7))
   );
   const [endDate, setEndDate] = useState<Date>(new Date());
-
-  // Export state
-  const [exportedFilePath, setExportedFilePath] = useState<string | null>(null);
-  const [showExportDialog, setShowExportDialog] = useState(false);
-  const [exportSuccess, setExportSuccess] = useState(false);
 
   const fetchStudent = async () => {
     if (!studentId) return;
@@ -102,58 +78,9 @@ export default function StudentStatisticsPage() {
     try {
       const fetchedStats = await getStudentStatistics(
         courseId,
-        Number(studentId),
+        Number(studentId)
       );
       setStudentStatistics(fetchedStats);
-    } catch (error) {
-      setErrorMessage((error as Error).message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const fetchStudentSubmissions = async () => {
-    if (!courseId || !studentId) return;
-
-    setIsLoading(true);
-    try {
-      const fetchedSubmissions = await getSubmissionsByStudent(
-        courseId,
-        Number(studentId),
-      );
-      setSubmissions(fetchedSubmissions);
-    } catch (error) {
-      setErrorMessage((error as Error).message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const fetchStudentGrades = async () => {
-    if (!courseId || !studentId) return;
-    setIsLoading(true);
-    try {
-      const fetchedGrades = await getActivitiesGradesByStudent(
-        courseId,
-        Number(studentId),
-      );
-      setGrades(fetchedGrades);
-    } catch (error) {
-      setErrorMessage((error as Error).message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const fetchActivities = async () => {
-    if (!courseId) return;
-    setIsLoading(true);
-    try {
-      const fetchedActivies = await getCourseTeacherActivities(
-        courseId,
-        ActivitiesOption.ALL,
-      );
-      setActivities(fetchedActivies);
     } catch (error) {
       setErrorMessage((error as Error).message);
     } finally {
@@ -172,8 +99,8 @@ export default function StudentStatisticsPage() {
             endDate,
             ActivitiesOption.TASKS,
             undefined,
-            Number(studentId),
-          ),
+            Number(studentId)
+          )
         ),
         getSubmissionStatistics(
           courseId,
@@ -182,8 +109,8 @@ export default function StudentStatisticsPage() {
             endDate,
             ActivitiesOption.EXAMS,
             undefined,
-            Number(studentId),
-          ),
+            Number(studentId)
+          )
         ),
       ]);
       setTasksSubmissionStatistics(tasks);
@@ -197,20 +124,17 @@ export default function StudentStatisticsPage() {
     useCallback(() => {
       fetchStudent();
       fetchStudentStatistics();
-      fetchStudentSubmissions();
-      fetchStudentGrades();
-      fetchActivities();
-    }, [courseId, studentId]),
+    }, [courseId, studentId])
   );
 
   useFocusEffect(
     useCallback(() => {
       fetchSubmissionStats();
-    }, [startDate, endDate, courseId, studentId]),
+    }, [startDate, endDate, courseId, studentId])
   );
 
   const handleExport = async () => {
-    if (!studentStatistics || !activities || !grades || !student) {
+    if (!studentStatistics || !student) {
       setErrorMessage("No hay datos disponibles para exportar");
       return;
     }
@@ -263,7 +187,7 @@ export default function StudentStatisticsPage() {
               Valor:
                 studentStatistics.avgTimeDifferenceHours !== undefined
                   ? `${studentStatistics.avgTimeDifferenceHours.toFixed(
-                      2,
+                      2
                     )} horas`
                   : "-",
             },
@@ -280,8 +204,8 @@ export default function StudentStatisticsPage() {
             {
               Métrica: "Cantidad de Tareas",
               Valor:
-                activities?.filter(
-                  (a) => a.activity.type === ActivityType.TASK && a.visible,
+                studentStatistics.activities?.filter(
+                  (a) => a.type === ActivityType.TASK && a.published
                 ).length ?? 0,
             },
           ],
@@ -289,19 +213,12 @@ export default function StudentStatisticsPage() {
         // 4. Notas por tarea
         {
           sheetName: "Notas por Tarea",
-          table: grades
-            .filter((grade) => grade.type === ActivityType.TASK)
-            .map((grade) => {
-              const activity = activities?.find(
-                (a) => a.activity.resourceId === grade.resourceId,
-              );
-              return {
-                Actividad:
-                  activity?.activity.activityDetails.title ??
-                  `Actividad ${grade.resourceId}`,
-                Nota: grade.mark,
-              };
-            }),
+          table: studentStatistics.activities
+            .filter((a) => a.type === ActivityType.TASK && a.grade !== null)
+            .map((a) => ({
+              Actividad: a.title,
+              Nota: a.grade,
+            })),
         },
         // 5. Estadísticas para exámenes
         {
@@ -314,8 +231,8 @@ export default function StudentStatisticsPage() {
             {
               Métrica: "Cantidad de Exámenes",
               Valor:
-                activities?.filter(
-                  (a) => a.activity.type === ActivityType.EXAM && a.visible,
+                studentStatistics.activities?.filter(
+                  (a) => a.type === ActivityType.EXAM && a.published
                 ).length ?? 0,
             },
           ],
@@ -323,17 +240,15 @@ export default function StudentStatisticsPage() {
         // 6. Notas por examen
         {
           sheetName: "Notas por Examen",
-          table: grades
-            .filter((grade) => grade.type === ActivityType.EXAM)
-            .map((grade) => {
-              const activity = activities?.find(
-                (a) => a.activity.resourceId === grade.resourceId,
-              );
+          table: studentStatistics.activities
+            .filter(
+              (activity) =>
+                activity.type === ActivityType.EXAM && activity.grade !== null
+            )
+            .map((activity) => {
               return {
-                Actividad:
-                  activity?.activity.activityDetails.title ??
-                  `Actividad ${grade.resourceId}`,
-                Nota: grade.mark,
+                Actividad: activity.title ?? `Actividad ${activity.activityId}`,
+                Nota: activity.grade,
               };
             }),
         },
@@ -363,13 +278,13 @@ export default function StudentStatisticsPage() {
           (tasksSubmissionStatistics ?? []).map((stat) => [
             stat.date.toDateString(),
             stat.count,
-          ]),
+          ])
         );
         const examsMap = new Map(
           (examsSubmissionStatistics ?? []).map((stat) => [
             stat.date.toDateString(),
             stat.count,
-          ]),
+          ])
         );
 
         const submissionsTable = allDates.map((date) => ({
@@ -387,27 +302,10 @@ export default function StudentStatisticsPage() {
       const timestamp = new Date().toISOString();
       const normalizedStudentName = normalizeFileName(studentName);
       const fileName = `estadisticas_estudiante_${normalizedStudentName}_${timestamp}`;
-      const filePath = await exportToExcel(tables, fileName);
-      setExportedFilePath(filePath);
-      setExportSuccess(true);
-      setShowExportDialog(true);
+      const file = await exportToExcel(tables, fileName);
+      await openFile(file);
     } catch (error) {
-      console.error("Error al exportar:", error);
-      setExportSuccess(false);
-      setShowExportDialog(true);
-    }
-  };
-
-  const handleOpenFile = async () => {
-    if (!exportedFilePath) {
-      console.warn("No hay archivo exportado para abrir.");
-      return;
-    }
-    try {
-      await openExcelFile(exportedFilePath);
-    } catch (error) {
-      console.error("Error al abrir el archivo:", error);
-      setErrorMessage("Error al abrir el archivo");
+      setErrorMessage((error as Error).message);
     }
   };
 
@@ -419,15 +317,11 @@ export default function StudentStatisticsPage() {
           title={
             student
               ? `${student.userInformation.firstName} ${student.userInformation.lastName}`
-              : "Calificación del estudiante"
+              : "Estadísticas del Estudiante"
           }
         />
       </Appbar.Header>
-      {isLoading ||
-      !studentStatistics ||
-      !activities ||
-      !submissions ||
-      !grades ? (
+      {isLoading || !studentStatistics ? (
         <View
           style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
         >
@@ -462,35 +356,25 @@ export default function StudentStatisticsPage() {
               {
                 icon: "check-circle",
                 value: `${(studentStatistics.completionRate * 100).toFixed(
-                  2,
+                  2
                 )} %`,
                 label: "Finalización",
                 color: customColors.info,
               },
               {
                 icon: "timer-sand",
-                value:
-                  studentStatistics.avgTimeDifferenceHours !== undefined
-                    ? getSimpleRelativeTimeFromNow(
-                        new Date(
-                          Date.now() +
-                            studentStatistics.avgTimeDifferenceHours *
-                              60 *
-                              60 *
-                              1000,
-                        ),
-                      )
-                    : "-",
+                value: getSimpleRelativeTimeFromNow(
+                  new Date(
+                    Date.now() +
+                      studentStatistics.avgTimeDifferenceHours * 60 * 60 * 1000
+                  )
+                ),
                 label:
-                  studentStatistics.avgTimeDifferenceHours === undefined
-                    ? "Retraso promedio"
-                    : studentStatistics.avgTimeDifferenceHours >= 0
+                  studentStatistics.avgTimeDifferenceHours >= 0
                     ? "Anticipo promedio"
                     : "Retraso promedio",
                 color:
-                  studentStatistics.avgTimeDifferenceHours === undefined
-                    ? customColors.error
-                    : studentStatistics.avgTimeDifferenceHours >= 0
+                  studentStatistics.avgTimeDifferenceHours >= 0
                     ? customColors.success
                     : customColors.error,
               },
@@ -521,10 +405,9 @@ export default function StudentStatisticsPage() {
             indicators={[
               {
                 icon: "clipboard-text",
-                value:
-                  activities?.filter(
-                    (a) => a.activity.type === ActivityType.TASK && a.visible,
-                  ).length ?? 0,
+                value: studentStatistics.activities.filter(
+                  (a) => a.type === ActivityType.TASK && a.published
+                ).length,
                 label: "Cantidad de tareas",
                 color: customColors.info,
               },
@@ -538,21 +421,17 @@ export default function StudentStatisticsPage() {
           />
           {/* HorizontalBarChart de notas por tarea */}
           <HorizontalBarChart
-            data={
-              grades
-                ?.filter((grade) => grade.type === ActivityType.TASK)
-                .map((grade) => {
-                  const activity = activities?.find(
-                    (a) => a.activity.resourceId === grade.resourceId,
-                  );
-                  return {
-                    label:
-                      activity?.activity.activityDetails.title ??
-                      `Actividad ${grade.resourceId}`,
-                    value: grade.mark,
-                  };
-                }) ?? []
-            }
+            data={studentStatistics.activities
+              .filter(
+                (activity) =>
+                  activity.type === ActivityType.TASK && activity.grade !== null
+              )
+              .map((activity) => {
+                return {
+                  label: activity.title,
+                  value: activity.grade,
+                };
+              })}
             title={"Nota por tarea"}
             titleColor={customColors.info}
             barColor={customColors.info}
@@ -561,94 +440,49 @@ export default function StudentStatisticsPage() {
 
           {/* HorizontalBarChart de tiempo restante de entrega para tareas - A tiempo */}
           <HorizontalBarChart
-            data={submissions
-              .filter((submission) => {
-                const activity = activities.find(
-                  (a) => a.activity.resourceId === submission.resourceId,
-                );
-                if (
-                  activity?.activity.type !== ActivityType.TASK ||
-                  !submission.submissionDate
-                )
-                  return false;
-                const dueDate = activity?.activity.activityDetails.dueDate;
-                if (!dueDate) return false;
-                const due = new Date(dueDate);
-                const submitted = new Date(submission.submissionDate);
-                return submitted.getTime() <= due.getTime();
-              })
-              .map((submission) => {
-                const activity = activities.find(
-                  (a) => a.activity.resourceId === submission.resourceId,
-                );
-                const dueDate = activity?.activity.activityDetails.dueDate;
-                let value = 0;
-                if (dueDate && submission.submissionDate) {
-                  const due = new Date(dueDate);
-                  const submitted = new Date(submission.submissionDate);
-                  value =
-                    (due.getTime() - submitted.getTime()) / (1000 * 60 * 60); // horas de anticipo
-                }
-                return {
-                  label:
-                    activity?.activity.activityDetails.title ??
-                    `Actividad ${submission.resourceId}`,
-                  value: Math.abs(value),
-                };
-              })}
+            data={studentStatistics.activities
+              .filter(
+                (activity) =>
+                  activity.type === ActivityType.TASK &&
+                  activity.submited &&
+                  activity.submissionDate.getTime() <=
+                    activity.dueDate.getTime()
+              )
+              .map((activity) => ({
+                label: activity.title,
+                value:
+                  activity.dueDate.getTime() -
+                  activity.submissionDate.getTime(),
+              }))}
             title={"Tiempo restante de entrega por tarea"}
             titleColor={customColors.info}
             barColor={customColors.info}
             displayValue={(value) => {
-              // value es positivo aquí, representa cuántas horas antes entregó
-              const displayDate = new Date(Date.now() - value * 60 * 60 * 1000);
+              const displayDate = new Date(Date.now() - value);
               return getSimpleRelativeTimeFromNow(displayDate);
             }}
           />
 
           {/* HorizontalBarChart de tiempo restante de entrega para tareas - Tarde */}
           <HorizontalBarChart
-            data={submissions
-              .filter((submission) => {
-                const activity = activities.find(
-                  (a) => a.activity.resourceId === submission.resourceId,
-                );
-                if (
-                  activity?.activity.type !== ActivityType.TASK ||
-                  !submission.submissionDate
-                )
-                  return false;
-                const dueDate = activity?.activity.activityDetails.dueDate;
-                if (!dueDate) return false;
-                const due = new Date(dueDate);
-                const submitted = new Date(submission.submissionDate);
-                return submitted.getTime() > due.getTime();
-              })
-              .map((submission) => {
-                const activity = activities.find(
-                  (a) => a.activity.resourceId === submission.resourceId,
-                );
-                const dueDate = activity?.activity.activityDetails.dueDate;
-                let value = 0;
-                if (dueDate && submission.submissionDate) {
-                  const due = new Date(dueDate);
-                  const submitted = new Date(submission.submissionDate);
-                  value =
-                    (submitted.getTime() - due.getTime()) / (1000 * 60 * 60); // horas de atraso
-                }
-                return {
-                  label:
-                    activity?.activity.activityDetails.title ??
-                    `Actividad ${submission.resourceId}`,
-                  value: Math.abs(value),
-                };
-              })}
+            data={studentStatistics.activities
+              .filter(
+                (activity) =>
+                  activity.type === ActivityType.TASK &&
+                  activity.submited &&
+                  activity.submissionDate.getTime() > activity.dueDate.getTime()
+              )
+              .map((activity) => ({
+                label: activity.title,
+                value:
+                  activity.submissionDate.getTime() -
+                  activity.dueDate.getTime(),
+              }))}
             title={"Tiempo vencido de entrega por tarea"}
             titleColor={customColors.error}
             barColor={customColors.error}
             displayValue={(value) => {
-              // value es positivo aquí, representa cuántas horas después entregó
-              const displayDate = new Date(Date.now() - value * 60 * 60 * 1000);
+              const displayDate = new Date(Date.now() - value);
               return getSimpleRelativeTimeFromNow(displayDate);
             }}
           />
@@ -659,10 +493,9 @@ export default function StudentStatisticsPage() {
             indicators={[
               {
                 icon: "file-document-edit",
-                value:
-                  activities?.filter(
-                    (a) => a.activity.type === ActivityType.EXAM && a.visible,
-                  ).length ?? 0,
+                value: studentStatistics.activities.filter(
+                  (a) => a.type === ActivityType.EXAM && a.published
+                ).length,
                 label: "Cantidad de exámenes",
                 color: theme.colors.primary,
               },
@@ -676,21 +509,15 @@ export default function StudentStatisticsPage() {
           />
           {/* HorizontalBarChart de notas por examen */}
           <HorizontalBarChart
-            data={
-              grades
-                ?.filter((grade) => grade.type === ActivityType.EXAM)
-                .map((grade) => {
-                  const activity = activities?.find(
-                    (a) => a.activity.resourceId === grade.resourceId,
-                  );
-                  return {
-                    label:
-                      activity?.activity.activityDetails.title ??
-                      `Actividad ${grade.resourceId}`,
-                    value: grade.mark,
-                  };
-                }) ?? []
-            }
+            data={studentStatistics.activities
+              .filter(
+                (activity) =>
+                  activity.type === ActivityType.EXAM && activity.grade !== null
+              )
+              .map((activity) => ({
+                label: activity.title,
+                value: activity.grade,
+              }))}
             title={"Nota por exámen"}
             titleColor={theme.colors.primary}
             barColor={theme.colors.primary}
@@ -699,94 +526,49 @@ export default function StudentStatisticsPage() {
 
           {/* HorizontalBarChart de tiempo restante de entrega para exámenes - A tiempo */}
           <HorizontalBarChart
-            data={submissions
-              .filter((submission) => {
-                const activity = activities.find(
-                  (a) => a.activity.resourceId === submission.resourceId,
-                );
-                if (
-                  activity?.activity.type !== ActivityType.EXAM ||
-                  !submission.submissionDate
-                )
-                  return false;
-                const dueDate = activity?.activity.activityDetails.dueDate;
-                if (!dueDate) return false;
-                const due = new Date(dueDate);
-                const submitted = new Date(submission.submissionDate);
-                return submitted.getTime() <= due.getTime();
-              })
-              .map((submission) => {
-                const activity = activities.find(
-                  (a) => a.activity.resourceId === submission.resourceId,
-                );
-                const dueDate = activity?.activity.activityDetails.dueDate;
-                let value = 0;
-                if (dueDate && submission.submissionDate) {
-                  const due = new Date(dueDate);
-                  const submitted = new Date(submission.submissionDate);
-                  value =
-                    (due.getTime() - submitted.getTime()) / (1000 * 60 * 60); // horas de anticipo
-                }
-                return {
-                  label:
-                    activity?.activity.activityDetails.title ??
-                    `Actividad ${submission.resourceId}`,
-                  value: Math.abs(value),
-                };
-              })}
+            data={studentStatistics.activities
+              .filter(
+                (activity) =>
+                  activity.type === ActivityType.EXAM &&
+                  activity.submited &&
+                  activity.submissionDate.getTime() <=
+                    activity.dueDate.getTime()
+              )
+              .map((activity) => ({
+                label: activity.title,
+                value:
+                  activity.dueDate.getTime() -
+                  activity.submissionDate.getTime(),
+              }))}
             title={"Tiempo restante de entrega por exámen"}
             titleColor={theme.colors.primary}
             barColor={theme.colors.primary}
             displayValue={(value) => {
               // value es positivo aquí, representa cuántas horas antes entregó
-              const displayDate = new Date(Date.now() - value * 60 * 60 * 1000);
+              const displayDate = new Date(Date.now() - value);
               return getSimpleRelativeTimeFromNow(displayDate);
             }}
           />
 
-          {/* HorizontalBarChart de tiempo restante de entrega para exámenes - Tarde */}
           <HorizontalBarChart
-            data={submissions
-              .filter((submission) => {
-                const activity = activities.find(
-                  (a) => a.activity.resourceId === submission.resourceId,
-                );
-                if (
-                  activity?.activity.type !== ActivityType.EXAM ||
-                  !submission.submissionDate
-                )
-                  return false;
-                const dueDate = activity?.activity.activityDetails.dueDate;
-                if (!dueDate) return false;
-                const due = new Date(dueDate);
-                const submitted = new Date(submission.submissionDate);
-                return submitted.getTime() > due.getTime();
-              })
-              .map((submission) => {
-                const activity = activities.find(
-                  (a) => a.activity.resourceId === submission.resourceId,
-                );
-                const dueDate = activity?.activity.activityDetails.dueDate;
-                let value = 0;
-                if (dueDate && submission.submissionDate) {
-                  const due = new Date(dueDate);
-                  const submitted = new Date(submission.submissionDate);
-                  value =
-                    (submitted.getTime() - due.getTime()) / (1000 * 60 * 60); // horas de atraso
-                }
-                return {
-                  label:
-                    activity?.activity.activityDetails.title ??
-                    `Actividad ${submission.resourceId}`,
-                  value: Math.abs(value),
-                };
-              })}
+            data={studentStatistics.activities
+              .filter(
+                (activity) =>
+                  activity.type === ActivityType.EXAM &&
+                  activity.submited &&
+                  activity.submissionDate.getTime() > activity.dueDate.getTime()
+              )
+              .map((activity) => ({
+                label: activity.title,
+                value:
+                  activity.submissionDate.getTime() -
+                  activity.dueDate.getTime(),
+              }))}
             title={"Tiempo vencido de entrega por exámen"}
             titleColor={theme.colors.error}
             barColor={theme.colors.error}
             displayValue={(value) => {
-              // value es positivo aquí, representa cuántas horas después entregó
-              const displayDate = new Date(Date.now() - value * 60 * 60 * 1000);
+              const displayDate = new Date(Date.now() - value);
               return getSimpleRelativeTimeFromNow(displayDate);
             }}
           />
@@ -828,7 +610,7 @@ export default function StudentStatisticsPage() {
                   data: generateDailyPoints(
                     examsSubmissionStatistics,
                     startDate,
-                    endDate,
+                    endDate
                   ),
                   showPoints: showPoints,
                   strokeWidth: 3,
@@ -840,7 +622,7 @@ export default function StudentStatisticsPage() {
                   data: generateDailyPoints(
                     tasksSubmissionStatistics,
                     startDate,
-                    endDate,
+                    endDate
                   ),
                   showPoints: showPoints,
                   strokeWidth: 2,
@@ -862,25 +644,6 @@ export default function StudentStatisticsPage() {
       <ErrorMessageSnackbar
         message={errorMessage}
         onDismiss={() => setErrorMessage("")}
-      />
-
-      {/* Export Dialog */}
-      <AlertDialog
-        visible={showExportDialog}
-        onDismiss={() => setShowExportDialog(false)}
-        onConfirm={async () => {
-          setShowExportDialog(false);
-          await handleOpenFile();
-        }}
-        content={
-          exportSuccess && exportedFilePath
-            ? `Las estadísticas del estudiante se han exportado correctamente en la carpeta de Descargas con el nombre "${exportedFilePath
-                .split("/")
-                .pop()}". ¿Desea abrir el archivo ahora?`
-            : "Ocurrió un error al exportar las estadísticas. Por favor, inténtelo de nuevo."
-        }
-        dismissText={exportSuccess ? "Más Tarde" : "Cerrar"}
-        confirmText={exportSuccess ? "Abrir" : undefined}
       />
     </View>
   );
