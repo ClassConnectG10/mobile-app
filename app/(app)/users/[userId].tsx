@@ -6,7 +6,11 @@ import {
   useTheme,
 } from "react-native-paper";
 import { COUNTRIES } from "@/utils/constants/countries";
-import { editUserProfile, getUser } from "@/services/userManagement";
+import {
+  editUserProfile,
+  getUser,
+  logoutUser,
+} from "@/services/userManagement";
 import { globalStyles } from "@/styles/globalStyles";
 import { ToggleableTextInput } from "@/components/forms/ToggleableTextInput";
 import { useRouter, useLocalSearchParams, useFocusEffect } from "expo-router";
@@ -106,6 +110,7 @@ export default function UserProfilePage() {
       const auth = getAuth();
       const user = auth.currentUser;
       const providerId = user?.providerData[0].providerId;
+      await logoutUser(userContext.id);
       if (providerId === "google.com") {
         await GoogleSignin.signOut();
       }

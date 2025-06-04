@@ -3,7 +3,11 @@
 import { NotificationEvent } from "./notification";
 
 export class User {
-  constructor(public id: number, public userInformation: UserInformation) {}
+  constructor(
+    public id: number,
+    public userInformation: UserInformation,
+    public userPreferences?: UserPreferences
+  ) {}
 }
 
 export class UserInformation {
@@ -11,7 +15,7 @@ export class UserInformation {
     public firstName: string,
     public lastName: string,
     public email: string,
-    public country?: string,
+    public country?: string
   ) {}
 }
 
@@ -25,6 +29,6 @@ export class UserPreferences {
     public notification_events_configuration: Record<
       NotificationEvent,
       NotificationEventPreferences
-    >,
+    >
   ) {}
 }

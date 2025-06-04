@@ -11,7 +11,7 @@ import {
   SubmissionStatistic,
   SubmissionStatisticsParams,
 } from "@/types/statistics";
-import { getDateFromBackend } from "@/utils/date";
+import { getDateFromBackend } from "./common";
 
 export async function getStatistics(courseId: string): Promise<Statistics> {
   const request = await createStatisticsRequest(courseId);

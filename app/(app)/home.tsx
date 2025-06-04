@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect } from "react";
-import { Alert, FlatList, View } from "react-native";
+import { FlatList, View } from "react-native";
 import {
   ActivityIndicator,
   Appbar,
@@ -16,13 +16,11 @@ import { useState } from "react";
 import { Course, SearchFilters, SearchOption } from "@/types/course";
 import { searchCourses } from "@/services/courseManagement";
 import { useUserContext } from "@/utils/storage/userContext";
-import axios from "axios";
 import { CourseFilterModal } from "@/components/courses/CourseFilterModal";
 import { SearchBar } from "@/components/forms/SearchBar";
 import { FullScreenModal } from "@/components/FullScreenModal";
 import { FloatingActionButton } from "@/components/FloatingActionButton";
 import { IconBadge } from "@/components/IconBadge";
-import { getMessaging } from "@react-native-firebase/messaging";
 
 export default function HomePage() {
   const theme = useTheme();
@@ -51,7 +49,7 @@ export default function HomePage() {
   });
 
   const userContextHook = useUserContext();
-  const userContext = userContextHook.user;
+  const userId = userContextHook.user.id;
 
   const handleSearchOptionChange = async (value: SearchOption) => {
     if (searchOption === value) {
@@ -62,7 +60,7 @@ export default function HomePage() {
   };
 
   const fetchCourses = async () => {
-    if (!userContext || !searchFilters || !searchOption) return;
+    if (!searchFilters || !searchOption) return;
 
     try {
       setIsLoading(true);
@@ -94,20 +92,8 @@ export default function HomePage() {
   useFocusEffect(
     useCallback(() => {
       fetchCourses();
-    }, [searchFilters, searchOption, userContext])
+    }, [searchFilters, searchOption])
   );
-
-  useEffect(() => {
-    const messaging = getMessaging();
-    const unsubscribe = messaging.onMessage(async (remoteMessage) => {
-      Alert.alert("A new FCM message arrived!", JSON.stringify(remoteMessage));
-    });
-
-    return unsubscribe;
-  }, []);
-
-  axios.defaults.headers.common["X-Caller-Id"] =
-    userContextHook.user.id.toString();
 
   return (
     <>
@@ -141,7 +127,7 @@ export default function HomePage() {
             router.push({
               pathname: "/users/[userId]",
               params: {
-                userId: userContext.id,
+                userId,
               },
             })
           }

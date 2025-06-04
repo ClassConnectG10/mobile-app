@@ -15,9 +15,9 @@ import {
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import CourseCard from "@/components/cards/CourseCard";
 import { View } from "react-native";
-import ActivitiesTab from "../../../../components/courseTabs/student/activities";
-import { ParticipantsTab } from "../../../../components/courseTabs/student/participants";
-import { ModulesTab } from "../../../../components/courseTabs/student/modules";
+import ActivitiesTab from "@/components/courseTabs/student/activities";
+import { ParticipantsTab } from "@/components/courseTabs/student/participants";
+import { ModulesTab } from "@/components/courseTabs/student/modules";
 
 export default function CoursePage() {
   const router = useRouter();

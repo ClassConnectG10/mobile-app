@@ -50,7 +50,7 @@ import {
   submittedExamItemSchema,
   taskGradeSchema,
 } from "@/validations/activities";
-import { getDateFromBackend } from "@/utils/date";
+import { getDateFromBackend } from "./common";
 import { File } from "@/types/file";
 
 // ACTIVITIES
@@ -396,7 +396,6 @@ export async function getExamSubmissions(
   }
 }
 
-// TODO
 export async function getTaskSubmission(
   courseId: string,
   taskId: number,

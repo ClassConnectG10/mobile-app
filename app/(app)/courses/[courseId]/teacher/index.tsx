@@ -15,8 +15,8 @@ import {
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import CourseCard from "@/components/cards/CourseCard";
 import { View } from "react-native";
-import ActivitiesTab from "../../../../components/courseTabs/teacher/activities";
-import { ParticipantsTab } from "../../../../components/courseTabs/teacher/participants";
+import ActivitiesTab from "@/components/courseTabs/teacher/activities";
+import { ParticipantsTab } from "@/components/courseTabs/teacher/participants";
 import { ModulesTab } from "@/components/courseTabs/teacher/modules";
 import { StatisticsTab } from "@/components/courseTabs/teacher/statistics";
 
@@ -129,7 +129,7 @@ export default function CoursePage() {
   useFocusEffect(
     useCallback(() => {
       fetchCourse();
-    }, [courseId]),
+    }, [courseId])
   );
 
   return (

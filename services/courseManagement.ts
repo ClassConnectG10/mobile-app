@@ -28,7 +28,7 @@ import {
 import { User } from "@/types/user";
 import { getBulkUsers } from "./userManagement";
 import { AssistantLog } from "@/types/assistantLog";
-import { getDateFromBackend } from "@/utils/date";
+import { getDateFromBackend } from "./common";
 
 function formatDate(date: Date): string {
   return date.toISOString().split("T")[0];

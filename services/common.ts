@@ -28,6 +28,8 @@ import {
   createResourceLinkUploadRequest,
 } from "@/api/resources";
 
+const STORAGE_PREFIX = process.env.EXPO_PUBLIC_STORAGE_PREFIX;
+
 export function handleError(error: any, action: string): Error {
   if (error instanceof ZodError) {
     return new Error(
@@ -215,16 +217,12 @@ export function getExamAnswerFromJSON(
   return new SubmittedExamItem(index, examItem.type, examItemAnswer, correct);
 }
 
-const STORAGE_FREFIX =
-  "https://storage.googleapis.com/class-connect-g10.firebasestorage.app";
-
 export function getFileFromBackend(
   fileName: string,
   backendRef: string,
   frontendRef?: string
 ): File {
   if (!fileName || !backendRef) {
-    // TODO: ver si está bien manejado el error
     return null;
   }
   const firebaseRef = parseBackendRef(backendRef);
@@ -235,10 +233,10 @@ export function getFileFromBackend(
 }
 
 function parseBackendRef(backendRef: string): string {
-  const prefixLength = STORAGE_FREFIX.length;
+  const prefixLength = STORAGE_PREFIX.length;
   if (backendRef.length <= prefixLength) {
     throw new Error(
-      `El backendRef no es válido. Debe comenzar con ${STORAGE_FREFIX}`
+      `El backendRef no es válido. Debe comenzar con ${STORAGE_PREFIX}`
     );
   }
   const ref = backendRef.substring(prefixLength);
@@ -394,4 +392,9 @@ export function getAttachmentFromBackend(attachmentData: any): Attachment {
   }
 
   throw new Error(`Tipo de adjunto no soportado: ${attachmentData.type}`);
+}
+
+export function getDateFromBackend(dateString: string): Date {
+  const date = new Date(dateString + "Z");
+  return date;
 }

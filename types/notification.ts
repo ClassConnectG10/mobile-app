@@ -2,11 +2,10 @@ import { BiMap } from "@/utils/bimap";
 
 export class Notification {
   constructor(
-    public id: number,
+    public id: string,
     public title: string,
     public body: string,
-    public date: Date,
-    public read: boolean = false,
+    public date: Date
   ) {}
 }
 

@@ -117,7 +117,7 @@ export function getRelativeTimeFromNow(date: Date): {
 
 export function getRelativeTimeFromDue(
   dueDate: Date,
-  submissionDate: Date,
+  submissionDate: Date
 ): {
   relativeTime: string;
   isOverdue: boolean;
@@ -150,9 +150,4 @@ export function getRelativeTimeFromDue(
     relativeTime: "entregada ahora",
     isOverdue,
   };
-}
-
-export function getDateFromBackend(dateString: string): Date {
-  const date = new Date(dateString + "Z");
-  return date;
 }

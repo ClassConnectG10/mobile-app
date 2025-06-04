@@ -1,0 +1,73 @@
+import { useNotification } from "@/services/notifications";
+import { useUserContext } from "@/utils/storage/userContext";
+import { getMessaging } from "@react-native-firebase/messaging";
+import axios from "axios";
+import { Stack, useRouter } from "expo-router";
+import { useEffect, useState } from "react";
+import { View } from "react-native";
+import { Notification } from "@/types/notification";
+import NotificationBanner from "@/components/banners/NotificationBanner";
+import { SafeAreaView } from "react-native-safe-area-context";
+
+export default function CoursesLayout() {
+  const router = useRouter();
+  const userContextHook = useUserContext();
+  const userContextId = userContextHook.user.id;
+
+  const [notification, setNotification] = useState<Notification | null>(null);
+
+  useEffect(() => {
+    const messaging = getMessaging();
+
+    const unsubscribe = messaging.onMessage(async (remoteMessage) => {
+      console.log("Received foreground notification:", remoteMessage);
+      const receivedNotification = new Notification(
+        remoteMessage.messageId || Math.random().toString(),
+        remoteMessage.notification?.title || "New Notification",
+        remoteMessage.notification?.body || "You have a new notification",
+        new Date(remoteMessage.sentTime || Date.now())
+      );
+      setNotification(receivedNotification);
+    });
+
+    return unsubscribe;
+  }, []);
+
+  useNotification();
+
+  axios.defaults.headers.common["X-Caller-Id"] = userContextId.toString();
+
+  const handleNavigateToNotifications = () => {
+    router.push("/notifications");
+    setNotification(null);
+  };
+
+  const handleDismissNotification = () => {
+    setNotification(null);
+  };
+
+  return (
+    <>
+      <SafeAreaView
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          padding: 16,
+          zIndex: 1000,
+        }}
+      >
+        {notification && (
+          <NotificationBanner
+            notification={notification}
+            onPress={handleNavigateToNotifications}
+            onDismiss={handleDismissNotification}
+          />
+        )}
+      </SafeAreaView>
+
+      <Stack screenOptions={{ headerShown: false }} />
+    </>
+  );
+}

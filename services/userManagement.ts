@@ -8,7 +8,10 @@ import {
   createUserRequest,
   createBulkUserRequest,
   createUsersRequest,
+  createLogoutUserRequest,
 } from "@/api/user";
+import { getToken } from "@/services/notifications";
+import { deleteToken, getMessaging } from "@react-native-firebase/messaging";
 
 /**
  * Registers a new user in the system by sending their information to the server.
@@ -21,7 +24,7 @@ import {
  */
 export async function registerUser(
   uid: string,
-  userInformation: UserInformation,
+  userInformation: UserInformation
 ) {
   try {
     userDetailsSchema.parse(userInformation);
@@ -40,8 +43,8 @@ export async function registerUser(
         response.data.data.name,
         response.data.data.surname,
         response.data.data.email,
-        response.data.data.country,
-      ),
+        response.data.data.country
+      )
     );
     return user;
   } catch (error) {
@@ -59,20 +62,21 @@ export async function registerUser(
  */
 export async function loginUser(uid: string): Promise<User | null> {
   try {
-    const request = await createLoginUserRequest(uid);
+    const messagingToken = await getToken();
+    const request = await createLoginUserRequest(uid, messagingToken);
     const response = await request.get("");
 
+    const responseData = response.data.data;
+
     const userInfo = new UserInformation(
-      response.data.data.name,
-      response.data.data.surname,
-      response.data.data.email,
-      response.data.data.country,
+      responseData.name,
+      responseData.surname,
+      responseData.email,
+      responseData.country
     );
 
-    const user = {
-      id: response.data.data.id,
-      userInformation: userInfo,
-    };
+    // TODO: Fetch the user preferences
+    const user = new User(responseData.id, userInfo);
 
     return user;
   } catch (error) {
@@ -84,6 +88,23 @@ export async function loginUser(uid: string): Promise<User | null> {
     }
 
     throw handleError(error, "iniciar sesión");
+  }
+}
+
+export async function logoutUser(uid: number): Promise<void> {
+  try {
+    const messaging = getMessaging();
+    if (messaging) {
+      deleteToken(messaging);
+    }
+
+    const request = await createLogoutUserRequest(uid);
+    const data = {
+      r_token: "",
+    };
+    await request.patch("", data);
+  } catch (error) {
+    throw handleError(error, "cerrar sesión");
   }
 }
 
@@ -110,7 +131,7 @@ export async function editUserProfile(user: User) {
       response.data.data.name,
       response.data.data.surname,
       response.data.data.email,
-      response.data.data.country,
+      response.data.data.country
     );
     return updatedUserInfo;
   } catch (error) {
@@ -125,7 +146,7 @@ export async function getUser(userId: number): Promise<User> {
     const userInfo = new UserInformation(
       response.data.data.name,
       response.data.data.surname,
-      response.data.data.email,
+      response.data.data.email
     );
 
     const user = {
@@ -154,7 +175,7 @@ export async function getBulkUsers(userIds: number[]): Promise<User[]> {
     const users = response.data.data.map((user: any) => {
       return new User(
         user.id,
-        new UserInformation(user.name, user.surname, user.email),
+        new UserInformation(user.name, user.surname, user.email)
       );
     });
     return users;
@@ -170,7 +191,7 @@ export async function getUsers(): Promise<User[]> {
     const users = response.data.data.map((user: any) => {
       return new User(
         user.id,
-        new UserInformation(user.name, user.surname, user.email),
+        new UserInformation(user.name, user.surname, user.email)
       );
     });
     return users;
@@ -180,7 +201,7 @@ export async function getUsers(): Promise<User[]> {
 }
 
 export async function getUserPreferences(
-  userId: number,
+  userId: number
 ): Promise<UserPreferences> {
   // TODO: Implement the actual API call to fetch user preferences
   return {

@@ -26,23 +26,17 @@ const NotificationCard: React.FC<NotificationCardProps> = ({
       ]}
     >
       <View style={styles.row}>
-        <Icon
-          source={notification.read ? "bell-check" : "bell"}
-          size={24}
-          color={theme.colors.primary}
-        />
-        <View style={{ flex: 1, justifyContent: "space-between" }}>
-          <View style={{ gap: 2 }}>
+        <Icon source={"bell"} size={24} color={theme.colors.primary} />
+        <View style={{ flex: 1 }}>
+          <View>
             <Text style={[styles.title, { color: theme.colors.onSurface }]}>
               {notification.title}
             </Text>
-            <Text numberOfLines={2} style={styles.description}>
+            <Text numberOfLines={3} style={styles.description}>
               {notification.body}
             </Text>
           </View>
-          <Text
-            style={{ fontSize: 12, color: theme.colors.outline, marginTop: 2 }}
-          >
+          <Text style={[styles.date, { color: theme.colors.onSurfaceVariant }]}>
             {notification.date.toLocaleString()}
           </Text>
         </View>
@@ -66,6 +60,10 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginTop: 4,
     fontWeight: "600",
+  },
+  date: {
+    fontSize: 12,
+    textAlign: "right",
   },
   row: {
     flexDirection: "row",

@@ -27,14 +27,7 @@ const DefaultTheme = {
   },
 };
 
-const messaging = getMessaging();
-messaging.setBackgroundMessageHandler(async (remoteMessage) => {
-  console.log("Message handled in the background!", remoteMessage);
-});
-
 export default function RootLayout() {
-  useNotification();
-
   return (
     <PaperProvider theme={DefaultTheme}>
       <UserProvider>
