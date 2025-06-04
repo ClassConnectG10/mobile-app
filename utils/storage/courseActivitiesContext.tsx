@@ -3,7 +3,6 @@ import { createContext, useContext, useState } from "react";
 
 /*
 ESTE CONTEXTO NO SE USA EN NINGUN LUGAR, HAY QUE VER SI LO USAMOS
-
 */
 
 interface CourseActivitiesContext {

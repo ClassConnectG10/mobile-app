@@ -20,19 +20,15 @@ export function useUserPreferences(): UserPreferencesHook {
   const setAllMailEventNotifications = (events: string[], enabled: boolean) => {
     setPreferences((prev) => {
       if (!prev) return prev;
-      const updatedEvents = Object.keys(
-        prev.notification_events_configuration,
-      ).reduce((acc, event) => {
-        if (events.includes(event)) {
-          acc[event] = {
-            ...prev.notification_events_configuration[event],
+      const updatedEvents = prev.notification_events_configuration.map(eventConfig => {
+        if (events.includes(eventConfig.event)) {
+          return {
+            ...eventConfig,
             mail: enabled,
           };
-        } else {
-          acc[event] = prev.notification_events_configuration[event];
         }
-        return acc;
-      }, {} as Record<string, { mail: boolean; push: boolean }>);
+        return eventConfig;
+      });
       return {
         ...prev,
         notification_events_configuration: updatedEvents,
@@ -43,19 +39,15 @@ export function useUserPreferences(): UserPreferencesHook {
   const setAllPushEventNotifications = (events: string[], enabled: boolean) => {
     setPreferences((prev) => {
       if (!prev) return prev;
-      const updatedEvents = Object.keys(
-        prev.notification_events_configuration,
-      ).reduce((acc, event) => {
-        if (events.includes(event)) {
-          acc[event] = {
-            ...prev.notification_events_configuration[event],
+      const updatedEvents = prev.notification_events_configuration.map(eventConfig => {
+        if (events.includes(eventConfig.event)) {
+          return {
+            ...eventConfig,
             push: enabled,
           };
-        } else {
-          acc[event] = prev.notification_events_configuration[event];
         }
-        return acc;
-      }, {} as Record<string, { mail: boolean; push: boolean }>);
+        return eventConfig;
+      });
       return {
         ...prev,
         notification_events_configuration: updatedEvents,
@@ -63,44 +55,40 @@ export function useUserPreferences(): UserPreferencesHook {
     });
   };
 
-  // const setMailNotifications = (enabled: boolean) => {
-  //   setPreferences((prev) => {
-  //     return { ...prev, mail_notifications: enabled };
-  //   });
-  // };
-
-  // const setPushNotifications = (enabled: boolean) => {
-  //   setPreferences((prev) => {
-  //     return { ...prev, push_notifications: enabled };
-  //   });
-  // };
-
   const setMailEventNotification = (event: string, enabled: boolean) => {
     setPreferences((prev) => {
+      if (!prev) return prev;
+      const updatedEvents = prev.notification_events_configuration.map(eventConfig => {
+        if (eventConfig.event === event) {
+          return {
+            ...eventConfig,
+            mail: enabled,
+          };
+        }
+        return eventConfig;
+      });
       return {
         ...prev,
-        notification_events_configuration: {
-          ...prev.notification_events_configuration,
-          [event]: {
-            ...prev.notification_events_configuration[event],
-            mail: enabled,
-          },
-        },
+        notification_events_configuration: updatedEvents,
       };
     });
   };
 
   const setPushEventNotification = (event: string, enabled: boolean) => {
     setPreferences((prev) => {
+      if (!prev) return prev;
+      const updatedEvents = prev.notification_events_configuration.map(eventConfig => {
+        if (eventConfig.event === event) {
+          return {
+            ...eventConfig,
+            push: enabled,
+          };
+        }
+        return eventConfig;
+      });
       return {
         ...prev,
-        notification_events_configuration: {
-          ...prev.notification_events_configuration,
-          [event]: {
-            ...prev.notification_events_configuration[event],
-            push: enabled,
-          },
-        },
+        notification_events_configuration: updatedEvents,
       };
     });
   };

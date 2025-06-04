@@ -6,7 +6,7 @@ export class Notification {
     public title: string,
     public body: string,
     public date: Date
-  ) {}
+  ) { }
 }
 
 export enum NotificationEvent {
@@ -43,9 +43,9 @@ export const notificationEventIconBiMap = new BiMap([
   ["human-greeting-variant", NotificationEvent.WELCOME],
   ["account-off", NotificationEvent.USER_BLOCKED],
   ["account-check", NotificationEvent.USER_UNBLOCKED],
-  ["student", NotificationEvent.STUDENT_ENROLLED],
+  ["account-plus", NotificationEvent.STUDENT_ENROLLED],
   ["file-upload", NotificationEvent.ACTIVITY_DELIVERY],
-  ["account-plus", NotificationEvent.AUXILIAR_ADDED],
+  ["account-multiple", NotificationEvent.AUXILIAR_ADDED],
   ["account-minus", NotificationEvent.AUXILIAR_REMOVED],
   ["file-document", NotificationEvent.ACTIVITY_PUBLISHED],
   ["check-circle", NotificationEvent.ACTIVITY_GRADED],

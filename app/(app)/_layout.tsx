@@ -36,7 +36,9 @@ export default function CoursesLayout() {
 
   useNotification();
 
-  axios.defaults.headers.common["X-Caller-Id"] = userContextId.toString();
+  useEffect(() => {
+    axios.defaults.headers.common["X-Caller-Id"] = userContextId.toString();
+  }, [userContextId]);
 
   const handleNavigateToNotifications = () => {
     router.push("/notifications");

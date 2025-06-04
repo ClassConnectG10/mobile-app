@@ -1,22 +1,15 @@
 import { createRequest } from "./common";
 
-export const createUserNotificationsRequest = (userId: number) => {
+export const createUserNotificationsRequest = () => {
   return createRequest({
-    uri: `users/${userId}/notifications`,
+    uri: `notifications`,
   });
 };
 
 export const createDeleteNotificationRequest = (
-  userId: number,
-  notificationId: number
+  notificationId: string
 ) => {
   return createRequest({
-    uri: `users/${userId}/notifications/${notificationId}`,
-  });
-};
-
-export const createMarkAllNotificationsAsReadRequest = (userId: number) => {
-  return createRequest({
-    uri: `users/${userId}/notifications/read-all`,
+    uri: `notifications/${notificationId}`,
   });
 };

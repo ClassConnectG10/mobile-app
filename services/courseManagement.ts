@@ -127,7 +127,7 @@ export async function searchCourses(
     const coursesData = response.data.data;
 
     const courses: Course[] = await Promise.all(
-      coursesData.map(async (courseData: any) => await getCourse(courseData.id))
+      coursesData.map((courseData: any) => getCourse(courseData.id))
     ); // TODO: Cambiar esto cuando tengamos el endpoint de cursos bien hecho
 
     // const courses: Course[] = coursesData.map((courseData: any) => {

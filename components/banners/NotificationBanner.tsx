@@ -14,9 +14,9 @@ interface NotificationBannerProps {
 
 const NotificationBanner: React.FC<NotificationBannerProps> = ({
   notification,
-  onPress = () => {},
-  onDismiss = () => {},
-  onAnimationComplete = () => {},
+  onPress = () => { },
+  onDismiss = () => { },
+  onAnimationComplete = () => { },
 }) => {
   const theme = useTheme();
   const slideAnim = useRef(new Animated.Value(-100)).current;

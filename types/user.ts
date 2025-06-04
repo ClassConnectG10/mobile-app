@@ -7,7 +7,7 @@ export class User {
     public id: number,
     public userInformation: UserInformation,
     public userPreferences?: UserPreferences
-  ) {}
+  ) { }
 }
 
 export class UserInformation {
@@ -16,19 +16,17 @@ export class UserInformation {
     public lastName: string,
     public email: string,
     public country?: string
-  ) {}
+  ) { }
 }
 
 export class NotificationEventPreferences {
-  constructor(public mail: boolean, public push: boolean) {}
+  constructor(public event: NotificationEvent,
+    public mail: boolean, public push: boolean) { }
 }
 
-// TODO: rellenar esto cuando fetcheemos el usuario
 export class UserPreferences {
   constructor(
-    public notification_events_configuration: Record<
-      NotificationEvent,
-      NotificationEventPreferences
-    >
-  ) {}
+    public notification_events_configuration:
+      NotificationEventPreferences[]
+  ) { }
 }

@@ -1,11 +1,9 @@
-import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useFocusEffect, useRouter } from "expo-router";
+import { useCallback, useState } from "react";
 import { ActivityIndicator, Appbar, Text, useTheme } from "react-native-paper";
 import { View, SectionList, StyleSheet } from "react-native";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import { useUserPreferences } from "@/hooks/useUserPreferences";
-import { UserPreferences } from "@/types/user";
-import { getUserPreferences } from "@/services/userManagement";
 import { useUserContext } from "@/utils/storage/userContext";
 import { NotificationEventPreference } from "@/components/forms/NotificationEventPreference";
 import {
@@ -16,23 +14,24 @@ import {
   notificationEventBiMap,
   notificationEventIconBiMap,
 } from "@/types/notification";
+import { updatePreferences } from "@/services/userManagement";
 
-export default function NotificationsPage() {
+export default function NotificationsPreferencesPage() {
   const router = useRouter();
   const theme = useTheme();
 
   const userContextHook = useUserContext();
   const userContext = userContextHook.user;
+  const userPreferencesContext = userContext.userPreferences;
 
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const [userPreferencesContext, setUserPreferencesContext] =
-    useState<UserPreferences | null>(null);
 
-  const configurableEventsMeta = notificationEventMeta.filter(
+
+  const configurableEvents = notificationEventMeta.filter(
     (meta) => meta.configurable !== NotificationConfig.NO_CONFIGURABLE,
-  );
+  ).map((meta) => (meta.event));
 
   const userPreferencesHook = useUserPreferences();
   const userPreferences = userPreferencesHook.userPreferences;
@@ -42,9 +41,7 @@ export default function NotificationsPage() {
     setIsLoading(true);
 
     try {
-      const fetchedPreferences = await getUserPreferences(userContext?.id);
-      setUserPreferencesContext(fetchedPreferences);
-      userPreferencesHook.setUserPreferences(fetchedPreferences);
+      userPreferencesHook.setUserPreferences(userPreferencesContext);
     } catch (error) {
       setErrorMessage((error as Error).message);
     } finally {
@@ -52,15 +49,20 @@ export default function NotificationsPage() {
     }
   };
 
-  useEffect(() => {
-    fetchPreferences();
-  }, [userContext]);
+  useFocusEffect(
+    useCallback(() => {
+      fetchPreferences();
+    }, [userContext])
+  );
 
   const handleSave = async () => {
     setIsLoading(true);
     try {
-      // await savePreferences();
-      setUserPreferencesContext(userPreferences);
+      await updatePreferences(userContext.id, userPreferencesHook.userPreferences);
+      userContextHook.setUser({
+        ...userContext,
+        userPreferences: userPreferencesHook.userPreferences,
+      });
       setIsEditing(false);
     } catch (error) {
       setErrorMessage((error as Error).message);
@@ -120,47 +122,31 @@ export default function NotificationsPage() {
             <NotificationEventPreference
               icon={"bell"}
               label={"Todos los eventos"}
-              valueMail={Object.entries(
-                userPreferences.notification_events_configuration,
-              )
-                .filter(([event]) =>
-                  configurableEventsMeta.some((item) => item.event === event),
-                )
-                .every(([, config]) => config.mail)}
-              valuePush={Object.entries(
-                userPreferences.notification_events_configuration,
-              )
-                .filter(([event]) =>
-                  configurableEventsMeta.some((item) => item.event === event),
-                )
-                .every(([, config]) => config.push)}
+              valueMail={userPreferences.notification_events_configuration
+                .filter((config) => configurableEvents.includes(config.event))
+                .every((config) => config.mail)}
+              valuePush={userPreferences.notification_events_configuration
+                .filter((config) => configurableEvents.includes(config.event))
+                .every((config) => config.push)}
               onValueMailChange={(value) =>
                 userPreferencesHook.setAllMailEventNotifications(
-                  configurableEventsMeta.map((item) => item.event),
+                  configurableEvents,
                   value,
                 )
               }
               onValuePushChange={(value) =>
                 userPreferencesHook.setAllPushEventNotifications(
-                  configurableEventsMeta.map((item) => item.event),
+                  configurableEvents,
                   value,
                 )
               }
               disabled={!isEditing}
-              someMail={Object.entries(
-                userPreferences.notification_events_configuration,
-              )
-                .filter(([event]) =>
-                  configurableEventsMeta.some((item) => item.event === event),
-                )
-                .some(([, config]) => config.mail)}
-              somePush={Object.entries(
-                userPreferences.notification_events_configuration,
-              )
-                .filter(([event]) =>
-                  configurableEventsMeta.some((item) => item.event === event),
-                )
-                .some(([, config]) => config.push)}
+              someMail={userPreferences.notification_events_configuration
+                .filter((config) => configurableEvents.includes(config.event))
+                .some((config) => config.mail)}
+              somePush={userPreferences.notification_events_configuration
+                .filter((config) => configurableEvents.includes(config.event))
+                .some((config) => config.push)}
             />
 
             <SectionList
@@ -182,14 +168,14 @@ export default function NotificationsPage() {
                     item.event
                   }
                   valueMail={
-                    userPreferences.notification_events_configuration[
-                      item.event
-                    ]?.mail ?? false
+                    userPreferences.notification_events_configuration.find(
+                      (config) => config.event === item.event,
+                    )?.mail ?? false
                   }
                   valuePush={
-                    userPreferences.notification_events_configuration[
-                      item.event
-                    ]?.push ?? false
+                    userPreferences.notification_events_configuration.find(
+                      (config) => config.event === item.event,
+                    )?.push ?? false
                   }
                   onValueMailChange={(value) =>
                     userPreferencesHook.setMailEventNotification(

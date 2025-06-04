@@ -68,7 +68,7 @@ export default function CreateCoursePage() {
 
     const requiredCourses = await Promise.all(
       courseContext.course.courseDetails.dependencies.map(
-        async (courseId) => await getCourse(courseId),
+        (courseId) => getCourse(courseId),
       ),
     );
 
@@ -230,10 +230,10 @@ export default function CreateCoursePage() {
         </Appbar.Header>
 
         {isLoading ||
-        !courseContext.course ||
-        !courseDetails ||
-        !courseOwner ||
-        !requiredCourses ? (
+          !courseContext.course ||
+          !courseDetails ||
+          !courseOwner ||
+          !requiredCourses ? (
           <View
             style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
           >
@@ -330,47 +330,47 @@ export default function CreateCoursePage() {
             {((courseContext.course &&
               courseContext.course.courseDetails.dependencies.length > 0) ||
               isEditing) && (
-              <View style={{ gap: 10 }}>
-                <Text variant="titleMedium">Cursos requeridos</Text>
-                {requiredCourses.map((course) => (
-                  <View
-                    key={course.courseId}
-                    style={{
-                      flexDirection: "row",
-                      justifyContent: "space-between",
-                      gap: 10,
-                    }}
-                  >
-                    <CourseCard
-                      course={course}
-                      small={true}
-                      onPress={() => handleRequiredCoursePress(course)}
-                      horizontal={true}
-                    />
-                    {isEditing && (
-                      <IconButton
-                        icon="delete"
-                        mode="contained"
-                        size={20}
-                        onPress={() => {
-                          requiredCoursesContext.deleteRequiredCourse(course);
-                        }}
+                <View style={{ gap: 10 }}>
+                  <Text variant="titleMedium">Cursos requeridos</Text>
+                  {requiredCourses.map((course) => (
+                    <View
+                      key={course.courseId}
+                      style={{
+                        flexDirection: "row",
+                        justifyContent: "space-between",
+                        gap: 10,
+                      }}
+                    >
+                      <CourseCard
+                        course={course}
+                        small={true}
+                        onPress={() => handleRequiredCoursePress(course)}
+                        horizontal={true}
                       />
-                    )}
-                  </View>
-                ))}
+                      {isEditing && (
+                        <IconButton
+                          icon="delete"
+                          mode="contained"
+                          size={20}
+                          onPress={() => {
+                            requiredCoursesContext.deleteRequiredCourse(course);
+                          }}
+                        />
+                      )}
+                    </View>
+                  ))}
 
-                {isEditing && (
-                  <Button
-                    onPress={() => router.push("/courses/searchRequired")}
-                    mode="outlined"
-                    icon="plus"
-                  >
-                    Agregar curso requerido
-                  </Button>
-                )}
-              </View>
-            )}
+                  {isEditing && (
+                    <Button
+                      onPress={() => router.push("/courses/searchRequired")}
+                      mode="outlined"
+                      icon="plus"
+                    >
+                      Agregar curso requerido
+                    </Button>
+                  )}
+                </View>
+              )}
 
             {isEditing && isOwner && (
               <Button

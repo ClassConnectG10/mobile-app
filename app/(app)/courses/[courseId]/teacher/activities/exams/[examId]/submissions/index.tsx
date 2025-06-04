@@ -4,7 +4,7 @@ import {
   getExamSubmissions,
   getTeacherExam,
 } from "@/services/activityManagement";
-import { getUser } from "@/services/userManagement";
+import { getBulkUsers } from "@/services/userManagement";
 import {
   ActivityStatusOption,
   ExamDetails,
@@ -84,14 +84,13 @@ export default function ExamSubmissionsPage() {
     if (!examSubmissions) return;
     setIsLoading(students === null);
     try {
-      const studentsDict = await Promise.all(
-        examSubmissions.map(async (submission) => {
-          const student = await getUser(submission.studentId);
-          return { [submission.studentId]: student };
-        })
-      ).then((studentsArray) =>
-        studentsArray.reduce((acc, curr) => ({ ...acc, ...curr }), {})
-      );
+      const studentIds = examSubmissions.map(submission => submission.studentId);
+      const studentsArray = await getBulkUsers(studentIds);
+
+      const studentsDict = studentsArray.reduce((acc, student) => {
+        acc[student.id] = student;
+        return acc;
+      }, {} as Record<number, User>);
 
       setStudents(studentsDict);
     } catch (error) {
@@ -111,8 +110,8 @@ export default function ExamSubmissionsPage() {
       currentActivityStatusOption === ActivityStatusOption.SUBMITTED
         ? examSubmissions.filter((submission) => submission.submited)
         : currentActivityStatusOption === ActivityStatusOption.PENDING
-        ? examSubmissions.filter((submission) => !submission.submited)
-        : examSubmissions;
+          ? examSubmissions.filter((submission) => !submission.submited)
+          : examSubmissions;
 
     setFilteredSubmissions(filteredSubmissions);
   };

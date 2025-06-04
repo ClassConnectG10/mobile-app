@@ -1,5 +1,5 @@
 import { userDetailsSchema, userSchema } from "@/validations/users";
-import { User, UserInformation, UserPreferences } from "@/types/user";
+import { NotificationEventPreferences, User, UserInformation, UserPreferences } from "@/types/user";
 import { handleError } from "./common";
 import {
   createRegisterUserRequest,
@@ -12,6 +12,7 @@ import {
 } from "@/api/user";
 import { getToken } from "@/services/notifications";
 import { deleteToken, getMessaging } from "@react-native-firebase/messaging";
+import { NotificationConfig, notificationEventMeta } from "@/types/notification";
 
 /**
  * Registers a new user in the system by sending their information to the server.
@@ -37,15 +38,28 @@ export async function registerUser(
       email: userInformation.email,
       country: userInformation.country,
     });
-    const user = new User(
-      response.data.data.id,
-      new UserInformation(
-        response.data.data.name,
-        response.data.data.surname,
-        response.data.data.email,
-        response.data.data.country
+
+    const responseData = response.data.data;
+
+    const userInfo = new UserInformation(
+      responseData.name,
+      responseData.surname,
+      responseData.email,
+      responseData.country
+    );
+
+    const userPreferences = new UserPreferences(
+      notificationEventMeta.map(
+        (eventMeta) =>
+          new NotificationEventPreferences(
+            eventMeta.event,
+            responseData.push_scopes.includes(eventMeta.event),
+            responseData.email_scopes.includes(eventMeta.event)
+          )
       )
     );
+
+    const user = new User(responseData.id, userInfo, userPreferences);
     return user;
   } catch (error) {
     throw handleError(error, "registrar el usuario");
@@ -75,8 +89,18 @@ export async function loginUser(uid: string): Promise<User | null> {
       responseData.country
     );
 
-    // TODO: Fetch the user preferences
-    const user = new User(responseData.id, userInfo);
+    const userPreferences = new UserPreferences(
+      notificationEventMeta.map(
+        (eventMeta) =>
+          new NotificationEventPreferences(
+            eventMeta.event,
+            responseData.push_scopes.includes(eventMeta.event),
+            responseData.email_scopes.includes(eventMeta.event)
+          )
+      )
+    );
+
+    const user = new User(responseData.id, userInfo, userPreferences);
 
     return user;
   } catch (error) {
@@ -117,23 +141,16 @@ export async function logoutUser(uid: number): Promise<void> {
  * @returns A `UserInformation` object containing the updated user's details.
  * @throws An error if the edit process fails.
  */
-export async function editUserProfile(user: User) {
+export async function editUserProfile(user: User): Promise<void> {
   try {
     userSchema.parse(user);
     const request = await createEditUserProfileRequest(user.id);
-    const response = await request.patch("", {
+    await request.patch("", {
       name: user.userInformation.firstName,
       surname: user.userInformation.lastName,
       email: user.userInformation.email,
       country: user.userInformation.country,
     });
-    const updatedUserInfo = new UserInformation(
-      response.data.data.name,
-      response.data.data.surname,
-      response.data.data.email,
-      response.data.data.country
-    );
-    return updatedUserInfo;
   } catch (error) {
     throw handleError(error, "editar el perfil del usuario");
   }
@@ -200,24 +217,49 @@ export async function getUsers(): Promise<User[]> {
   }
 }
 
-export async function getUserPreferences(
-  userId: number
-): Promise<UserPreferences> {
-  // TODO: Implement the actual API call to fetch user preferences
-  return {
-    notification_events_configuration: {
-      WELCOME: { mail: true, push: true },
-      USER_BLOCKED: { mail: true, push: true },
-      USER_UNBLOCKED: { mail: true, push: true },
-      STUDENT_ENROLLED: { mail: false, push: true },
-      ACTIVITY_DELIVERY: { mail: false, push: true },
-      AUXILIAR_ADDED: { mail: true, push: true },
-      AUXILIAR_REMOVED: { mail: true, push: true },
-      ACTIVITY_PUBLISHED: { mail: false, push: true },
-      ACTIVITY_GRADED: { mail: true, push: true },
-      COURSE_GRADE: { mail: true, push: true },
-      RESOURCE_PUBLISHED: { mail: false, push: true },
-      STUDENT_KICKED: { mail: true, push: true },
-    },
-  };
+export async function updatePreferences(
+  userId: number,
+  preferences: UserPreferences
+): Promise<void> {
+  try {
+    const request = await createUserRequest(userId);
+
+    const configurableEvents = notificationEventMeta.filter(
+      (meta) => meta.configurable === NotificationConfig.CONFIGURABLE
+    ).map((meta) => meta.event);
+
+    const pushScopes = preferences.notification_events_configuration
+      .filter(
+        (event) =>
+          event.push &&
+          configurableEvents.includes(event.event)
+      ).map(
+        (event) => event.event
+      );
+
+    const emailScopes = preferences.notification_events_configuration
+      .filter(
+        (event) =>
+          event.mail &&
+          configurableEvents.includes(event.event)
+      ).map(
+        (event) => event.event
+      );
+
+    const body = {
+      push_scopes: pushScopes,
+      email_scopes: emailScopes,
+    };
+
+    console.log("Updating user preferences:", body);
+
+    await request.patch("", body);
+
+    const userRequest = await createUserRequest(userId);
+    const response = await userRequest.get("");
+
+    console.log("User preferences updated successfully:", response.data.data);
+  } catch (error) {
+    throw handleError(error, "actualizar las preferencias del usuario");
+  }
 }
