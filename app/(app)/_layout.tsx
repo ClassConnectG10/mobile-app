@@ -4,7 +4,6 @@ import { getMessaging } from "@react-native-firebase/messaging";
 import axios from "axios";
 import { Stack, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import { View } from "react-native";
 import { Notification } from "@/types/notification";
 import NotificationBanner from "@/components/banners/NotificationBanner";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -14,7 +13,9 @@ export default function CoursesLayout() {
   const userContextHook = useUserContext();
   const userContextId = userContextHook.user.id;
 
-  const [notification, setNotification] = useState<Notification | null>(null);
+  // Simple notification state management
+  const [currentNotification, setCurrentNotification] =
+    useState<Notification | null>(null);
 
   useEffect(() => {
     const messaging = getMessaging();
@@ -27,7 +28,7 @@ export default function CoursesLayout() {
         remoteMessage.notification?.body || "You have a new notification",
         new Date(remoteMessage.sentTime || Date.now())
       );
-      setNotification(receivedNotification);
+      setCurrentNotification(receivedNotification);
     });
 
     return unsubscribe;
@@ -39,11 +40,11 @@ export default function CoursesLayout() {
 
   const handleNavigateToNotifications = () => {
     router.push("/notifications");
-    setNotification(null);
+    setCurrentNotification(null);
   };
 
   const handleDismissNotification = () => {
-    setNotification(null);
+    setCurrentNotification(null);
   };
 
   return (
@@ -58,9 +59,9 @@ export default function CoursesLayout() {
           zIndex: 1000,
         }}
       >
-        {notification && (
+        {currentNotification && (
           <NotificationBanner
-            notification={notification}
+            notification={currentNotification}
             onPress={handleNavigateToNotifications}
             onDismiss={handleDismissNotification}
           />

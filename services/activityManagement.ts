@@ -13,7 +13,6 @@ import {
   TaskGrade,
   ExamGrade,
   ActivitySubmission,
-  ActivityGrade,
 } from "@/types/activity";
 import {
   examItemToJSON,

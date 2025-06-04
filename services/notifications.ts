@@ -5,7 +5,6 @@ import {
   Notification,
   NotificationEvent,
   notificationEventBiMap,
-  notificationEventIconBiMap,
 } from "@/types/notification";
 
 const requestUserPermission = async () => {

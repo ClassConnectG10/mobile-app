@@ -1,7 +1,9 @@
-import { Card, Icon, Text, useTheme, IconButton } from "react-native-paper";
-import { StyleSheet, View, Animated } from "react-native";
+import { Card, Text, useTheme, IconButton } from "react-native-paper";
+import { View, StyleSheet, Animated } from "react-native";
 import { Notification } from "@/types/notification";
 import { useEffect, useRef } from "react";
+
+const AUTO_DISMISS_TIMEOUT = 5000; // 5 seconds
 
 interface NotificationBannerProps {
   notification: Notification;
@@ -49,7 +51,7 @@ const NotificationBanner: React.FC<NotificationBannerProps> = ({
     // Auto dismiss después de 5 segundos
     timerRef.current = setTimeout(() => {
       handleDismiss();
-    }, 5000);
+    }, AUTO_DISMISS_TIMEOUT);
 
     return () => {
       if (timerRef.current) {

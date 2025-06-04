@@ -1,7 +1,7 @@
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import { ExamDetails, ExamGrade, ExamItemAnswer } from "@/types/activity";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useCallback, useState, useEffect, useRef } from "react";
+import { useCallback, useState, useEffect } from "react";
 import { View, FlatList } from "react-native";
 import {
   Appbar,

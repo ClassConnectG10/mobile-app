@@ -2,8 +2,6 @@ import { Stack } from "expo-router";
 import { StatusBar } from "react-native";
 import { MD3LightTheme, PaperProvider } from "react-native-paper";
 import { UserProvider } from "@/utils/storage/userContext";
-import { getMessaging } from "@react-native-firebase/messaging";
-import { useNotification } from "@/services/notifications";
 
 const DefaultTheme = {
   ...MD3LightTheme,

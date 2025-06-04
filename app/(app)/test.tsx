@@ -14,17 +14,6 @@ import { File } from "@/types/file";
 export default function TestPage() {
   const router = useRouter();
   const theme = useTheme();
-  // const [files, setFiles] = useState([
-  //   new File(
-  //     "1.pdf",
-  //     "application/pdf",
-  //     null,
-  //     "/course/16b8c2e6-3239-4f18-9165-364d713fadbe/1",
-  //   ),
-  // ]);
-  // const [links, setLinks] = useState([
-  //   new Link("Google", "https://www.google.com"),
-  // ]);
 
   const [exportedFile, setExportedFile] = React.useState<File | null>(null);
 
@@ -146,31 +135,7 @@ export default function TestPage() {
       </Appbar.Header>
 
       <ScrollView contentContainerStyle={{ padding: 16, gap: 16 }}>
-        {/* <ToggleableFileInput
-          files={files}
-          editable={true}
-          onChange={setFiles}
-          maxFiles={5}
-        />
-        <ToggleableFileInput
-          files={files}
-          editable={false}
-          onChange={setFiles}
-          maxFiles={5}
-        />
-        <Divider />
-        <ToggleableLinkInput
-          links={links}
-          editable={true}
-          onChange={setLinks}
-          maxLinks={5}
-        />
-        <ToggleableLinkInput
-          links={links}
-          editable={false}
-          onChange={setLinks}
-          maxLinks={5}
-        /> */}
+        {/* Excel Export Testing */}
         <Button icon="file-excel" mode="contained" onPress={handleExport}>
           Exportar
         </Button>
