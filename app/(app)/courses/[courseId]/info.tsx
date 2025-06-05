@@ -35,12 +35,12 @@ import { useUserContext } from "@/utils/storage/userContext";
 import UserCard from "@/components/cards/UserCard";
 import { SeatsField } from "@/components/courses/SeatsField";
 import { Course, CourseStatus, UserRole } from "@/types/course";
-import { CommonActions, useNavigation } from "@react-navigation/native";
+// import { CommonActions, useNavigation } from "@react-navigation/native";
 
 export default function CreateCoursePage() {
   const theme = useTheme();
   const router = useRouter();
-  const navigation = useNavigation();
+  // const navigation = useNavigation();
 
   const { courseId: courseIdParam } = useLocalSearchParams();
   const courseId = courseIdParam as string;
@@ -113,12 +113,13 @@ export default function CreateCoursePage() {
       await deleteCourse(courseContext.course.courseId);
       courseContext.setCourse(null);
       requiredCoursesContext.setRequiredCourses([]);
-      navigation.dispatch(
-        CommonActions.reset({
-          index: 0,
-          routes: [{ name: "(app)/home" }],
-        })
-      );
+      // navigation.dispatch(
+      //   CommonActions.reset({
+      //     index: 0,
+      //     routes: [{ name: "(app)/home" }],
+      //   })
+      // );
+      router.replace("/home");
     } catch (error) {
       setErrorMessage((error as Error).message);
     } finally {
