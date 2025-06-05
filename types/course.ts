@@ -28,19 +28,19 @@ export class SearchFilters {
     public modality: string,
     public category: string,
     public favorites: boolean = false,
-  ) {}
+  ) { }
 }
 
 export class Course {
   constructor(
     public courseId: string,
-    public ownerId: number,
     public courseDetails: CourseDetails,
     public currentUserRole: UserRole,
-    public courseStatus: CourseStatus,
+    public courseStatus?: CourseStatus,
+    public ownerId?: number,
     public numberOfStudens?: number,
     public isFavorite?: boolean,
-  ) {}
+  ) { }
 }
 
 export class CourseDetails {
@@ -54,5 +54,5 @@ export class CourseDetails {
     public modality: string,
     public category: string,
     public dependencies: string[] = [],
-  ) {}
+  ) { }
 }

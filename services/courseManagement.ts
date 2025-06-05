@@ -35,8 +35,8 @@ function formatDate(date: Date): string {
 }
 
 export async function createCourse(
-  courseDetails: CourseDetails
-): Promise<Course> {
+  courseDetails: CourseDetails,
+): Promise<string> {
   try {
     courseDetailsSchema.parse(courseDetails);
 
@@ -56,27 +56,9 @@ export async function createCourse(
     const response = await request.post("", body);
 
     const courseData = response.data.data;
-    const course = new Course(
-      courseData.id,
-      courseData.owner,
-      new CourseDetails(
-        courseData.title,
-        courseData.description,
-        courseData.capacity,
-        new Date(courseData.start_date),
-        new Date(courseData.end_date),
-        courseData.level,
-        courseData.modality,
-        courseData.category,
-        courseDetails.dependencies
-      ),
-      courseData.user_role,
-      courseData.status,
-      0,
-      false
-    );
+    const courseId = courseData.id;
 
-    return course;
+    return courseId;
   } catch (error) {
     console.error("Error al crear el curso:", error);
     throw handleError(error, "crear el curso");
@@ -91,7 +73,6 @@ export async function getCourse(courseId: string): Promise<Course> {
 
     const course = new Course(
       courseData.id,
-      courseData.owner,
       new CourseDetails(
         courseData.title,
         courseData.description,
@@ -101,12 +82,13 @@ export async function getCourse(courseId: string): Promise<Course> {
         courseData.level,
         courseData.modality,
         courseData.category,
-        courseData.dependencies.map((dep: any) => dep.course_id)
+        courseData.dependencies.map((dep: any) => dep.course_id),
       ),
       courseData.user_role,
       courseData.status,
+      courseData.owner ? courseData.owner : null,
       courseData.students ? courseData.students : 0,
-      courseData.is_favorite
+      courseData.is_favorite,
     );
     return course;
   } catch (error) {
@@ -116,12 +98,12 @@ export async function getCourse(courseId: string): Promise<Course> {
 
 export async function searchCourses(
   searchFilters: SearchFilters,
-  searchOption: SearchOption
+  searchOption: SearchOption,
 ): Promise<Course[]> {
   try {
     const request = await createSearchCoursesRequest(
       searchFilters,
-      searchOption
+      searchOption,
     );
     const response = await request.get("");
     const coursesData = response.data.data;
@@ -130,10 +112,11 @@ export async function searchCourses(
       coursesData.map((courseData: any) => getCourse(courseData.id))
     ); // TODO: Cambiar esto cuando tengamos el endpoint de cursos bien hecho
 
+    // console.log("Datos de cursos obtenidos:", coursesData);
+
     // const courses: Course[] = coursesData.map((courseData: any) => {
     //   return new Course(
     //     courseData.id,
-    //     null,
     //     new CourseDetails(
     //       courseData.title,
     //       courseData.description,
@@ -144,12 +127,11 @@ export async function searchCourses(
     //       courseData.modality,
     //       courseData.category
     //     ),
-    //     null,
-    //     null,
-    //     courseData.students ? courseData.students : 0,
-    //     courseData.is_favorite
+    //     courseData.user_role,
     //   );
     // });
+
+    // console.log("Cursos encontrados:", courses);
 
     return courses;
   } catch (error) {
@@ -168,14 +150,14 @@ export async function enrollCourse(courseId: string) {
 
 export async function editCourse(
   course: Course,
-  newCourseDetails: CourseDetails
-): Promise<Course> {
+  newCourseDetails: CourseDetails,
+): Promise<CourseDetails> {
   try {
     courseDetailsUpdateSchema.parse(newCourseDetails);
 
     if (course.numberOfStudens > newCourseDetails.maxNumberOfStudents) {
       throw new Error(
-        "El nuevo número máximo de estudiantes no puede ser menor que el número actual de estudiantes"
+        "El nuevo número máximo de estudiantes no puede ser menor que el número actual de estudiantes",
       );
     }
 
@@ -195,26 +177,19 @@ export async function editCourse(
     const response = await request.patch("", body);
 
     const courseData = response.data.data;
-    const updatedCourse = new Course(
-      course.courseId,
-      course.ownerId,
-      new CourseDetails(
-        courseData.title,
-        courseData.description,
-        courseData.capacity,
-        new Date(courseData.start_date),
-        new Date(courseData.end_date),
-        courseData.level,
-        courseData.modality,
-        courseData.category,
-        newCourseDetails.dependencies
-      ),
-      course.currentUserRole,
-      course.courseStatus,
-      course.numberOfStudens,
-      course.isFavorite
+    const updatedCourseDetails = new CourseDetails(
+      courseData.title,
+      courseData.description,
+      courseData.capacity,
+      new Date(courseData.start_date),
+      new Date(courseData.end_date),
+      courseData.level,
+      courseData.modality,
+      courseData.category,
+      newCourseDetails.dependencies,
     );
-    return updatedCourse;
+
+    return updatedCourseDetails;
   } catch (error) {
     throw handleError(error, "editar el curso");
   }
@@ -239,7 +214,7 @@ export async function addCourseToFavorites(courseId: string): Promise<void> {
 }
 
 export async function removeCourseFromFavorites(
-  courseId: string
+  courseId: string,
 ): Promise<void> {
   try {
     const request = await createFavoriteCourseRequest(courseId);
@@ -265,7 +240,7 @@ export async function getCourseAssistants(courseId: string): Promise<User[]> {
     const assistantsData = response.data.data;
 
     const assistants: User[] = await getBulkUsers(
-      assistantsData.map((assistant) => assistant.user_id)
+      assistantsData.map((assistant: any) => assistant.user_id),
     );
 
     return assistants;
@@ -276,7 +251,7 @@ export async function getCourseAssistants(courseId: string): Promise<User[]> {
 
 export async function addAssistantToCourse(
   courseId: string,
-  assistantId: number
+  assistantId: number,
 ): Promise<void> {
   try {
     const request = await createAddAssistantRequest(courseId, assistantId);
@@ -288,7 +263,7 @@ export async function addAssistantToCourse(
 
 export async function removeAssistantFromCourse(
   courseId: string,
-  assistantId: number
+  assistantId: number,
 ): Promise<void> {
   try {
     const request = await createAssistantRequest(courseId, assistantId);
@@ -305,7 +280,7 @@ export async function getCourseStudents(courseId: string): Promise<User[]> {
     const studentsData = response.data.data;
 
     const students: User[] = await getBulkUsers(
-      studentsData.map((student: any) => student.user_id)
+      studentsData.map((student: any) => student.user_id),
     );
 
     return students;
@@ -316,7 +291,7 @@ export async function getCourseStudents(courseId: string): Promise<User[]> {
 
 export async function removeStudentFromCourse(
   courseId: string,
-  studentId: number
+  studentId: number,
 ): Promise<void> {
   try {
     const request = await createStudentRequest(courseId, studentId);
@@ -328,7 +303,7 @@ export async function removeStudentFromCourse(
 
 export async function getStudentMark(
   courseId: string,
-  studentId: number
+  studentId: number,
 ): Promise<number | null> {
   try {
     const request = await createStudentMarkRequest(courseId, studentId);
@@ -345,7 +320,7 @@ export async function getStudentMark(
 export async function setStudentMark(
   courseId: string,
   studentId: number,
-  mark: number
+  mark: number,
 ): Promise<void> {
   try {
     const request = await createMarksRequest(courseId);
@@ -360,7 +335,7 @@ export async function setStudentMark(
 
 export async function getAssistantLogs(
   courseId: string,
-  assistantId: number
+  assistantId: number,
 ): Promise<AssistantLog[]> {
   try {
     const request = await createAssistantLogsRequest(courseId, assistantId);
@@ -373,8 +348,8 @@ export async function getAssistantLogs(
           log.log_id,
           log.user_id,
           getDateFromBackend(log.timestamp),
-          log.log
-        )
+          log.log,
+        ),
     );
 
     return logs;

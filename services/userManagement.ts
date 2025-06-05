@@ -12,6 +12,7 @@ import {
   createUserRequest,
   createBulkUserRequest,
   createUsersRequest,
+  createLogoutUserRequest,
 } from "@/api/user";
 import { getToken } from "@/services/notifications";
 import { deleteToken, getMessaging } from "@react-native-firebase/messaging";
@@ -35,16 +36,19 @@ export async function registerUser(
 ) {
   try {
     userDetailsSchema.parse(userInformation);
+    const messagingToken = await getToken();
     const request = await createRegisterUserRequest();
-    const response = await request.post("", {
+    const body = {
       uid: uid,
       role: "user",
       name: userInformation.firstName,
       surname: userInformation.lastName,
       email: userInformation.email,
       country: userInformation.country,
-    });
+      r_token: messagingToken,
+    };
 
+    const response = await request.post("", body);
     const responseData = response.data.data;
 
     const userInfo = new UserInformation(
@@ -82,7 +86,8 @@ export async function registerUser(
  */
 export async function loginUser(uid: string): Promise<User | null> {
   try {
-    const request = await createLoginUserRequest(uid);
+    const messagingToken = await getToken();
+    const request = await createLoginUserRequest(uid, messagingToken);
     const response = await request.get("");
 
     const responseData = response.data.data;
@@ -107,18 +112,11 @@ export async function loginUser(uid: string): Promise<User | null> {
 
     const user = new User(responseData.id, userInfo, userPreferences);
 
-    const messagingToken = await getToken();
-    const requestToken = await createUserRequest(user.id);
-    const data = {
-      r_token: messagingToken,
-    };
-    await requestToken.patch("", data);
-
     return user;
   } catch (error) {
     if (
-      error.response?.status === 500 &&
-      error.response?.data?.detail === "Error logging in user: user not found"
+      error.response?.status === 404 &&
+      error.response?.data?.detail === `User with UID ${uid} not found.`
     ) {
       return null; //TODO: should be another error
     }
@@ -138,11 +136,8 @@ export async function logoutUser(uid: number): Promise<void> {
       deleteToken(messaging);
     }
 
-    const request = await createUserRequest(uid);
-    const data = {
-      r_token: "",
-    };
-    await request.patch("", data);
+    const request = await createLogoutUserRequest();
+    await request.get("")
   } catch (error) {
     throw handleError(error, "cerrar sesión");
   }
@@ -256,6 +251,9 @@ export async function updatePreferences(
       push_scopes: pushScopes,
       email_scopes: emailScopes,
     };
+
+    console.log("Updating user preferences...");
+    console.log(body);
 
     await request.patch("", body);
   } catch (error) {

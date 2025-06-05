@@ -35,9 +35,6 @@ export const NotificationEventPreference: React.FC<
     const isInteractionDisabled = disabled || alwaysDisabled;
 
     const getIconColor = (value: boolean, some: boolean) => {
-      if (alwaysDisabled) {
-        return customColors.success + "80";
-      }
       if (disabled) {
         return "white";
       }
@@ -49,9 +46,6 @@ export const NotificationEventPreference: React.FC<
     };
 
     const getBackgroundColor = (value: boolean, some: boolean) => {
-      if (alwaysDisabled) {
-        return customColors.success + "40";
-      }
       if (disabled) {
         return value
           ? customColors.success
@@ -86,7 +80,7 @@ export const NotificationEventPreference: React.FC<
               if (isInteractionDisabled) return;
               onValuePushChange(!valuePush);
             }}
-            disabled={alwaysDisabled && !disabled}
+            disabled={alwaysDisabled}
           />
           <IconButton
             mode="contained"
@@ -98,7 +92,7 @@ export const NotificationEventPreference: React.FC<
               if (isInteractionDisabled) return;
               onValueMailChange(!valueMail);
             }}
-            disabled={alwaysDisabled && !disabled}
+            disabled={alwaysDisabled}
           />
         </View>
       </View>

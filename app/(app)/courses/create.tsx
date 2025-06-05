@@ -21,7 +21,6 @@ import { createCourse } from "@/services/courseManagement";
 import { useRequiredCoursesContext } from "@/utils/storage/requiredCoursesContext";
 import CourseCard from "@/components/cards/CourseCard";
 import { ToggleableNumberInput } from "@/components/forms/ToggleableNumberInput";
-import { useCourseContext } from "@/utils/storage/courseContext";
 import { Course, UserRole } from "@/types/course";
 
 export default function CreateCoursePage() {
@@ -29,8 +28,6 @@ export default function CreateCoursePage() {
   const router = useRouter();
   const courseDetailsHook = useCourseDetails();
   const courseDetails = courseDetailsHook.courseDetails;
-
-  const courseContext = useCourseContext();
 
   const requiredCoursesContext = useRequiredCoursesContext();
   const { requiredCourses } = requiredCoursesContext;
@@ -40,11 +37,10 @@ export default function CreateCoursePage() {
       courseDetails.dependencies = requiredCourses.map(
         (course) => course.courseId,
       );
-      const createdCourse = await createCourse(courseDetails);
-      courseContext.setCourse(createdCourse);
+      const createdCourseId = await createCourse(courseDetails);
       router.replace({
         pathname: "/courses/[courseId]",
-        params: { courseId: createdCourse.courseId, role: UserRole.OWNER },
+        params: { courseId: createdCourseId, role: UserRole.OWNER },
       });
     } catch (error) {
       console.error("Error al crear el curso:", error);

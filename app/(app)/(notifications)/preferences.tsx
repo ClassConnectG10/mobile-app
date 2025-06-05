@@ -77,18 +77,10 @@ export default function NotificationsPreferencesPage() {
   };
 
   const sections: { title: string; data: NotificationEventMeta[] }[] =
-    notificationEventMeta.reduce((acc, meta) => {
-      const audience = notificationAudienceBiMap.getFrontValue(meta.audience);
-      if (!audience) return acc;
-
-      const section = acc.find((s) => s.title === audience);
-      if (section) {
-        section.data.push(meta);
-      } else {
-        acc.push({ title: audience, data: [meta] });
-      }
-      return acc;
-    }, [] as { title: string; data: NotificationEventMeta[] }[]);
+    notificationAudienceBiMap.values().map(({ front: audienceLabel, back: audienceKey }) => ({
+      title: audienceLabel,
+      data: notificationEventMeta.filter((meta) => meta.audience === audienceKey),
+    })).filter((section) => section.data.length > 0);
 
   return (
     <>
@@ -154,7 +146,7 @@ export default function NotificationsPreferencesPage() {
               keyExtractor={(item) => item.event}
               renderSectionHeader={({ section: { title } }) => (
                 <Text style={styles.sectionHeader}>
-                  {notificationAudienceBiMap.getFrontValue(title) ?? title}
+                  {title}
                 </Text>
               )}
               renderItem={({ item }) => (

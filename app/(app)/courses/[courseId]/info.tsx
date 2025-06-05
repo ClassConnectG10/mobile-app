@@ -35,10 +35,12 @@ import { useUserContext } from "@/utils/storage/userContext";
 import UserCard from "@/components/cards/UserCard";
 import { SeatsField } from "@/components/courses/SeatsField";
 import { Course, CourseStatus, UserRole } from "@/types/course";
+import { CommonActions, useNavigation } from "@react-navigation/native";
 
 export default function CreateCoursePage() {
   const theme = useTheme();
   const router = useRouter();
+  const navigation = useNavigation();
 
   const { courseId: courseIdParam } = useLocalSearchParams();
   const courseId = courseIdParam as string;
@@ -85,12 +87,15 @@ export default function CreateCoursePage() {
       newCourseDetails.dependencies =
         requiredCoursesContext.requiredCourses.map((course) => course.courseId);
 
-      const updatedCourse = await editCourse(
+      const updatedCourseDetails = await editCourse(
         courseContext.course,
         newCourseDetails,
       );
 
-      courseContext.setCourse(updatedCourse);
+      courseContext.setCourse({
+        ...courseContext.course,
+        courseDetails: updatedCourseDetails,
+      });
       setIsEditing(false);
     } catch (error) {
       setErrorMessage((error as Error).message);
@@ -108,7 +113,12 @@ export default function CreateCoursePage() {
       await deleteCourse(courseContext.course.courseId);
       courseContext.setCourse(null);
       requiredCoursesContext.setRequiredCourses([]);
-      router.push("/home");
+      navigation.dispatch(
+        CommonActions.reset({
+          index: 0,
+          routes: [{ name: "(app)/home" }],
+        })
+      );
     } catch (error) {
       setErrorMessage((error as Error).message);
     } finally {

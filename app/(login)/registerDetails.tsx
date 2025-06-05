@@ -6,14 +6,13 @@ import { registerUser } from "@/services/userManagement";
 import { globalStyles } from "@/styles/globalStyles";
 import { useUserContext } from "@/utils/storage/userContext";
 import { getAuth } from "@react-native-firebase/auth";
-import { useNavigation, CommonActions } from "@react-navigation/native";
 import { COUNTRIES, defaultCountry } from "@/utils/constants/countries";
 import OptionPicker from "@/components/forms/OptionPicker";
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 
 export default function RegisterDetailsPage() {
   const theme = useTheme();
-  const navigation = useNavigation();
+  const router = useRouter();
   const { firstName: initialFirstName, lastName: initialLastName } =
     useLocalSearchParams();
   const [firstName, setFirstName] = useState(initialFirstName as string);
@@ -46,12 +45,7 @@ export default function RegisterDetailsPage() {
       };
       const newUserInfo = await registerUser(uid, userInfo);
       setUser(newUserInfo);
-      navigation.dispatch(
-        CommonActions.reset({
-          index: 0,
-          routes: [{ name: "(app)/home" }],
-        }),
-      );
+      router.replace("/home");
     } catch (error) {
       setErrorMessage((error as Error).message);
     } finally {

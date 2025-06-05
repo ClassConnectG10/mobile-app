@@ -73,6 +73,7 @@ export default function HomePage() {
   };
 
   const handleSearch = (searchTerm: string) => {
+    if (searchFilters.searchQuery === searchTerm) return;
     setSearchFilters((prev) => ({
       ...prev,
       searchQuery: searchTerm,
