@@ -51,25 +51,24 @@ export default function CoursesLayout() {
 
   return (
     <>
-      <SafeAreaView
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          right: 0,
-          padding: 16,
-          zIndex: 1000,
-        }}
-      >
-        {currentNotification && (
+      {currentNotification && (
+        <SafeAreaView
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            padding: 16,
+            zIndex: 1000,
+          }}
+        >
           <NotificationBanner
             notification={currentNotification}
             onPress={handleNavigateToNotifications}
             onDismiss={handleDismissNotification}
           />
-        )}
-      </SafeAreaView>
-
+        </SafeAreaView>
+      )}
       <Stack screenOptions={{ headerShown: false }} />
     </>
   );
