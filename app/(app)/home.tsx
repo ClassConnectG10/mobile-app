@@ -20,7 +20,6 @@ import { CourseFilterModal } from "@/components/courses/CourseFilterModal";
 import { SearchBar } from "@/components/forms/SearchBar";
 import { FullScreenModal } from "@/components/FullScreenModal";
 import { FloatingActionButton } from "@/components/FloatingActionButton";
-import { IconBadge } from "@/components/IconBadge";
 
 export default function HomePage() {
   const theme = useTheme();
@@ -101,13 +100,19 @@ export default function HomePage() {
       <Appbar.Header>
         {/* <Appbar.Action icon="menu" /> */}
         <Appbar.Content title="Class Connect" />
-        <IconBadge
+        {/* <IconBadge
           icon="bell"
           count={1}
           showBadge={true}
           onPress={() => {
             router.push("/notifications");
           }}
+        /> */}
+        <Appbar.Action
+          icon="bell-badge"
+          onPress={() =>
+            router.push("/notifications")
+          }
         />
         <Appbar.Action
           icon="account"
@@ -123,7 +128,6 @@ export default function HomePage() {
       </Appbar.Header>
 
       {/* Segmented control */}
-
       <View style={{ padding: 16, gap: 16, flex: 1 }}>
         <View
           style={{

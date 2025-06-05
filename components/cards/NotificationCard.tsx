@@ -57,7 +57,15 @@ const NotificationCard: React.FC<NotificationCardProps> = ({
           </View>
 
           <Text style={[styles.date, { color: theme.colors.onSurfaceVariant }]}>
-            {notification.date.toLocaleString()}
+            {new Date(notification.date).toLocaleDateString("es-ES", {
+              year: "numeric",
+              month: "2-digit",
+              day: "2-digit",
+              hour: "2-digit",
+              minute: "2-digit",
+              hour12: false,
+            }
+            )}
           </Text>
         </View>
 

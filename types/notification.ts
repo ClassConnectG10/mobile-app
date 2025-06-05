@@ -25,13 +25,13 @@ export enum NotificationEvent {
 }
 
 export const notificationEventBiMap = new BiMap([
-  ["Bienvenida", NotificationEvent.WELCOME],
   ["Usuario Bloqueado", NotificationEvent.USER_BLOCKED],
   ["Usuario Desbloqueado", NotificationEvent.USER_UNBLOCKED],
   ["Estudiante Inscrito", NotificationEvent.STUDENT_ENROLLED],
   ["Entrega de Actividad", NotificationEvent.ACTIVITY_DELIVERY],
   ["Auxiliar Agregado", NotificationEvent.AUXILIAR_ADDED],
   ["Auxiliar Removido", NotificationEvent.AUXILIAR_REMOVED],
+  ["Inscripción a curso", NotificationEvent.WELCOME],
   ["Actividad Publicada", NotificationEvent.ACTIVITY_PUBLISHED],
   ["Actividad Calificada", NotificationEvent.ACTIVITY_GRADED],
   ["Calificación del Curso", NotificationEvent.COURSE_GRADE],
@@ -81,11 +81,6 @@ export interface NotificationEventMeta {
 
 export const notificationEventMeta: NotificationEventMeta[] = [
   {
-    event: NotificationEvent.WELCOME,
-    audience: NotificationAudience.STUDENT,
-    configurable: NotificationConfig.NO_CONFIGURABLE,
-  },
-  {
     event: NotificationEvent.USER_BLOCKED,
     audience: NotificationAudience.GENERAL,
     configurable: NotificationConfig.NO_CONFIGURABLE,
@@ -113,6 +108,11 @@ export const notificationEventMeta: NotificationEventMeta[] = [
   {
     event: NotificationEvent.AUXILIAR_REMOVED,
     audience: NotificationAudience.ASSISTANT,
+    configurable: NotificationConfig.NO_CONFIGURABLE,
+  },
+  {
+    event: NotificationEvent.WELCOME,
+    audience: NotificationAudience.STUDENT,
     configurable: NotificationConfig.NO_CONFIGURABLE,
   },
   {

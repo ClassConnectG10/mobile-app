@@ -74,8 +74,7 @@ export async function registerUser(
  */
 export async function loginUser(uid: string): Promise<User | null> {
   try {
-    const messagingToken = await getToken();
-    const request = await createLoginUserRequest(uid, messagingToken);
+    const request = await createLoginUserRequest(uid);
     const response = await request.get("");
 
     const responseData = response.data.data;
@@ -100,6 +99,7 @@ export async function loginUser(uid: string): Promise<User | null> {
 
     const user = new User(responseData.id, userInfo, userPreferences);
 
+    const messagingToken = await getToken();
     const requestToken = await createUserRequest(user.id);
     const data = {
       r_token: messagingToken,
@@ -255,14 +255,7 @@ export async function updatePreferences(
       email_scopes: emailScopes,
     };
 
-    console.log("Updating user preferences:", body);
-
     await request.patch("", body);
-
-    const userRequest = await createUserRequest(userId);
-    const response = await userRequest.get("");
-
-    console.log("User preferences updated successfully:", response.data.data);
   } catch (error) {
     throw handleError(error, "actualizar las preferencias del usuario");
   }

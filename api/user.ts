@@ -6,13 +6,13 @@ export const createRegisterUserRequest = () => {
 
 export const createLoginUserRequest = (
   uid: string,
-  notification_token: string
+  // notification_token: string
 ) => {
   return createRequest({
     uri: `users/login/${uid}`,
-    headers: {
-      r_token: notification_token,
-    },
+    // headers: {
+    //   r_token: notification_token,
+    // },
     params: {
       platform: "app",
     },

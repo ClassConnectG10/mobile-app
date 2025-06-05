@@ -92,7 +92,6 @@ export default function StudentFillExam() {
 
     const calculateRemainingTime = () => {
       const currentTime = new Date().getTime();
-      console.log("Current time:", currentTime);
       const examEndTime = examDetails.dueDate;
       const remaining = Math.max(
         0,
@@ -407,8 +406,8 @@ export default function StudentFillExam() {
           examDetails
             ? remainingTime > 0
               ? `El examen debe ser entregado en ${getSimpleRelativeTimeFromNow(
-                  examDetails.dueDate
-                )}`
+                examDetails.dueDate
+              )}`
               : "El examen está vencido"
             : "El examen no tiene tiempo límite."
         }

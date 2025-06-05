@@ -30,80 +30,80 @@ export const NotificationEventPreference: React.FC<
   someMail = false,
   somePush = false,
 }) => {
-  const theme = useTheme();
+    const theme = useTheme();
 
-  const isInteractionDisabled = disabled || alwaysDisabled;
+    const isInteractionDisabled = disabled || alwaysDisabled;
 
-  const getIconColor = (value: boolean, some: boolean) => {
-    if (alwaysDisabled) {
-      return theme.colors.outline;
-    }
-    if (disabled) {
-      return "white";
-    }
-    return value
-      ? customColors.success
-      : some
-      ? customColors.warning
-      : theme.colors.error;
-  };
-
-  const getBackgroundColor = (value: boolean, some: boolean) => {
-    if (alwaysDisabled) {
-      return theme.colors.surfaceVariant;
-    }
-    if (disabled) {
+    const getIconColor = (value: boolean, some: boolean) => {
+      if (alwaysDisabled) {
+        return customColors.success + "80";
+      }
+      if (disabled) {
+        return "white";
+      }
       return value
         ? customColors.success
         : some
-        ? customColors.warning
-        : theme.colors.error;
-    }
-    return value
-      ? customColors.success + "40"
-      : some
-      ? customColors.warning + "40"
-      : theme.colors.errorContainer + "40";
+          ? customColors.warning
+          : theme.colors.error;
+    };
+
+    const getBackgroundColor = (value: boolean, some: boolean) => {
+      if (alwaysDisabled) {
+        return customColors.success + "40";
+      }
+      if (disabled) {
+        return value
+          ? customColors.success
+          : some
+            ? customColors.warning
+            : theme.colors.error;
+      }
+      return value
+        ? customColors.success + "40"
+        : some
+          ? customColors.warning + "40"
+          : theme.colors.errorContainer + "40";
+    };
+
+    return (
+      <View
+        style={[styles.container, { backgroundColor: theme.colors.onPrimary }]}
+      >
+        <View style={styles.labelContainer}>
+          <Icon source={icon} size={24} color={theme.colors.onSurface} />
+          <Text style={styles.label}>{label}</Text>
+        </View>
+
+        <View style={{ flexDirection: "row", gap: 8 }}>
+          <IconButton
+            mode="contained"
+            icon={"cellphone"}
+            iconColor={getIconColor(valuePush, somePush)}
+            containerColor={getBackgroundColor(valuePush, somePush)}
+            size={24}
+            onPress={() => {
+              if (isInteractionDisabled) return;
+              onValuePushChange(!valuePush);
+            }}
+            disabled={alwaysDisabled && !disabled}
+          />
+          <IconButton
+            mode="contained"
+            icon={"email"}
+            iconColor={getIconColor(valueMail, someMail)}
+            containerColor={getBackgroundColor(valueMail, someMail)}
+            size={24}
+            onPress={() => {
+              if (isInteractionDisabled) return;
+              onValueMailChange(!valueMail);
+            }}
+            disabled={alwaysDisabled && !disabled}
+          />
+        </View>
+      </View>
+    );
   };
-
-  return (
-    <View
-      style={[styles.container, { backgroundColor: theme.colors.onPrimary }]}
-    >
-      <View style={styles.labelContainer}>
-        <Icon source={icon} size={24} color={theme.colors.onSurface} />
-        <Text style={styles.label}>{label}</Text>
-      </View>
-
-      <View style={{ flexDirection: "row", gap: 8 }}>
-        <IconButton
-          mode="contained"
-          icon={"cellphone"}
-          iconColor={getIconColor(valuePush, somePush)}
-          containerColor={getBackgroundColor(valuePush, somePush)}
-          size={24}
-          onPress={() => {
-            if (isInteractionDisabled) return;
-            onValuePushChange(!valuePush);
-          }}
-          disabled={alwaysDisabled}
-        />
-        <IconButton
-          mode="contained"
-          icon={"email"}
-          iconColor={getIconColor(valueMail, someMail)}
-          containerColor={getBackgroundColor(valueMail, someMail)}
-          size={24}
-          onPress={() => {
-            if (isInteractionDisabled) return;
-            onValueMailChange(!valueMail);
-          }}
-          disabled={alwaysDisabled}
-        />
-      </View>
-    </View>
-  );
-};
 
 const styles = StyleSheet.create({
   container: {
