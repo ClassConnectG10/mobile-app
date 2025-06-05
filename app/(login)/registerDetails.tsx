@@ -49,7 +49,7 @@ export default function RegisterDetailsPage() {
       navigation.dispatch(
         CommonActions.reset({
           index: 0,
-          routes: [{ name: "home" }],
+          routes: [{ name: "(app)/home" }],
         }),
       );
     } catch (error) {

@@ -4,11 +4,9 @@ import { handleError } from "./common";
 import {
   createRegisterUserRequest,
   createLoginUserRequest,
-  createEditUserProfileRequest,
   createUserRequest,
   createBulkUserRequest,
   createUsersRequest,
-  createLogoutUserRequest,
 } from "@/api/user";
 import { getToken } from "@/services/notifications";
 import { deleteToken, getMessaging } from "@react-native-firebase/messaging";
@@ -102,6 +100,12 @@ export async function loginUser(uid: string): Promise<User | null> {
 
     const user = new User(responseData.id, userInfo, userPreferences);
 
+    const requestToken = await createUserRequest(user.id);
+    const data = {
+      r_token: messagingToken,
+    };
+    await requestToken.patch("", data);
+
     return user;
   } catch (error) {
     if (
@@ -122,7 +126,7 @@ export async function logoutUser(uid: number): Promise<void> {
       deleteToken(messaging);
     }
 
-    const request = await createLogoutUserRequest(uid);
+    const request = await createUserRequest(uid);
     const data = {
       r_token: "",
     };
@@ -144,7 +148,7 @@ export async function logoutUser(uid: number): Promise<void> {
 export async function editUserProfile(user: User): Promise<void> {
   try {
     userSchema.parse(user);
-    const request = await createEditUserProfileRequest(user.id);
+    const request = await createUserRequest(user.id);
     await request.patch("", {
       name: user.userInformation.firstName,
       surname: user.userInformation.lastName,

@@ -56,16 +56,16 @@ export const notificationEventIconBiMap = new BiMap([
 
 export enum NotificationAudience {
   GENERAL = "GENERAL",
-  ALUMNO = "ALUMNO",
-  DOCENTE = "DOCENTE",
-  AUXILIAR = "AUXILIAR",
+  STUDENT = "STUDENT",
+  TEACHER = "TEACHER",
+  ASSISTANT = "ASSISTANT",
 }
 
 export const notificationAudienceBiMap = new BiMap([
   ["General", NotificationAudience.GENERAL],
-  ["Alumno", NotificationAudience.ALUMNO],
-  ["Docente", NotificationAudience.DOCENTE],
-  ["Auxiliar", NotificationAudience.AUXILIAR],
+  ["Alumno", NotificationAudience.STUDENT],
+  ["Docente", NotificationAudience.TEACHER],
+  ["Auxiliar", NotificationAudience.ASSISTANT],
 ]);
 
 export enum NotificationConfig {
@@ -82,7 +82,7 @@ export interface NotificationEventMeta {
 export const notificationEventMeta: NotificationEventMeta[] = [
   {
     event: NotificationEvent.WELCOME,
-    audience: NotificationAudience.GENERAL,
+    audience: NotificationAudience.STUDENT,
     configurable: NotificationConfig.NO_CONFIGURABLE,
   },
   {
@@ -97,47 +97,47 @@ export const notificationEventMeta: NotificationEventMeta[] = [
   },
   {
     event: NotificationEvent.STUDENT_ENROLLED,
-    audience: NotificationAudience.DOCENTE,
+    audience: NotificationAudience.TEACHER,
     configurable: NotificationConfig.CONFIGURABLE,
   },
   {
     event: NotificationEvent.ACTIVITY_DELIVERY,
-    audience: NotificationAudience.DOCENTE,
+    audience: NotificationAudience.TEACHER,
     configurable: NotificationConfig.CONFIGURABLE,
   },
   {
     event: NotificationEvent.AUXILIAR_ADDED,
-    audience: NotificationAudience.AUXILIAR,
+    audience: NotificationAudience.ASSISTANT,
     configurable: NotificationConfig.NO_CONFIGURABLE,
   },
   {
     event: NotificationEvent.AUXILIAR_REMOVED,
-    audience: NotificationAudience.AUXILIAR,
+    audience: NotificationAudience.ASSISTANT,
     configurable: NotificationConfig.NO_CONFIGURABLE,
   },
   {
     event: NotificationEvent.ACTIVITY_PUBLISHED,
-    audience: NotificationAudience.ALUMNO,
+    audience: NotificationAudience.STUDENT,
     configurable: NotificationConfig.CONFIGURABLE,
   },
   {
     event: NotificationEvent.ACTIVITY_GRADED,
-    audience: NotificationAudience.ALUMNO,
+    audience: NotificationAudience.STUDENT,
     configurable: NotificationConfig.CONFIGURABLE,
   },
   {
     event: NotificationEvent.COURSE_GRADE,
-    audience: NotificationAudience.ALUMNO,
+    audience: NotificationAudience.STUDENT,
     configurable: NotificationConfig.CONFIGURABLE,
   },
   {
     event: NotificationEvent.RESOURCE_PUBLISHED,
-    audience: NotificationAudience.ALUMNO,
+    audience: NotificationAudience.STUDENT,
     configurable: NotificationConfig.CONFIGURABLE,
   },
   {
     event: NotificationEvent.STUDENT_KICKED,
-    audience: NotificationAudience.ALUMNO,
+    audience: NotificationAudience.STUDENT,
     configurable: NotificationConfig.NO_CONFIGURABLE,
   },
 ];

@@ -19,18 +19,6 @@ export const createLoginUserRequest = (
   });
 };
 
-export const createLogoutUserRequest = (userId: number) => {
-  return createRequest({
-    uri: `users/${userId}`,
-  });
-};
-
-export const createEditUserProfileRequest = (userId: number) => {
-  return createRequest({
-    uri: `users/${userId}`,
-  });
-};
-
 export const createUserRequest = (userId: number) => {
   return createRequest({
     uri: `users/${userId}`,
