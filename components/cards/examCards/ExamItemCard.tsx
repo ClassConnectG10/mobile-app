@@ -64,19 +64,45 @@ export const ExamItemCard: React.FC<ExamItemCardProps> = ({
     setAnswerOk(newAnwerOk);
   };
 
-  const correctionColor =
-    answerOk === null
-      ? theme.colors.primary
-      : answerOk
-      ? customColors.success
-      : customColors.error;
+  const getCorrectionIconColor = () => {
+    const isEditable = mode === ExamItemMode.REVIEW && examItem.type === ExamItemType.OPEN;
+
+    if (isEditable) {
+      return answerOk === null
+        ? theme.colors.primary
+        : answerOk
+          ? customColors.success
+          : customColors.error;
+    } else {
+      return "white";
+    }
+  };
+
+  const getCorrectionBackgroundColor = () => {
+    const isEditable = mode === ExamItemMode.REVIEW && examItem.type === ExamItemType.OPEN;
+    if (isEditable) {
+      // Más transparente para elementos editables
+      return answerOk === null
+        ? theme.colors.secondaryContainer
+        : answerOk
+          ? customColors.success + "40"
+          : customColors.error + "40";
+    } else {
+      // Sólido para elementos no editables
+      return answerOk === null
+        ? theme.colors.primary
+        : answerOk
+          ? customColors.success
+          : customColors.error;
+    }
+  };
 
   const correctionIcon =
     answerOk === null
-      ? "help-circle-outline"
+      ? "help"
       : answerOk
-      ? "check-circle-outline"
-      : "close-circle-outline";
+        ? "check"
+        : "close";
 
   return (
     <Card
@@ -100,10 +126,10 @@ export const ExamItemCard: React.FC<ExamItemCardProps> = ({
             {examItem.type === ExamItemType.OPEN
               ? "Pregunta abierta"
               : examItem.type === ExamItemType.MULTIPLE_CHOICE
-              ? "Pregunta de opción múltiple"
-              : examItem.type === ExamItemType.TRUE_FALSE
-              ? "Pregunta de verdadero/falso"
-              : "Pregunta de selección múltiple"}
+                ? "Pregunta de opción múltiple"
+                : examItem.type === ExamItemType.TRUE_FALSE
+                  ? "Pregunta de verdadero/falso"
+                  : "Pregunta de selección múltiple"}
           </Text>
 
           <View style={{ flexDirection: "row" }}>
@@ -117,10 +143,11 @@ export const ExamItemCard: React.FC<ExamItemCardProps> = ({
             {showCorrection && (
               <IconButton
                 icon={correctionIcon}
-                size={24}
+                size={18}
                 mode="contained"
                 onPress={handleCorrectionPress}
-                iconColor={correctionColor}
+                iconColor={getCorrectionIconColor()}
+                containerColor={getCorrectionBackgroundColor()}
               />
             )}
           </View>

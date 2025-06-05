@@ -228,21 +228,22 @@ export default function StudentFillExam() {
           }
         />
 
-        {mode === ExamItemMode.FILL && !isLoading && remainingTime !== null && (
-          <>
-            <Text
-              variant="titleMedium"
-              style={{ color: getIconColorByRemainingTime() }}
-            >
-              {formatRemainingTime()}
-            </Text>
-            <Appbar.Action
-              icon="timer"
-              color={getIconColorByRemainingTime()}
-              onPress={() => setRemainingTimeModalVisible(true)}
-            />
-          </>
-        )}
+        {mode === ExamItemMode.FILL && !isLoading && remainingTime !== null && examDetails && examSubmission
+          && (
+            <>
+              <Text
+                variant="titleMedium"
+                style={{ color: getIconColorByRemainingTime() }}
+              >
+                {formatRemainingTime()}
+              </Text>
+              <Appbar.Action
+                icon="timer"
+                color={getIconColorByRemainingTime()}
+                onPress={() => setRemainingTimeModalVisible(true)}
+              />
+            </>
+          )}
 
         {mode === ExamItemMode.MARKED && (
           <Appbar.Action
@@ -322,7 +323,7 @@ export default function StudentFillExam() {
             <Text variant="titleMedium">Íconos y código de colores</Text>
             <View>
               <Text>
-                Cada pregunta tiene arriba a la izquierda un ícono que indica si
+                Cada pregunta tiene arriba a la derecha un ícono que indica si
                 el estudiante la respondió correctamente o no:
               </Text>
               <View style={{ marginVertical: 16, gap: 8 }}>

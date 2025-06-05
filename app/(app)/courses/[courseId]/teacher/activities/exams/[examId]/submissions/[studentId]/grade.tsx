@@ -205,10 +205,10 @@ export default function GradeExamSubmissionPage() {
         />
       </Appbar.Header>
       {isLoading ||
-      !teacherActivity ||
-      !examSubmission ||
-      !student ||
-      !temporalExamGrade ? (
+        !teacherActivity ||
+        !examSubmission ||
+        !student ||
+        !temporalExamGrade ? (
         <View
           style={{
             flex: 1,
@@ -244,7 +244,7 @@ export default function GradeExamSubmissionPage() {
                     (examSubmission as ExamSubmission).submittedExamItems[index]
                       .answer
                   }
-                  setStudentAnswer={() => {}}
+                  setStudentAnswer={() => { }}
                   answerOk={temporalExamGrade.correctExamItems[index]}
                   setAnswerOk={(correct) => setCorrectAnswer(index, correct)}
                 />
@@ -282,7 +282,7 @@ export default function GradeExamSubmissionPage() {
                       (item) => item === true
                     ).length /
                       temporalExamGrade.correctExamItems.length) *
-                      10
+                    10
                   )}{" "}
                 </Text>
 
@@ -324,7 +324,7 @@ export default function GradeExamSubmissionPage() {
             <Text variant="titleMedium">Íconos y código de colores</Text>
             <View>
               <Text>
-                Cada pregunta tiene arriba a la izquierda un ícono que indica si
+                Cada pregunta tiene arriba a la derecha un ícono que indica si
                 el estudiante la respondió correctamente o no:
               </Text>
               <View style={{ marginVertical: 16, gap: 8 }}>

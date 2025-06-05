@@ -107,7 +107,7 @@ export default function TeacherSubmissionPage() {
       const grade = await getExamGrade(
         courseId,
         Number(examId),
-        Number(studentId)
+        Number(studentId),
       );
       setExamGrade(grade);
       if (grade) {
@@ -145,7 +145,7 @@ export default function TeacherSubmissionPage() {
   useFocusEffect(
     useCallback(() => {
       fetchSubmission();
-    }, [teacherExam])
+    }, [teacherExam]),
   );
 
   useFocusEffect(
@@ -153,7 +153,7 @@ export default function TeacherSubmissionPage() {
       fetchTeacherExam();
       fetchStudent();
       fetchExamGrade();
-    }, [courseId, examId, studentId])
+    }, [courseId, examId, studentId]),
   );
 
   return (
@@ -207,34 +207,36 @@ export default function TeacherSubmissionPage() {
                   label="Fecha de entrega"
                   value={formatDateTime(studentSubmission.submissionDate)}
                 />
+                <Divider />
+                <Text>Calificación de la entrega</Text>
+                {!examGrade ? (
+                  <AlertText text="La entrega no ha sido calificada todavía." />
+                ) : (
+                  <View style={{ flex: 1, gap: 16 }}>
+                    <TextField label="Nota" value={examGrade.mark.toString()} />
+                    <TextField
+                      label="Comentario de retroalimentación"
+                      value={examGrade.feedback_message}
+                    />
+                  </View>
+                )}
               </>
             ) : (
               <Text variant="titleSmall">El alumno no entregó el examen</Text>
             )}
-            <Divider />
-            <Text>Calificación de la entrega</Text>
-            {!examGrade ? (
-              <AlertText text="La entrega no ha sido calificada todavía." />
-            ) : (
-              <View style={{ flex: 1, gap: 16 }}>
-                <TextField label="Nota" value={examGrade.mark.toString()} />
-                <TextField
-                  label="Comentario de retroalimentación"
-                  value={examGrade.feedback_message}
-                />
-              </View>
-            )}
           </ScrollView>
-          <View style={{ padding: 16 }}>
-            <Button
-              icon="note-check"
-              mode="contained"
-              onPress={() => handleEditGrade()}
-              disabled={isLoading}
-            >
-              {examGrade ? "Editar calificación" : "Calificar entrega"}
-            </Button>
-          </View>
+          {studentSubmission && studentSubmission.submited && (
+            <View style={{ padding: 16 }}>
+              <Button
+                icon="note-check"
+                mode="contained"
+                onPress={() => handleEditGrade()}
+                disabled={isLoading}
+              >
+                {examGrade ? "Editar calificación" : "Calificar entrega"}
+              </Button>
+            </View>
+          )}
         </>
       )}
       <ErrorMessageSnackbar
