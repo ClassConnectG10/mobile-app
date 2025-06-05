@@ -94,8 +94,8 @@ export async function loginUser(uid: string): Promise<User | null> {
         (eventMeta) =>
           new NotificationEventPreferences(
             eventMeta.event,
-            responseData.push_scopes.includes(eventMeta.event),
-            responseData.email_scopes.includes(eventMeta.event)
+            responseData.email_scopes.includes(eventMeta.event),
+            responseData.push_scopes.includes(eventMeta.event)
           )
       )
     );
