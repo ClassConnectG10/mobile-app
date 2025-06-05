@@ -1,5 +1,10 @@
 import { userDetailsSchema, userSchema } from "@/validations/users";
-import { NotificationEventPreferences, User, UserInformation, UserPreferences } from "@/types/user";
+import {
+  NotificationEventPreferences,
+  User,
+  UserInformation,
+  UserPreferences,
+} from "@/types/user";
 import { handleError } from "./common";
 import {
   createRegisterUserRequest,
@@ -10,7 +15,10 @@ import {
 } from "@/api/user";
 import { getToken } from "@/services/notifications";
 import { deleteToken, getMessaging } from "@react-native-firebase/messaging";
-import { NotificationConfig, notificationEventMeta } from "@/types/notification";
+import {
+  NotificationConfig,
+  notificationEventMeta,
+} from "@/types/notification";
 
 /**
  * Registers a new user in the system by sending their information to the server.
@@ -113,6 +121,10 @@ export async function loginUser(uid: string): Promise<User | null> {
       error.response?.data?.detail === "Error logging in user: user not found"
     ) {
       return null; //TODO: should be another error
+    }
+
+    if (error.response?.status === 403) {
+      throw new Error("Error al iniciar sesión: usuario bloqueado");
     }
 
     throw handleError(error, "iniciar sesión");
@@ -228,27 +240,17 @@ export async function updatePreferences(
   try {
     const request = await createUserRequest(userId);
 
-    const configurableEvents = notificationEventMeta.filter(
-      (meta) => meta.configurable === NotificationConfig.CONFIGURABLE
-    ).map((meta) => meta.event);
+    const configurableEvents = notificationEventMeta
+      .filter((meta) => meta.configurable === NotificationConfig.CONFIGURABLE)
+      .map((meta) => meta.event);
 
     const pushScopes = preferences.notification_events_configuration
-      .filter(
-        (event) =>
-          event.push &&
-          configurableEvents.includes(event.event)
-      ).map(
-        (event) => event.event
-      );
+      .filter((event) => event.push && configurableEvents.includes(event.event))
+      .map((event) => event.event);
 
     const emailScopes = preferences.notification_events_configuration
-      .filter(
-        (event) =>
-          event.mail &&
-          configurableEvents.includes(event.event)
-      ).map(
-        (event) => event.event
-      );
+      .filter((event) => event.mail && configurableEvents.includes(event.event))
+      .map((event) => event.event);
 
     const body = {
       push_scopes: pushScopes,
