@@ -222,7 +222,7 @@ export function getFileFromBackend(
   backendRef: string,
   frontendRef?: string
 ): File {
-  if (!fileName || !backendRef) {
+  if (!backendRef) {
     return null;
   }
   const firebaseRef = parseBackendRef(backendRef);

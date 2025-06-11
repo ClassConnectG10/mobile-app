@@ -2,6 +2,7 @@ import React from "react";
 import { Card, Text, Avatar, useTheme } from "react-native-paper";
 import { View, StyleSheet } from "react-native";
 import { User } from "@/types/user";
+import { ToggleableProfilePicture } from "../forms/ToggleableProfilePicture";
 
 interface UserCardProps {
   user: User;
@@ -18,7 +19,10 @@ const UserCard: React.FC<UserCardProps> = ({ user, onPress }) => {
       style={[styles.card, { backgroundColor: theme.colors.onPrimary }]}
     >
       <View style={styles.row}>
-        <Avatar.Icon icon="account" size={48} />
+        <ToggleableProfilePicture
+          file={user.userInformation.profilePicture}
+          size={48}
+        />
 
         <View style={{ flex: 1 }}>
           <Text style={[styles.name, { color: theme.colors.onSurface }]}>

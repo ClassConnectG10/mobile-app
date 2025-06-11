@@ -42,3 +42,12 @@ export const createUsersRequest = () => {
     uri: `users`,
   });
 };
+
+export const createProfilePictureRequest = (userId: number) => {
+  return createRequest({
+    uri: `users/${userId}/profile-picture`,
+    headers: {
+      "X-Caller-Id": `${userId}`,
+    },
+  });
+};

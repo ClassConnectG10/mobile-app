@@ -20,7 +20,7 @@ export const TextField: React.FC<TextFieldProps> = ({
       editable={false}
       value={String(value)}
       multiline={true}
-      numberOfLines={NUMBER_OF_LINES}
+      // numberOfLines={NUMBER_OF_LINES}
       style={{
         backgroundColor: "#fff",
       }}

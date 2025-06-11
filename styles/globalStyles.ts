@@ -37,7 +37,8 @@ export const globalStyles = StyleSheet.create({
     borderRadius: 4,
   },
   userIconContainer: {
-    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "center",
   },
   title: {
     textAlign: "center",

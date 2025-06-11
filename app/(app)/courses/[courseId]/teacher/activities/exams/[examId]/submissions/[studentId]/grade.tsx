@@ -16,7 +16,7 @@ import {
 import { User } from "@/types/user";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
-import { FlatList, View } from "react-native";
+import { View, KeyboardAvoidingView, Platform, ScrollView } from "react-native";
 import {
   ActivityIndicator,
   Appbar,
@@ -34,6 +34,8 @@ import { ToggleableTextInput } from "@/components/forms/ToggleableTextInput";
 import { useExamGrade } from "@/hooks/useExamGrade";
 import { customColors } from "@/utils/constants/colors";
 import { FullScreenModal } from "@/components/FullScreenModal";
+import { TextField } from "@/components/forms/TextField";
+import { ListStatCard } from "@/components/ListStatCard";
 
 export default function GradeExamSubmissionPage() {
   const theme = useTheme();
@@ -205,10 +207,10 @@ export default function GradeExamSubmissionPage() {
         />
       </Appbar.Header>
       {isLoading ||
-        !teacherActivity ||
-        !examSubmission ||
-        !student ||
-        !temporalExamGrade ? (
+      !teacherActivity ||
+      !examSubmission ||
+      !student ||
+      !temporalExamGrade ? (
         <View
           style={{
             flex: 1,
@@ -223,98 +225,115 @@ export default function GradeExamSubmissionPage() {
           />
         </View>
       ) : (
-        <View style={{ padding: 16, flex: 1 }}>
-          <FlatList
-            data={
-              (teacherActivity.activity.activityDetails as ExamDetails)
-                .examItems
-            }
-            keyExtractor={(_item, index) => index.toString()}
-            ListHeaderComponent={
-              <View style={{ gap: 16, paddingBottom: 16 }}>
-                <Text variant="titleMedium">Corrección de las preguntas</Text>
-              </View>
-            }
-            renderItem={({ item, index }) =>
-              examSubmission.submited ? (
-                <ExamItemCard
-                  mode={ExamItemMode.REVIEW}
-                  examItem={item}
-                  studentAnswer={
-                    (examSubmission as ExamSubmission).submittedExamItems[index]
-                      .answer
-                  }
-                  setStudentAnswer={() => { }}
-                  answerOk={temporalExamGrade.correctExamItems[index]}
-                  setAnswerOk={(correct) => setCorrectAnswer(index, correct)}
-                />
-              ) : null
-            }
-            ItemSeparatorComponent={() => (
-              <View
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          keyboardVerticalOffset={16} // Ajusta este valor según la altura de tu Appbar/Header
+        >
+          <ScrollView
+            contentContainerStyle={{ padding: 16, flexGrow: 1, gap: 8 }}
+            keyboardShouldPersistTaps="handled"
+          >
+            <View style={{ gap: 16 }}>
+              <Text
                 style={{
-                  height: 8,
+                  fontWeight: "bold",
+                  fontSize: 18,
+                  paddingBottom: 8,
                 }}
-              />
+              >
+                Corrección de las preguntas
+              </Text>
+            </View>
+            {(
+              teacherActivity.activity.activityDetails as ExamDetails
+            ).examItems.map((item, index) =>
+              examSubmission.submited ? (
+                <View key={index} style={{ marginBottom: 8 }}>
+                  <ExamItemCard
+                    mode={ExamItemMode.REVIEW}
+                    examItem={item}
+                    studentAnswer={
+                      (examSubmission as ExamSubmission).submittedExamItems[
+                        index
+                      ].answer
+                    }
+                    setStudentAnswer={() => {}}
+                    answerOk={temporalExamGrade.correctExamItems[index]}
+                    setAnswerOk={(correct) => setCorrectAnswer(index, correct)}
+                  />
+                </View>
+              ) : null
             )}
-            ListFooterComponent={
-              <View style={{ gap: 16, paddingVertical: 16 }}>
-                <Divider />
-                <Text variant="titleLarge">Calificación de la entrega</Text>
-                {!hasPreviousGrade && (
-                  <AlertText text="La entrega no ha sido calificada todavía." />
-                )}
-                {/* Quiero un Text que indique la cantidad de items en true en temporalExamGrade.correctExamItems */}
-                <Text variant="bodyMedium">
-                  Preguntas correctas:{" "}
+            <View style={{ gap: 16, paddingVertical: 16 }}>
+              <Divider />
+              <ListStatCard
+                title="Calificación de la entrega"
+                indicators={[
                   {
-                    temporalExamGrade.correctExamItems.filter(
-                      (item) => item === true
-                    ).length
-                  }{" "}
-                  de {temporalExamGrade.correctExamItems.length} preguntas.
-                </Text>
+                    icon: "check-circle",
+                    value: temporalExamGrade.correctExamItems.filter(
+                      (item) => item
+                    ).length,
+                    label: "Correctas",
+                    color: customColors.success,
+                  },
+                  {
+                    icon: "help-circle",
+                    value: temporalExamGrade.correctExamItems.length,
+                    label: "Total",
+                    color: theme.colors.primary,
+                  },
+                  {
+                    icon: "star",
+                    value: Math.round(
+                      (temporalExamGrade.correctExamItems.filter(
+                        (item) => item === true
+                      ).length /
+                        temporalExamGrade.correctExamItems.length) *
+                        10
+                    ),
+                    label: "Nota sugerida",
+                    color: customColors.warning,
+                  },
+                ]}
+              />
 
-                <Text variant="bodyMedium">
-                  Nota sugerida:{" "}
-                  {Math.round(
-                    (temporalExamGrade.correctExamItems.filter(
-                      (item) => item === true
-                    ).length /
-                      temporalExamGrade.correctExamItems.length) *
-                    10
-                  )}{" "}
-                </Text>
+              <Divider />
 
-                <ToggleableNumberInput
-                  label="Nota"
-                  value={temporalExamGrade.mark}
-                  editable={true}
-                  onChange={(mark) => temporalExamGradeHook.setMark(mark)}
-                  minValue={0}
-                  maxValue={10}
-                />
-                <ToggleableTextInput
-                  label="Comentario de retroalimentación"
-                  placeholder="Escriba un comentario para el estudiante"
-                  value={temporalExamGrade.feedback_message}
-                  editable={true}
-                  onChange={(feedback) =>
-                    temporalExamGradeHook.setFeedbackMessage(feedback)
-                  }
-                />
-                <Button
-                  icon="note-check"
-                  mode="contained"
-                  onPress={() => handleSaveGrade()}
-                  disabled={isLoading}
-                >
-                  Confirmar calificación
-                </Button>
-              </View>
-            }
-          />
-        </View>
+              {!hasPreviousGrade && (
+                <AlertText text="La entrega no ha sido calificada todavía." />
+              )}
+
+              <ToggleableNumberInput
+                label="Nota"
+                value={temporalExamGrade.mark}
+                editable={true}
+                onChange={(mark) => temporalExamGradeHook.setMark(mark)}
+                minValue={0}
+                maxValue={10}
+              />
+              <ToggleableTextInput
+                label="Comentario de retroalimentación"
+                placeholder="Escriba un comentario para el estudiante"
+                value={temporalExamGrade.feedback_message}
+                editable={true}
+                onChange={(feedback) =>
+                  temporalExamGradeHook.setFeedbackMessage(feedback)
+                }
+              />
+              <Divider />
+              <Button
+                icon="note-check"
+                mode="contained"
+                onPress={() => handleSaveGrade()}
+                disabled={isLoading}
+              >
+                Confirmar calificación
+              </Button>
+            </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
       )}
       <FullScreenModal
         visible={helpModalVisible}

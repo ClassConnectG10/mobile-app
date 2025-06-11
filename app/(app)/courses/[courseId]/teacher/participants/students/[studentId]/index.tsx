@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
   Appbar,
   Button,
+  Divider,
   useTheme,
 } from "react-native-paper";
 import { getStudentMark, setStudentMark } from "@/services/courseManagement";
@@ -116,38 +117,38 @@ export default function TeacherStudentDetialsPage() {
     useCallback(() => {
       fetchStudent();
       fetchMark();
-    }, [courseId, studentId]),
+    }, [courseId, studentId])
   );
 
   return (
     <>
-      <View style={{ flex: 1 }}>
-        <Appbar.Header>
-          <Appbar.BackAction onPress={() => router.back()} />
-          <Appbar.Content
-            title={
-              student
-                ? `${student.userInformation.firstName} ${student.userInformation.lastName}`
-                : "Calificación del estudiante"
-            }
+      <Appbar.Header>
+        <Appbar.BackAction onPress={() => router.back()} />
+        <Appbar.Content
+          title={
+            student
+              ? `${student.userInformation.firstName} ${student.userInformation.lastName}`
+              : "Calificación del estudiante"
+          }
+        />
+      </Appbar.Header>
+      {!student ? (
+        <View
+          style={{
+            flex: 1,
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <ActivityIndicator
+            animating={true}
+            size="large"
+            color={theme.colors.primary}
           />
-        </Appbar.Header>
-        {!student ? (
-          <View
-            style={{
-              flex: 1,
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
-            <ActivityIndicator
-              animating={true}
-              size="large"
-              color={theme.colors.primary}
-            />
-          </View>
-        ) : (
-          <ScrollView contentContainerStyle={{ padding: 16, gap: 16 }}>
+        </View>
+      ) : (
+        <View style={{ flex: 1, padding: 16 }}>
+          <ScrollView contentContainerStyle={{ gap: 16 }}>
             <UserCard user={student} onPress={handleStudentPress} />
 
             <Button
@@ -170,6 +171,8 @@ export default function TeacherStudentDetialsPage() {
               {student.userInformation.lastName}
             </Button>
 
+            <Divider />
+
             <ToggleableNumberInput
               label="Calificación"
               value={temporaryMark}
@@ -180,18 +183,18 @@ export default function TeacherStudentDetialsPage() {
             {mark == null && (
               <AlertText text="El estudiante no tiene una calificación asignada." />
             )}
-
-            <Button
-              icon="content-save"
-              mode="contained"
-              onPress={() => setShowConfirmationUpdateMarkDialog(true)}
-              disabled={isLoading}
-            >
-              Guardar calificación
-            </Button>
           </ScrollView>
-        )}
-      </View>
+          <Button
+            icon="content-save"
+            mode="contained"
+            onPress={() => setShowConfirmationUpdateMarkDialog(true)}
+            disabled={isLoading}
+          >
+            Guardar calificación
+          </Button>
+        </View>
+      )}
+
       <ErrorMessageSnackbar
         message={errorMessage}
         onDismiss={() => setErrorMessage("")}

@@ -243,59 +243,63 @@ export default function TaskSubmissionPage() {
                     onChange={() => {}}
                     maxFiles={1}
                   />
+                  <Divider />
+                  <Text>Calificación de la entrega</Text>
+                  {!hasPreviousGrade && !isEditing && (
+                    <AlertText text="La entrega no ha sido calificada todavía." />
+                  )}
+
+                  {(hasPreviousGrade || isEditing) && (
+                    <View style={{ flex: 1, gap: 16 }}>
+                      <ToggleableNumberInput
+                        label="Nota"
+                        value={temporalTaskGrade.mark}
+                        editable={isEditing}
+                        onChange={(mark) => temporalTaskGradeHook.setMark(mark)}
+                        minValue={0}
+                        maxValue={10}
+                      />
+                      <ToggleableTextInput
+                        label="Comentario de retroalimentación"
+                        placeholder="Escriba un comentario para el estudiante"
+                        value={temporalTaskGrade.feedback_message}
+                        editable={isEditing}
+                        onChange={(feedback) =>
+                          temporalTaskGradeHook.setFeedbackMessage(feedback)
+                        }
+                      />
+                    </View>
+                  )}
                 </>
               ) : (
                 <Text variant="titleSmall">El alumno no entregó la tarea</Text>
               )}
-              <Divider />
-              <Text>Calificación de la entrega</Text>
-              {!hasPreviousGrade && !isEditing && (
-                <AlertText text="La entrega no ha sido calificada todavía." />
-              )}
-
-              {(hasPreviousGrade || isEditing) && (
-                <View style={{ flex: 1, gap: 16 }}>
-                  <ToggleableNumberInput
-                    label="Nota"
-                    value={temporalTaskGrade.mark}
-                    editable={isEditing}
-                    onChange={(mark) => temporalTaskGradeHook.setMark(mark)}
-                    minValue={0}
-                    maxValue={10}
-                  />
-                  <ToggleableTextInput
-                    label="Comentario de retroalimentación"
-                    placeholder="Escriba un comentario para el estudiante"
-                    value={temporalTaskGrade.feedback_message}
-                    editable={isEditing}
-                    onChange={(feedback) =>
-                      temporalTaskGradeHook.setFeedbackMessage(feedback)
-                    }
-                  />
-                </View>
-              )}
             </View>
           </ScrollView>
           <View style={{ padding: 16 }}>
-            {isEditing ? (
-              <Button
-                icon="note-check"
-                mode="contained"
-                onPress={() => handleSaveGrade()}
-                disabled={isLoading}
-              >
-                Confirmar calificación
-              </Button>
-            ) : (
-              <Button
-                icon="note-check"
-                mode="contained"
-                onPress={() => setIsEditing(true)}
-                disabled={isLoading}
-              >
-                {hasPreviousGrade ? "Editar calificación" : "Calificar entrega"}
-              </Button>
-            )}
+            {studentSubmission &&
+              studentSubmission.submited &&
+              (isEditing ? (
+                <Button
+                  icon="note-check"
+                  mode="contained"
+                  onPress={() => handleSaveGrade()}
+                  disabled={isLoading}
+                >
+                  Confirmar calificación
+                </Button>
+              ) : (
+                <Button
+                  icon="note-check"
+                  mode="contained"
+                  onPress={() => setIsEditing(true)}
+                  disabled={isLoading}
+                >
+                  {hasPreviousGrade
+                    ? "Editar calificación"
+                    : "Calificar entrega"}
+                </Button>
+              ))}
           </View>
         </>
       )}

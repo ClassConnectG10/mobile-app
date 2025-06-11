@@ -24,6 +24,7 @@ import { signOut } from "@/services/auth/authUtils";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { getAuth } from "@react-native-firebase/auth";
 import { useNavigation, CommonActions } from "@react-navigation/native";
+import { ToggleableProfilePicture } from "@/components/forms/ToggleableProfilePicture";
 
 export default function UserProfilePage() {
   const theme = useTheme();
@@ -41,6 +42,7 @@ export default function UserProfilePage() {
   // Para edición y campos controlados
   const userInformationHook = useUserInformation();
   const userInformation = userInformationHook.userInformation;
+  const [profilePictureChanged, setProfilePictureChanged] = useState(false);
 
   // Para mostrar datos de otro usuario
   const [isLoading, setIsLoading] = useState(false);
@@ -73,11 +75,17 @@ export default function UserProfilePage() {
   // Inicializar datos propios en el hook de edición
   useEffect(() => {
     if (isMe && userContext) {
+      console.log("userContext", userContext);
       userInformationHook.setUserInformation({
         ...userContext.userInformation,
       });
     }
   }, [isMe, userContext]);
+
+  const handleChangeProfilePicture = (file: File | null) => {
+    setProfilePictureChanged(true);
+    userInformationHook.setProfilePicture(file);
+  };
 
   // Guardar cambios en perfil propio
   const handleSave = async () => {
@@ -87,7 +95,10 @@ export default function UserProfilePage() {
         id: userContext.id,
         userInformation: { ...userInformation },
       };
-      await editUserProfile(newUser);
+      await editUserProfile(newUser, profilePictureChanged);
+
+      console.log("newUser", newUser);
+
       userContextHook.setUser(newUser);
       setIsEditing(false);
     } catch (error) {
@@ -110,7 +121,7 @@ export default function UserProfilePage() {
       const auth = getAuth();
       const user = auth.currentUser;
       const providerId = user?.providerData[0].providerId;
-      await logoutUser(userContext.id);
+      await logoutUser();
       if (providerId === "google.com") {
         await GoogleSignin.signOut();
       }
@@ -168,7 +179,19 @@ export default function UserProfilePage() {
               }}
             >
               <View style={globalStyles.userIconContainer}>
-                <Avatar.Icon size={96} icon="account" />
+                <ToggleableProfilePicture
+                  file={userInformation.profilePicture}
+                  setFile={
+                    isEditing
+                      ? handleChangeProfilePicture
+                      : (file) => {
+                          userInformationHook.setProfilePicture(file);
+                        }
+                  }
+                  editable={isMe && isEditing}
+                  size={96}
+                />
+                {/* <Avatar.Icon size={96} icon="account" /> */}
               </View>
 
               <ToggleableTextInput

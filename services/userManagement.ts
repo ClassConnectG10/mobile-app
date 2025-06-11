@@ -5,7 +5,7 @@ import {
   UserInformation,
   UserPreferences,
 } from "@/types/user";
-import { handleError } from "./common";
+import { getFileFromBackend, handleError, postFile } from "./common";
 import {
   createRegisterUserRequest,
   createLoginUserRequest,
@@ -13,6 +13,7 @@ import {
   createBulkUserRequest,
   createUsersRequest,
   createLogoutUserRequest,
+  createProfilePictureRequest,
 } from "@/api/user";
 import { getToken } from "@/services/notifications";
 import { deleteToken, getMessaging } from "@react-native-firebase/messaging";
@@ -20,6 +21,7 @@ import {
   NotificationConfig,
   notificationEventMeta,
 } from "@/types/notification";
+import { File } from "@/types/file";
 
 /**
  * Registers a new user in the system by sending their information to the server.
@@ -51,10 +53,25 @@ export async function registerUser(
     const response = await request.post("", body);
     const responseData = response.data.data;
 
+    if (userInformation.profilePicture) {
+      console.log(
+        "Uploading profile picture for user with ID:",
+        responseData.id
+      );
+
+      console.log("Profile picture file", userInformation.profilePicture);
+
+      await uploadProfilePicture(
+        responseData.id,
+        userInformation.profilePicture
+      );
+    }
+
     const userInfo = new UserInformation(
       responseData.name,
       responseData.surname,
       responseData.email,
+      userInformation.profilePicture,
       responseData.country
     );
 
@@ -96,6 +113,10 @@ export async function loginUser(uid: string): Promise<User | null> {
       responseData.name,
       responseData.surname,
       responseData.email,
+      getFileFromBackend(
+        `${responseData.id}_profile_picture.png`,
+        responseData.profile_picture_url
+      ),
       responseData.country
     );
 
@@ -129,7 +150,7 @@ export async function loginUser(uid: string): Promise<User | null> {
   }
 }
 
-export async function logoutUser(uid: number): Promise<void> {
+export async function logoutUser(): Promise<void> {
   try {
     const messaging = getMessaging();
     if (messaging) {
@@ -137,7 +158,7 @@ export async function logoutUser(uid: number): Promise<void> {
     }
 
     const request = await createLogoutUserRequest();
-    await request.get("")
+    await request.get("");
   } catch (error) {
     throw handleError(error, "cerrar sesión");
   }
@@ -147,12 +168,14 @@ export async function logoutUser(uid: number): Promise<void> {
  * Edits the profile of a user by sending their updated information to the server.
  *
  * @param accessToken - The access token for authentication.
- * @param uid - The unique identifier for the user.
  * @param user - An object containing the user's updated information.
  * @returns A `UserInformation` object containing the updated user's details.
  * @throws An error if the edit process fails.
  */
-export async function editUserProfile(user: User): Promise<void> {
+export async function editUserProfile(
+  user: User,
+  profilePictureChanged: boolean
+): Promise<void> {
   try {
     userSchema.parse(user);
     const request = await createUserRequest(user.id);
@@ -162,6 +185,23 @@ export async function editUserProfile(user: User): Promise<void> {
       email: user.userInformation.email,
       country: user.userInformation.country,
     });
+
+    if (profilePictureChanged) {
+      if (user.userInformation.profilePicture) {
+        console.log("Uploading profile picture for user with ID:", user.id);
+        await uploadProfilePicture(
+          user.id,
+          user.userInformation.profilePicture
+        );
+
+        console.log(
+          "Profile picture uploaded successfully for user with ID:",
+          user.id
+        );
+      } else {
+        await deleteProfilePicture(user.id);
+      }
+    }
   } catch (error) {
     throw handleError(error, "editar el perfil del usuario");
   }
@@ -174,7 +214,12 @@ export async function getUser(userId: number): Promise<User> {
     const userInfo = new UserInformation(
       response.data.data.name,
       response.data.data.surname,
-      response.data.data.email
+      response.data.data.email,
+      getFileFromBackend(
+        `${response.data.data.id}_profile_picture`,
+        response.data.data.profile_picture_url
+      ),
+      response.data.data.country ? response.data.data.country : null
     );
 
     const user = {
@@ -203,7 +248,16 @@ export async function getBulkUsers(userIds: number[]): Promise<User[]> {
     const users = response.data.data.map((user: any) => {
       return new User(
         user.id,
-        new UserInformation(user.name, user.surname, user.email)
+        new UserInformation(
+          user.name,
+          user.surname,
+          user.email,
+          getFileFromBackend(
+            `${user.id}_profile_picture`,
+            user.profile_picture_url
+          ),
+          user.country ? user.country : null
+        )
       );
     });
     return users;
@@ -219,7 +273,18 @@ export async function getUsers(): Promise<User[]> {
     const users = response.data.data.map((user: any) => {
       return new User(
         user.id,
-        new UserInformation(user.name, user.surname, user.email)
+        new UserInformation(
+          user.name,
+          user.surname,
+          user.email,
+          user.profile_picture_url
+            ? getFileFromBackend(
+                `${user.id}_profile_picture`,
+                user.profile_picture_url
+              )
+            : null,
+          user.country ? user.country : null
+        )
       );
     });
     return users;
@@ -258,5 +323,26 @@ export async function updatePreferences(
     await request.patch("", body);
   } catch (error) {
     throw handleError(error, "actualizar las preferencias del usuario");
+  }
+}
+
+export async function uploadProfilePicture(
+  userId: number,
+  file: File
+): Promise<void> {
+  try {
+    const request = await createProfilePictureRequest(userId);
+    await postFile(request, file);
+  } catch (error) {
+    throw handleError(error, "subir el archivo de la actividad");
+  }
+}
+
+export async function deleteProfilePicture(userId: number): Promise<void> {
+  try {
+    const request = await createProfilePictureRequest(userId);
+    await request.delete("");
+  } catch (error) {
+    throw handleError(error, "eliminar el archivo de la actividad");
   }
 }

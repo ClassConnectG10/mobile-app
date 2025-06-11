@@ -109,11 +109,10 @@ export default function HomePage() {
             router.push("/notifications");
           }}
         /> */}
+        <Appbar.Action icon="test-tube" onPress={() => router.push("/test")} />
         <Appbar.Action
           icon="bell-badge"
-          onPress={() =>
-            router.push("/notifications")
-          }
+          onPress={() => router.push("/notifications")}
         />
         <Appbar.Action
           icon="account"

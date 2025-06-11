@@ -71,7 +71,6 @@ export default function CreateExam() {
     setIsLoading(true);
 
     try {
-      examDetailsSchema.parse(examDetails);
       await updateExam(courseId, Number(examId), examDetails);
 
       setTeacherExam({

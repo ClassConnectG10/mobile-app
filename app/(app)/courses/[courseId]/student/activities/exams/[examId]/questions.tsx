@@ -228,8 +228,11 @@ export default function StudentFillExam() {
           }
         />
 
-        {mode === ExamItemMode.FILL && !isLoading && remainingTime !== null && examDetails && examSubmission
-          && (
+        {mode === ExamItemMode.FILL &&
+          !isLoading &&
+          remainingTime !== null &&
+          examDetails &&
+          examSubmission && (
             <>
               <Text
                 variant="titleMedium"
@@ -272,6 +275,10 @@ export default function StudentFillExam() {
         >
           <FlatList
             data={examDetails.examItems}
+            style={{ flex: 1 }}
+            contentContainerStyle={{
+              paddingBottom: 20,
+            }}
             keyExtractor={(_item, index) => index.toString()}
             renderItem={({ item, index }) => (
               <ExamItemCard
@@ -407,8 +414,8 @@ export default function StudentFillExam() {
           examDetails
             ? remainingTime > 0
               ? `El examen debe ser entregado en ${getSimpleRelativeTimeFromNow(
-                examDetails.dueDate
-              )}`
+                  examDetails.dueDate
+                )}`
               : "El examen está vencido"
             : "El examen no tiene tiempo límite."
         }

@@ -10,12 +10,25 @@ import LineChart from "@/components/charts/LineChart";
 import { exportToExcel } from "@/utils/files/exportToExcel";
 import { openFile } from "@/utils/files/common";
 import { File } from "@/types/file";
+import { TextField } from "@/components/forms/TextField";
+import { ToggleableTextInput } from "@/components/forms/ToggleableTextInput";
+import { ToggleableProfilePicture } from "@/components/forms/ToggleableProfilePicture";
 
 export default function TestPage() {
   const router = useRouter();
   const theme = useTheme();
 
   const [exportedFile, setExportedFile] = React.useState<File | null>(null);
+  const [textString, setTextString] = React.useState<string>("");
+  const [file, setFile] = React.useState<File | null>(
+    new File(
+      "test.png",
+
+      "image/png",
+      null,
+      "/course/test.png"
+    )
+  );
 
   const data = [
     { label: "Argentina", value: 45000000 },
@@ -136,7 +149,14 @@ export default function TestPage() {
 
       <ScrollView contentContainerStyle={{ padding: 16, gap: 16 }}>
         {/* Excel Export Testing */}
-        <Button icon="file-excel" mode="contained" onPress={handleExport}>
+        <ToggleableProfilePicture
+          file={file}
+          editable={true}
+          size={96 * 1.5}
+          setFile={setFile}
+        />
+
+        {/* <Button icon="file-excel" mode="contained" onPress={handleExport}>
           Exportar
         </Button>
         <Button
@@ -180,6 +200,13 @@ export default function TestPage() {
           yLabel="°C"
           renderXLabel={(x) => `Día ${x}`}
         />
+        <ToggleableTextInput
+          value={textString}
+          label={"holaaa"}
+          placeholder={"holaaa"}
+          editable={true}
+          onChange={setTextString}
+        /> */}
       </ScrollView>
     </>
   );

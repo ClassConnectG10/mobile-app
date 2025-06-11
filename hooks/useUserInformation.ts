@@ -1,5 +1,6 @@
 import { UserInformation } from "@/types/user";
 import { useState } from "react";
+import { File } from "@/types/file";
 
 export interface UserHook {
   userInformation: UserInformation;
@@ -8,6 +9,7 @@ export interface UserHook {
   setLastName: (lastName: string) => void;
   setEmail: (email: string) => void;
   setCountry: (country: string) => void;
+  setProfilePicture: (profilePicture: File | null) => void;
 }
 
 export function useUserInformation(): UserHook {
@@ -38,6 +40,10 @@ export function useUserInformation(): UserHook {
     setUserInformation((prev) => ({ ...prev, country }));
   };
 
+  const setProfilePicture = (profilePicture: File | null) => {
+    setUserInformation((prev) => ({ ...prev, profilePicture }));
+  };
+
   return {
     userInformation,
     setUserInformation,
@@ -45,5 +51,6 @@ export function useUserInformation(): UserHook {
     setLastName,
     setEmail,
     setCountry,
+    setProfilePicture,
   };
 }

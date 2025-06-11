@@ -1,5 +1,6 @@
 import { View } from "react-native";
 import { IconButton, TextInput, Text } from "react-native-paper";
+import { TextField } from "./TextField";
 
 interface ToggleableNumberInputsProps {
   label: string;
@@ -32,7 +33,6 @@ export const ToggleableNumberInput: React.FC<ToggleableNumberInputsProps> = ({
 
   return editable ? (
     <>
-      <Text variant="titleMedium">{label}</Text>
       <View
         style={{
           flexDirection: "row",
@@ -47,7 +47,20 @@ export const ToggleableNumberInput: React.FC<ToggleableNumberInputsProps> = ({
           mode="contained"
           onPress={() => decreaseNumStudents()}
         />
-        <Text variant="titleLarge">{value}</Text>
+        <TextInput
+          label={label}
+          value={value.toString()}
+          onChangeText={(text) => {
+            const num = parseInt(text, 10);
+            if (!isNaN(num)) {
+              onChange(num);
+            }
+          }}
+          keyboardType="numeric"
+          style={{ textAlign: "center", flex: 1 }}
+        />
+        {/* <Text variant="titleLarge">{value}</Text> */}
+
         <IconButton
           icon="plus"
           mode="contained"
@@ -56,10 +69,6 @@ export const ToggleableNumberInput: React.FC<ToggleableNumberInputsProps> = ({
       </View>
     </>
   ) : (
-    <TextInput
-      label={label}
-      editable={false}
-      value={value.toString()}
-    ></TextInput>
+    <TextField label={label} value={value.toString()} />
   );
 };
