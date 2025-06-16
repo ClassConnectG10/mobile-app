@@ -6,9 +6,7 @@ export const createUserNotificationsRequest = () => {
   });
 };
 
-export const createDeleteNotificationRequest = (
-  notificationId: string
-) => {
+export const createDeleteNotificationRequest = (notificationId: string) => {
   return createRequest({
     uri: `notifications/${notificationId}`,
   });

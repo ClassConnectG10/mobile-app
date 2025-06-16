@@ -20,6 +20,7 @@ export const ParticipantsTab: React.FC<ParticipantsTabProps> = ({ course }) => {
   const router = useRouter();
   const theme = useTheme();
   const [isLoading, setIsLoading] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
   const [courseOwner, setCourseOwner] = useState<User | null>(null);
@@ -84,6 +85,19 @@ export const ParticipantsTab: React.FC<ParticipantsTabProps> = ({ course }) => {
     }
   }
 
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      await Promise.all([
+        fetchCourseOwner(),
+        fetchAssistants(),
+        fetchStudents(),
+      ]);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
   useFocusEffect(
     useCallback(() => {
       fetchCourseOwner();
@@ -117,6 +131,8 @@ export const ParticipantsTab: React.FC<ParticipantsTabProps> = ({ course }) => {
         >
           <SectionList
             sections={participantsSections}
+            refreshing={isRefreshing}
+            onRefresh={handleRefresh}
             keyExtractor={(item, index) => item?.id.toString() + index}
             renderItem={({ item }) => {
               if (!item) return null;

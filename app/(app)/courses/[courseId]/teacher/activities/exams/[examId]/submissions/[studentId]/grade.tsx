@@ -34,7 +34,6 @@ import { ToggleableTextInput } from "@/components/forms/ToggleableTextInput";
 import { useExamGrade } from "@/hooks/useExamGrade";
 import { customColors } from "@/utils/constants/colors";
 import { FullScreenModal } from "@/components/FullScreenModal";
-import { TextField } from "@/components/forms/TextField";
 import { ListStatCard } from "@/components/ListStatCard";
 
 export default function GradeExamSubmissionPage() {

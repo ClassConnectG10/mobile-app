@@ -10,7 +10,6 @@ import LineChart from "@/components/charts/LineChart";
 import { exportToExcel } from "@/utils/files/exportToExcel";
 import { openFile } from "@/utils/files/common";
 import { File } from "@/types/file";
-import { TextField } from "@/components/forms/TextField";
 import { ToggleableTextInput } from "@/components/forms/ToggleableTextInput";
 import { ToggleableProfilePicture } from "@/components/forms/ToggleableProfilePicture";
 
@@ -156,7 +155,7 @@ export default function TestPage() {
           setFile={setFile}
         />
 
-        {/* <Button icon="file-excel" mode="contained" onPress={handleExport}>
+        <Button icon="file-excel" mode="contained" onPress={handleExport}>
           Exportar
         </Button>
         <Button
@@ -206,7 +205,7 @@ export default function TestPage() {
           placeholder={"holaaa"}
           editable={true}
           onChange={setTextString}
-        /> */}
+        />
       </ScrollView>
     </>
   );

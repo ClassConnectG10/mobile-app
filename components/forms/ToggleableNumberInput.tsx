@@ -1,5 +1,5 @@
 import { View } from "react-native";
-import { IconButton, TextInput, Text } from "react-native-paper";
+import { IconButton, TextInput } from "react-native-paper";
 import { TextField } from "./TextField";
 
 interface ToggleableNumberInputsProps {

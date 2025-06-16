@@ -1,6 +1,5 @@
 import {
   ActivityIndicator,
-  Avatar,
   Appbar,
   Button,
   useTheme,
@@ -25,6 +24,7 @@ import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { getAuth } from "@react-native-firebase/auth";
 import { useNavigation, CommonActions } from "@react-navigation/native";
 import { ToggleableProfilePicture } from "@/components/forms/ToggleableProfilePicture";
+import { AlertText } from "@/components/AlertText";
 
 export default function UserProfilePage() {
   const theme = useTheme();
@@ -48,6 +48,7 @@ export default function UserProfilePage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [isBlocked, setIsBlocked] = useState(false);
 
   // Cargar datos si es otro usuario
   const fetchUser = async () => {
@@ -59,6 +60,7 @@ export default function UserProfilePage() {
       userInformationHook.setUserInformation({
         ...userFetched.userInformation,
       });
+      setIsBlocked(userFetched.isBlocked);
     } catch (error) {
       setErrorMessage((error as Error).message);
     } finally {
@@ -92,13 +94,10 @@ export default function UserProfilePage() {
     setIsLoading(true);
     try {
       const newUser = {
-        id: userContext.id,
+        ...userContext,
         userInformation: { ...userInformation },
       };
       await editUserProfile(newUser, profilePictureChanged);
-
-      console.log("newUser", newUser);
-
       userContextHook.setUser(newUser);
       setIsEditing(false);
     } catch (error) {
@@ -190,25 +189,29 @@ export default function UserProfilePage() {
                   }
                   editable={isMe && isEditing}
                   size={96}
+                  isBlocked={isBlocked}
                 />
                 {/* <Avatar.Icon size={96} icon="account" /> */}
               </View>
+              {!isBlocked && (
+                <>
+                  <ToggleableTextInput
+                    label="Nombre"
+                    placeholder="Nombre"
+                    editable={isMe && isEditing}
+                    onChange={userInformationHook.setFirstName}
+                    value={userInformation.firstName}
+                  />
 
-              <ToggleableTextInput
-                label="Nombre"
-                placeholder="Nombre"
-                editable={isMe && isEditing}
-                onChange={userInformationHook.setFirstName}
-                value={userInformation.firstName}
-              />
-
-              <ToggleableTextInput
-                label="Apellido"
-                placeholder="Apellido"
-                editable={isMe && isEditing}
-                onChange={userInformationHook.setLastName}
-                value={userInformation.lastName}
-              />
+                  <ToggleableTextInput
+                    label="Apellido"
+                    placeholder="Apellido"
+                    editable={isMe && isEditing}
+                    onChange={userInformationHook.setLastName}
+                    value={userInformation.lastName}
+                  />
+                </>
+              )}
 
               <ToggleableTextInput
                 label="Email"
@@ -217,6 +220,10 @@ export default function UserProfilePage() {
                 onChange={userInformationHook.setEmail}
                 value={userInformation.email}
               />
+
+              {isBlocked && (
+                <AlertText text="Este usuario está bloqueado" error={true} />
+              )}
 
               {isMe && (
                 <OptionPicker

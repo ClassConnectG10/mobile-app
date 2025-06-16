@@ -5,7 +5,11 @@ import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import { FlatList, View, StyleSheet } from "react-native";
 import { Notification } from "@/types/notification";
 import NotificationCard from "@/components/cards/NotificationCard";
-import { deleteAllNotifications, deleteNotification, getUserNotifications } from "@/services/notifications";
+import {
+  deleteAllNotifications,
+  deleteNotification,
+  getUserNotifications,
+} from "@/services/notifications";
 import { AlertDialog } from "@/components/AlertDialog";
 
 export default function NotificationsPage() {
@@ -17,12 +21,14 @@ export default function NotificationsPage() {
   const [notifications, setNotifications] = useState<Notification[] | null>(
     null
   );
-  const [deleteAllNotificationsDialogVisible, setDeleteAllNotificationsDialogVisible] = useState(false);
+  const [
+    deleteAllNotificationsDialogVisible,
+    setDeleteAllNotificationsDialogVisible,
+  ] = useState(false);
 
   const fetchNotifications = async () => {
     setIsLoading(true);
     try {
-      // const userNotifications = await getUserMockNotifications();
       const userNotifications = await getUserNotifications();
       setNotifications(userNotifications);
     } catch (error) {
@@ -50,8 +56,7 @@ export default function NotificationsPage() {
       setNotifications((prev) =>
         prev ? prev.filter((n) => n.id !== notification.id) : null
       );
-    }
-    catch (error) {
+    } catch (error) {
       setErrorMessage((error as Error).message);
     }
   };
@@ -60,7 +65,7 @@ export default function NotificationsPage() {
     if (!notifications || notifications.length === 0) return;
 
     try {
-      await deleteAllNotifications(notifications.map(n => n.id));
+      await deleteAllNotifications();
       setNotifications([]);
       setDeleteAllNotificationsDialogVisible(false);
     } catch (error) {
@@ -94,7 +99,10 @@ export default function NotificationsPage() {
               onPress={() => setDeleteAllNotificationsDialogVisible(true)}
             />
           )}
-          <Appbar.Action icon="cog" onPress={() => router.push("/preferences")} />
+          <Appbar.Action
+            icon="cog"
+            onPress={() => router.push("/preferences")}
+          />
         </Appbar.Header>
 
         {isLoading ? (
@@ -107,7 +115,6 @@ export default function NotificationsPage() {
           </View>
         ) : (
           <View style={styles.container}>
-
             <FlatList
               data={notifications}
               contentContainerStyle={styles.listContainer}
@@ -122,10 +129,13 @@ export default function NotificationsPage() {
               ListHeaderComponent={
                 <>
                   {notifications && notifications.length > 0 && (
-                    <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
-                      {notifications.length === 1 ?
-                        `${notifications.length} notificación` :
-                        `${notifications.length} notificaciones`}
+                    <Text
+                      variant="bodyMedium"
+                      style={{ color: theme.colors.onSurfaceVariant }}
+                    >
+                      {notifications.length === 1
+                        ? `${notifications.length} notificación`
+                        : `${notifications.length} notificaciones`}
                     </Text>
                   )}
                 </>
@@ -175,10 +185,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   loadingText: {
-    textAlign: 'center',
+    textAlign: "center",
   },
   listContainer: {
     gap: 12,
   },
-
 });

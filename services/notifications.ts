@@ -2,13 +2,16 @@ import { useEffect } from "react";
 import { PermissionsAndroid, Platform } from "react-native";
 import { getMessaging } from "@react-native-firebase/messaging";
 import { Notification } from "@/types/notification";
-import { createDeleteNotificationRequest, createUserNotificationsRequest } from "@/api/notifications";
+import {
+  createDeleteNotificationRequest,
+  createUserNotificationsRequest,
+} from "@/api/notifications";
 import { handleError } from "./common";
 
 const requestUserPermission = async () => {
-  if (Platform.OS === 'android') {
+  if (Platform.OS === "android") {
     const granted = await PermissionsAndroid.request(
-      PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
+      PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS
     );
     if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
       console.log("Notification permission denied");
@@ -35,13 +38,14 @@ export const getUserNotifications = async (): Promise<Notification[]> => {
     const notifications = await request.get("");
     const notificationsData = notifications.data.data;
 
-    return notificationsData.map((notification: any) =>
-      new Notification(
-        notification.id,
-        notification.title,
-        notification.message,
-        notification.date_created,
-      )
+    return notificationsData.map(
+      (notification: any) =>
+        new Notification(
+          notification.id,
+          notification.title,
+          notification.message,
+          notification.date_created
+        )
     );
   } catch (error) {
     handleError(error, "obtener las notificaciones del usuario");
@@ -49,7 +53,7 @@ export const getUserNotifications = async (): Promise<Notification[]> => {
 };
 
 export const deleteNotification = async (
-  notificationId: string,
+  notificationId: string
 ): Promise<void> => {
   try {
     const request = await createDeleteNotificationRequest(notificationId);
@@ -59,15 +63,14 @@ export const deleteNotification = async (
   }
 };
 
-export const deleteAllNotifications = async (
-  notificationIds: string[],
-): Promise<void> => {
+export const deleteAllNotifications = async (): Promise<void> => {
   try {
-    await Promise.all(notificationIds.map((id) => deleteNotification(id)));
+    const request = await createUserNotificationsRequest();
+    await request.delete("");
   } catch (error) {
     handleError(error, "eliminar todas las notificaciones");
   }
-}
+};
 
 export const useNotification = () => {
   useEffect(() => {

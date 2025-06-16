@@ -5,6 +5,7 @@ export class User {
   constructor(
     public id: number,
     public userInformation: UserInformation,
+    public isBlocked: boolean = false,
     public userPreferences?: UserPreferences
   ) {}
 }

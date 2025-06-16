@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { Text, View, StyleSheet, Image } from "react-native";
+import { View, StyleSheet, Image } from "react-native";
 import {
   Avatar,
   IconButton,
@@ -17,6 +17,8 @@ interface ToggleableProfilePictureProps {
   setFile?: (file: File | null) => void;
   editable?: boolean;
   size?: number;
+  pressable?: boolean;
+  isBlocked?: boolean;
 }
 
 export const ToggleableProfilePicture: React.FC<
@@ -26,6 +28,8 @@ export const ToggleableProfilePicture: React.FC<
   setFile: setInitialFile = () => {},
   editable = false,
   size = 96,
+  pressable = true,
+  isBlocked = false,
 }) => {
   const theme = useTheme();
 
@@ -128,12 +132,22 @@ export const ToggleableProfilePicture: React.FC<
             color={theme.colors.onPrimary}
           />
         </View>
+      ) : isBlocked ? (
+        <Avatar.Icon
+          size={size}
+          icon="account-off"
+          onTouchEnd={() => {
+            if (editable && !isDisabled) {
+              pickImage();
+            }
+          }}
+        />
       ) : file ? (
         <Avatar.Image
           size={size}
           source={{ uri: file.localUri }}
           onTouchEnd={() => {
-            if (file.localUri) {
+            if (file.localUri && pressable && !isDisabled) {
               openImageModal();
             }
           }}

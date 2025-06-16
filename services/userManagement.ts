@@ -86,7 +86,7 @@ export async function registerUser(
       )
     );
 
-    const user = new User(responseData.id, userInfo, userPreferences);
+    const user = new User(responseData.id, userInfo, false, userPreferences);
     return user;
   } catch (error) {
     throw handleError(error, "registrar el usuario");
@@ -110,8 +110,12 @@ export async function loginUser(uid: string): Promise<User | null> {
     const responseData = response.data.data;
 
     const userInfo = new UserInformation(
-      responseData.name,
-      responseData.surname,
+      responseData.is_blocked
+        ? "*".repeat(responseData.name.length)
+        : responseData.name,
+      responseData.is_blocked
+        ? "*".repeat(responseData.surname.length)
+        : responseData.surname,
       responseData.email,
       getFileFromBackend(
         `${responseData.id}_profile_picture.png`,
@@ -131,7 +135,12 @@ export async function loginUser(uid: string): Promise<User | null> {
       )
     );
 
-    const user = new User(responseData.id, userInfo, userPreferences);
+    const user = new User(
+      responseData.id,
+      userInfo,
+      responseData.is_blocked ? true : false,
+      userPreferences
+    );
 
     return user;
   } catch (error) {
@@ -211,21 +220,28 @@ export async function getUser(userId: number): Promise<User> {
   try {
     const request = await createUserRequest(userId);
     const response = await request.get("");
+    const responseData = response.data.data;
+
     const userInfo = new UserInformation(
-      response.data.data.name,
-      response.data.data.surname,
-      response.data.data.email,
+      responseData.is_blocked
+        ? "*".repeat(responseData.name.length)
+        : responseData.name,
+      responseData.is_blocked
+        ? "*".repeat(responseData.surname.length)
+        : responseData.surname,
+      responseData.email,
       getFileFromBackend(
-        `${response.data.data.id}_profile_picture`,
-        response.data.data.profile_picture_url
+        `${responseData.id}_profile_picture`,
+        responseData.profile_picture_url
       ),
-      response.data.data.country ? response.data.data.country : null
+      responseData.country ? responseData.country : null
     );
 
-    const user = {
-      id: response.data.data.id,
-      userInformation: userInfo,
-    };
+    const user = new User(
+      responseData.id,
+      userInfo,
+      responseData.is_blocked ? true : false
+    );
 
     return user;
   } catch (error) {
@@ -249,15 +265,16 @@ export async function getBulkUsers(userIds: number[]): Promise<User[]> {
       return new User(
         user.id,
         new UserInformation(
-          user.name,
-          user.surname,
+          user.is_blocked ? "*".repeat(user.name.length) : user.name,
+          user.is_blocked ? "*".repeat(user.surname.length) : user.surname,
           user.email,
           getFileFromBackend(
             `${user.id}_profile_picture`,
             user.profile_picture_url
           ),
           user.country ? user.country : null
-        )
+        ),
+        user.is_blocked ? true : false
       );
     });
     return users;
@@ -274,8 +291,8 @@ export async function getUsers(): Promise<User[]> {
       return new User(
         user.id,
         new UserInformation(
-          user.name,
-          user.surname,
+          user.is_blocked ? "*".repeat(user.name.length) : user.name,
+          user.is_blocked ? "*".repeat(user.surname.length) : user.surname,
           user.email,
           user.profile_picture_url
             ? getFileFromBackend(
@@ -284,7 +301,8 @@ export async function getUsers(): Promise<User[]> {
               )
             : null,
           user.country ? user.country : null
-        )
+        ),
+        user.is_blocked ? true : false
       );
     });
     return users;

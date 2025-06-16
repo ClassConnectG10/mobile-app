@@ -313,13 +313,7 @@ export default function StudentStatisticsPage() {
     <View style={{ flex: 1 }}>
       <Appbar.Header>
         <Appbar.BackAction onPress={() => router.back()} />
-        <Appbar.Content
-          title={
-            student
-              ? `${student.userInformation.firstName} ${student.userInformation.lastName}`
-              : "Estadísticas del Estudiante"
-          }
-        />
+        <Appbar.Content title={"Estadísticas del estudiante"} />
       </Appbar.Header>
       {isLoading || !studentStatistics ? (
         <View

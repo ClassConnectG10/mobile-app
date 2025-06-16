@@ -124,13 +124,7 @@ export default function TeacherStudentDetialsPage() {
     <>
       <Appbar.Header>
         <Appbar.BackAction onPress={() => router.back()} />
-        <Appbar.Content
-          title={
-            student
-              ? `${student.userInformation.firstName} ${student.userInformation.lastName}`
-              : "Calificación del estudiante"
-          }
-        />
+        <Appbar.Content title={"Información del estudiante"} />
       </Appbar.Header>
       {!student ? (
         <View

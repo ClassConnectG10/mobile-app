@@ -1,5 +1,5 @@
 import React from "react";
-import { Card, Text, Avatar, useTheme } from "react-native-paper";
+import { Card, Text, useTheme } from "react-native-paper";
 import { View, StyleSheet } from "react-native";
 import { User } from "@/types/user";
 import { ToggleableProfilePicture } from "../forms/ToggleableProfilePicture";
@@ -22,6 +22,8 @@ const UserCard: React.FC<UserCardProps> = ({ user, onPress }) => {
         <ToggleableProfilePicture
           file={user.userInformation.profilePicture}
           size={48}
+          pressable={false}
+          isBlocked={user.isBlocked}
         />
 
         <View style={{ flex: 1 }}>
@@ -31,10 +33,6 @@ const UserCard: React.FC<UserCardProps> = ({ user, onPress }) => {
           <Text style={[styles.email, { color: theme.colors.onSurface }]}>
             {email}
           </Text>
-          {/* <View style={styles.countryRow}>
-            <Icon source="map-marker" size={16} color={theme.colors.primary} />
-            <Text style={styles.countryText}>{country}</Text>
-          </View> */}
         </View>
       </View>
     </Card>
