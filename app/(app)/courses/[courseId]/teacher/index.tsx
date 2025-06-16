@@ -19,6 +19,7 @@ import ActivitiesTab from "@/components/courseTabs/teacher/activities";
 import { ParticipantsTab } from "@/components/courseTabs/teacher/participants";
 import { ModulesTab } from "@/components/courseTabs/teacher/modules";
 import { StatisticsTab } from "@/components/courseTabs/teacher/statistics";
+import { ForumTab } from "@/components/courseTabs/teacher/forum";
 
 export default function CoursePage() {
   const router = useRouter();
@@ -43,6 +44,12 @@ export default function CoursePage() {
       title: "Módulos",
       focusedIcon: "bookshelf",
       unfocusedIcon: "bookshelf",
+    },
+    {
+      key: "forum",
+      title: "Foro",
+      focusedIcon: "forum",
+      unfocusedIcon: "forum",
     },
     {
       key: "participants",
@@ -73,6 +80,12 @@ export default function CoursePage() {
         return null;
       }
       return <ModulesTab course={courseContext.course} />;
+    },
+    forum: () => {
+      if (!courseContext.course) {
+        return null;
+      }
+      return <ForumTab course={courseContext.course} />;
     },
     statistics: () => {
       if (!courseContext.course) {
@@ -185,6 +198,7 @@ export default function CoursePage() {
               navigationState={{ index: tabIndex, routes }}
               onIndexChange={setTabIndex}
               renderScene={renderScene}
+              labeled={false}
             />
           </>
         )}
