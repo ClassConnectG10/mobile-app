@@ -79,22 +79,22 @@ export const ForumTab: React.FC<ForumTabProps> = ({ course }) => {
     }, [course.courseId])
   );
 
-  const handleCreateModule = () => {
+  const handleCreateQuestion = () => {
     router.push({
-      pathname: "/courses/[courseId]/teacher/modules/create", // TODO change to forum creation
+      pathname: "/courses/[courseId]/forum/create",
       params: { courseId: course.courseId },
     });
   };
 
-  // const handlePressModule = (question: ForumQuestion) => {
-  //   router.push({
-  //     pathname: "/courses/[courseId]/teacher/modules/[moduleId]", // TODO change to forum question details
-  //     params: {
-  //       courseId: course.courseId,
-  //       moduleId: question.id,
-  //     },
-  //   });
-  // };
+  const handleViewQuestion = (question: ForumQuestion) => {
+    router.push({
+      pathname: "/courses/[courseId]/forum/[questionId]", // TODO change to forum question details
+      params: {
+        courseId: course.courseId,
+        questionId: question.id,
+      },
+    });
+  };
 
   return (
     <View style={{ paddingHorizontal: 16, flex: 1 }}>
@@ -129,7 +129,7 @@ export const ForumTab: React.FC<ForumTabProps> = ({ course }) => {
                 icon="plus"
                 size={24}
                 style={{ margin: 0 }}
-                onPress={handleCreateModule}
+                onPress={handleCreateQuestion}
                 accessibilityLabel="Nueva pregunta"
               />
             </View>
@@ -149,7 +149,9 @@ export const ForumTab: React.FC<ForumTabProps> = ({ course }) => {
                     ({} as User)
                   }
                   forumQuestion={item}
-                  onPress={() => {}}
+                  onPress={() => {
+                    handleViewQuestion(item);
+                  }}
                 />
               </View>
             )}

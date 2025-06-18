@@ -47,7 +47,7 @@ export async function getQuestions(
 
 export async function getQuestion(
   courseId: string,
-  questionId: string
+  questionId: number
 ): Promise<{ question: ForumQuestion; answers: ForumAnswer[] }> {
   try {
     const request = await createForumQuestionRequest(courseId, questionId);
@@ -102,18 +102,13 @@ export async function createForumQuestion(
       title: questionInformation.title,
       description: questionInformation.content,
       tags: questionInformation.tags,
-    }
+    };
 
     if (questionInformation.file) {
-      await postFile(
-        request,
-        questionInformation.file,
-        body,
-      )
+      await postFile(request, questionInformation.file, body);
     } else {
       await request.post("", body);
     }
-
   } catch (error) {
     throw handleError(error, "crear la pregunta del foro");
   }

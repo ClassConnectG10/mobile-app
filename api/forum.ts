@@ -11,7 +11,7 @@ export const createForumQuestionsRequest = (courseId: string) => {
 
 export const createForumQuestionRequest = (
   courseId: string,
-  questionId: string
+  questionId: number
 ) => {
   return createRequest({
     uri: `courses/${courseId}/forum/questions/${questionId}`,
