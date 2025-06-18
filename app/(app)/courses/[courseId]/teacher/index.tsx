@@ -19,7 +19,7 @@ import ActivitiesTab from "@/components/courseTabs/teacher/activities";
 import { ParticipantsTab } from "@/components/courseTabs/teacher/participants";
 import { ModulesTab } from "@/components/courseTabs/teacher/modules";
 import { StatisticsTab } from "@/components/courseTabs/teacher/statistics";
-import { ForumTab } from "@/components/courseTabs/teacher/forum";
+import { ForumTab } from "@/components/courseTabs/forum";
 
 export default function CoursePage() {
   const router = useRouter();
@@ -142,7 +142,7 @@ export default function CoursePage() {
   useFocusEffect(
     useCallback(() => {
       fetchCourse();
-    }, [courseId])
+    }, [courseId]),
   );
 
   return (

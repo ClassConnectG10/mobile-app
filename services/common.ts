@@ -41,7 +41,8 @@ export function handleError(error: any, action: string): Error {
 
 export function postFile(
   axiosInstance: AxiosInstance,
-  file: File
+  file: File,
+  body?: Record<string, any>
 ): Promise<any> {
   const formData = new FormData();
 
@@ -50,6 +51,12 @@ export function postFile(
     name: file.name,
     type: file.type,
   } as any);
+
+  if (body) {
+    Object.entries(body).forEach(([key, value]) => {
+      formData.append(key, value);
+    });
+  }
 
   return axiosInstance.post("", formData, {
     headers: {
@@ -343,6 +350,7 @@ export async function syncResourceAttachments(
     moduleId,
     resourceId
   );
+
   const linkRequest = await createResourceLinkUploadRequest(
     courseId,
     moduleId,

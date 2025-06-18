@@ -32,8 +32,8 @@ export async function createRequest(
   return axios.create({
     baseURL: `${BASE_URL}/${axiosRequestConfig.uri}`,
     headers: {
-      "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
+      "Content-Type": axiosRequestConfig.headers?.["Content-Type"] || "application/json",
       ...axiosRequestConfig.headers,
     },
     params: {

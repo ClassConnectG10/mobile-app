@@ -9,10 +9,10 @@ import {
   ForumAnswerInformation,
 } from "@/types/forum";
 import {
-  getAttachmentFromBackend,
   getDateFromBackend,
   getFileFromBackend,
   handleError,
+  postFile,
 } from "./common";
 
 export async function getQuestions(
@@ -30,6 +30,7 @@ export async function getQuestions(
           question.id,
           question.user_id,
           getDateFromBackend(question.created_at),
+          question.answer_count ?? 0, // TODO: check this
           new ForumQuestionInformation(
             question.title,
             question.description,
@@ -57,6 +58,7 @@ export async function getQuestion(
       responseData.id,
       responseData.user_id,
       getDateFromBackend(responseData.created_at),
+      responseData.answer_count ?? 0,
       new ForumQuestionInformation(
         responseData.title,
         responseData.description,
@@ -74,17 +76,45 @@ export async function getQuestion(
           answer.parent_id,
           answer.user_id,
           getDateFromBackend(answer.created_at),
+          answer.answer_count ?? 0, // TODO: check this
+          answer.upvotes,
+          answer.downvotes,
           new ForumAnswerInformation(
             answer.content,
             getFileFromBackend(answer.file_name, answer.file_url)
-          ),
-          answer.upvotes,
-          answer.downvotes
+          )
         )
     );
 
     return { question, answers };
   } catch (error) {
     throw handleError(error, "obtener la pregunta del foro");
+  }
+}
+
+export async function createForumQuestion(
+  courseId: string,
+  questionInformation: ForumQuestionInformation
+): Promise<void> {
+  try {
+    const request = await createForumQuestionsRequest(courseId);
+    const body = {
+      title: questionInformation.title,
+      description: questionInformation.content,
+      tags: questionInformation.tags,
+    }
+
+    if (questionInformation.file) {
+      await postFile(
+        request,
+        questionInformation.file,
+        body,
+      )
+    } else {
+      await request.post("", body);
+    }
+
+  } catch (error) {
+    throw handleError(error, "crear la pregunta del foro");
   }
 }

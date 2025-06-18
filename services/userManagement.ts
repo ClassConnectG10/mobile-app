@@ -104,6 +104,7 @@ export async function registerUser(
 export async function loginUser(uid: string): Promise<User | null> {
   try {
     const messagingToken = await getToken();
+    console.log("Messaging token:", messagingToken);
     const request = await createLoginUserRequest(uid, messagingToken);
     const response = await request.get("");
 

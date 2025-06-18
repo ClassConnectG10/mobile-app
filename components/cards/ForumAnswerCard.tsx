@@ -1,23 +1,23 @@
 import { Card, Icon, Text, useTheme } from "react-native-paper";
 import { StyleSheet, View } from "react-native";
-import { ForumQuestion } from "@/types/forum";
+import { ForumAnswer } from "@/types/forum";
 import { User } from "@/types/user";
 
-interface ForumQuestionCardProps {
+interface ForumAnswerCardProps {
   user: User;
-  forumQuestion: ForumQuestion;
+  forumAnswer: ForumAnswer;
   onPress?: () => void;
 }
 
-const ForumQuestionCard: React.FC<ForumQuestionCardProps> = ({
+const ForumAnswerCard: React.FC<ForumAnswerCardProps> = ({
   user,
-  forumQuestion,
+  forumAnswer,
   onPress,
 }) => {
   const theme = useTheme();
-  const { title, file } = forumQuestion.information;
-  const { createdAt, acceptedAnswerId } = forumQuestion;
-
+  const { content, file } = forumAnswer.information;
+  const { createdAt, creatorId } = forumAnswer;
+ 
   return (
     <Card
       onPress={onPress}
@@ -29,18 +29,10 @@ const ForumQuestionCard: React.FC<ForumQuestionCardProps> = ({
       ]}
     >
       <View style={styles.row}>
-        <Icon
-          source={
-            acceptedAnswerId
-              ? "check-circle-outline"
-              : "checkbox-blank-circle-outline"
-          }
-          size={24}
-          color={theme.colors.primary}
-        />
+        
         <View style={{ flex: 1 }}>
           <Text style={[styles.title, { color: theme.colors.onSurface }]}>
-            {title}
+            {content}
           </Text>
           <Text numberOfLines={1} style={styles.description}>
             Publicada por {user.userInformation.firstName}{" "}
@@ -76,4 +68,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ForumQuestionCard;
+export default ForumAnswerCard;

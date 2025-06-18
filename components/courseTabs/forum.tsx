@@ -8,7 +8,7 @@ import {
   ActivityIndicator,
   IconButton,
 } from "react-native-paper";
-import ErrorMessageSnackbar from "../../ErrorMessageSnackbar";
+import ErrorMessageSnackbar from "../ErrorMessageSnackbar";
 import { ForumQuestion } from "@/types/forum";
 import { getQuestions } from "@/services/forumManagement";
 import { User } from "@/types/user";

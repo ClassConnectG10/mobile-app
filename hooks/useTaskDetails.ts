@@ -38,8 +38,8 @@ export function useTaskDetails(): TaskDetailsHook {
   };
 
   return {
-    taskDetails: taskDetails,
-    setTaskDetails: setTaskDetails,
+    taskDetails,
+    setTaskDetails,
     setModuleId,
     setTitle,
     setInstructions,

@@ -107,6 +107,7 @@ export async function searchCourses(
     );
     const response = await request.get("");
     const coursesData = response.data.data;
+    console.log("Courses data:", coursesData);
 
     const courses: Course[] = coursesData.map((courseData: any) => {
       return new Course(

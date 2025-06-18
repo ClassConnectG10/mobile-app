@@ -5,6 +5,7 @@ export class ForumQuestion {
     public id: number,
     public creatorId: number,
     public createdAt: Date,
+    public answerCount: number,
     public information: ForumQuestionInformation,
     public acceptedAnswerId: number | null
   ) {}
@@ -26,9 +27,10 @@ export class ForumAnswer {
     public parentId: number | null,
     public creatorId: number,
     public createdAt: Date,
-    public information: ForumAnswerInformation,
+    public answerCount: number,
     public upVotes: number,
-    public downVotes: number
+    public downVotes: number,
+    public information: ForumAnswerInformation,
   ) {}
 }
 
