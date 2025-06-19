@@ -7,6 +7,7 @@ import {
   Text,
   ActivityIndicator,
   IconButton,
+  Button,
 } from "react-native-paper";
 import ErrorMessageSnackbar from "../ErrorMessageSnackbar";
 import { ForumQuestion } from "@/types/forum";
@@ -51,7 +52,6 @@ export const ForumTab: React.FC<ForumTabProps> = ({ course }) => {
       const uniqueUserIds = Array.from(
         new Set(questions.map((question) => question.creatorId))
       );
-      console.log("Fetching users for IDs:", uniqueUserIds);
       const fetchedUsers = await getBulkUsers(uniqueUserIds);
       setUsers(fetchedUsers);
     } catch (error) {
@@ -114,46 +114,22 @@ export const ForumTab: React.FC<ForumTabProps> = ({ course }) => {
         </View>
       ) : (
         <View style={{ flex: 1 }}>
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              paddingVertical: 8,
-              justifyContent: "space-between",
-            }}
-          >
-            <Text variant="titleMedium">Foro</Text>
-
-            <View style={{ flexDirection: "row", gap: 4 }}>
-              <IconButton
-                icon="plus"
-                size={24}
-                style={{ margin: 0 }}
-                onPress={handleCreateQuestion}
-                accessibilityLabel="Nueva pregunta"
-              />
-            </View>
-          </View>
           <FlatList
             data={questions}
             keyExtractor={(item) => item.id.toString()}
             refreshing={isRefreshing}
             onRefresh={handleRefresh}
-            renderItem={({ item, index }) => (
-              <View
-                style={{ flexDirection: "row", alignItems: "center", gap: 8 }}
-              >
-                <ForumQuestionCard
-                  user={
-                    users.find((user) => user.id === item.creatorId) ||
-                    ({} as User)
-                  }
-                  forumQuestion={item}
-                  onPress={() => {
-                    handleViewQuestion(item);
-                  }}
-                />
-              </View>
+            renderItem={({ item }) => (
+              <ForumQuestionCard
+                user={
+                  users.find((user) => user.id === item.creatorId) ||
+                  ({} as User)
+                }
+                forumQuestion={item}
+                onPress={() => {
+                  handleViewQuestion(item);
+                }}
+              />
             )}
             ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
             ListEmptyComponent={
@@ -165,6 +141,31 @@ export const ForumTab: React.FC<ForumTabProps> = ({ course }) => {
                 }}
               >
                 <Text variant="titleMedium">No hay preguntas en este foro</Text>
+              </View>
+            }
+            ListHeaderComponent={
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  paddingVertical: 8,
+                  justifyContent: "space-between",
+                }}
+              >
+                <Text variant="titleMedium">Foro</Text>
+
+                <View
+                  style={{ flexDirection: "row", gap: 4, alignItems: "center" }}
+                >
+                  <Button
+                    icon="plus"
+                    contentStyle={{ flexDirection: "row-reverse" }}
+                    onPress={handleCreateQuestion}
+                    accessibilityLabel="Nueva pregunta"
+                  >
+                    Nueva pregunta
+                  </Button>
+                </View>
               </View>
             }
           />

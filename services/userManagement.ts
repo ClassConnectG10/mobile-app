@@ -54,13 +54,6 @@ export async function registerUser(
     const responseData = response.data.data;
 
     if (userInformation.profilePicture) {
-      console.log(
-        "Uploading profile picture for user with ID:",
-        responseData.id
-      );
-
-      console.log("Profile picture file", userInformation.profilePicture);
-
       await uploadProfilePicture(
         responseData.id,
         userInformation.profilePicture
@@ -104,7 +97,6 @@ export async function registerUser(
 export async function loginUser(uid: string): Promise<User | null> {
   try {
     const messagingToken = await getToken();
-    console.log("Messaging token:", messagingToken);
     const request = await createLoginUserRequest(uid, messagingToken);
     const response = await request.get("");
 
@@ -198,15 +190,9 @@ export async function editUserProfile(
 
     if (profilePictureChanged) {
       if (user.userInformation.profilePicture) {
-        console.log("Uploading profile picture for user with ID:", user.id);
         await uploadProfilePicture(
           user.id,
           user.userInformation.profilePicture
-        );
-
-        console.log(
-          "Profile picture uploaded successfully for user with ID:",
-          user.id
         );
       } else {
         await deleteProfilePicture(user.id);
@@ -335,9 +321,6 @@ export async function updatePreferences(
       push_scopes: pushScopes,
       email_scopes: emailScopes,
     };
-
-    console.log("Updating user preferences...");
-    console.log(body);
 
     await request.patch("", body);
   } catch (error) {

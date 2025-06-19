@@ -64,8 +64,6 @@ export default function RegisterDetailsPage() {
         country: userInformation.country,
       };
 
-      console.log("Registering user with info:", userInfo);
-
       const newUser = await registerUser(uid, userInfo);
       setUser(newUser);
       router.replace("/home");

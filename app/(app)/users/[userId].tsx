@@ -77,7 +77,6 @@ export default function UserProfilePage() {
   // Inicializar datos propios en el hook de edición
   useEffect(() => {
     if (isMe && userContext) {
-      console.log("userContext", userContext);
       userInformationHook.setUserInformation({
         ...userContext.userInformation,
       });

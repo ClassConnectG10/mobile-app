@@ -30,7 +30,7 @@ export default function NotificationsPage() {
     setIsLoading(true);
     try {
       const userNotifications = await getUserNotifications();
-      setNotifications(userNotifications);
+      // setNotifications(userNotifications);
     } catch (error) {
       setErrorMessage((error as Error).message);
     } finally {

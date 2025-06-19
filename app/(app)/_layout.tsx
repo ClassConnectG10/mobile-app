@@ -21,7 +21,6 @@ export default function CoursesLayout() {
     const messaging = getMessaging();
 
     const unsubscribe = messaging.onMessage(async (remoteMessage) => {
-      console.log("Received foreground notification:", remoteMessage);
       const receivedNotification = new Notification(
         remoteMessage.messageId || Math.random().toString(),
         remoteMessage.notification?.title || "New Notification",

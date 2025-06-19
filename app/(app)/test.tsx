@@ -133,7 +133,6 @@ export default function TestPage() {
     }
     try {
       await openFile(exportedFile);
-      console.log("Archivo abierto correctamente:", exportedFile.name);
     } catch (error) {
       console.error("Error al abrir el archivo:", error);
     }

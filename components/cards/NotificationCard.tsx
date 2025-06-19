@@ -1,6 +1,7 @@
 import { Card, Text, useTheme, IconButton } from "react-native-paper";
 import { StyleSheet, View } from "react-native";
 import { Notification } from "@/types/notification";
+import { formatLocalDateTime } from "@/utils/date";
 
 interface NotificationCardProps {
   notification: Notification;
@@ -10,13 +11,13 @@ interface NotificationCardProps {
 
 const NotificationCard: React.FC<NotificationCardProps> = ({
   notification,
-  onPress = () => { },
-  onDelete = () => { },
+  onPress = () => {},
+  onDelete = () => {},
 }) => {
   const theme = useTheme();
 
   const getNotificationIcon = () => {
-    return 'bell';
+    return "bell";
   };
 
   return (
@@ -43,29 +44,24 @@ const NotificationCard: React.FC<NotificationCardProps> = ({
         <View style={styles.content}>
           <View style={styles.header}>
             <Text
-              style={[styles.title, { color: theme.colors.onSurface, }]}
+              style={[styles.title, { color: theme.colors.onSurface }]}
               numberOfLines={2}
             >
               {notification.title}
             </Text>
             <Text
               numberOfLines={3}
-              style={[styles.description, { color: theme.colors.onSurfaceVariant, }]}
+              style={[
+                styles.description,
+                { color: theme.colors.onSurfaceVariant },
+              ]}
             >
               {notification.body}
             </Text>
           </View>
 
           <Text style={[styles.date, { color: theme.colors.onSurfaceVariant }]}>
-            {new Date(notification.date).toLocaleDateString("es-ES", {
-              year: "numeric",
-              month: "2-digit",
-              day: "2-digit",
-              hour: "2-digit",
-              minute: "2-digit",
-              hour12: false,
-            }
-            )}
+            {formatLocalDateTime(new Date(notification.date))}
           </Text>
         </View>
 

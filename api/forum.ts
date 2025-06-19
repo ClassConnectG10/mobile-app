@@ -17,3 +17,15 @@ export const createForumQuestionRequest = (
     uri: `courses/${courseId}/forum/questions/${questionId}`,
   });
 };
+
+export const createForumAnswerRequest = (
+  courseId: string,
+  questionId: number
+) => {
+  return createRequest({
+    uri: `courses/${courseId}/forum/questions/${questionId}/answers`,
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+};

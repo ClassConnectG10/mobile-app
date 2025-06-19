@@ -6,6 +6,8 @@ interface ToggleableTextInputProps {
   value: string;
   editable: boolean;
   onChange: (value: string) => void;
+  autoFocus?: boolean;
+  clearable?: boolean;
 }
 
 export const ToggleableTextInput: React.FC<ToggleableTextInputProps> = ({
@@ -14,6 +16,8 @@ export const ToggleableTextInput: React.FC<ToggleableTextInputProps> = ({
   value,
   editable,
   onChange,
+  autoFocus = false,
+  clearable = true,
 }) => {
   return (
     <TextInput
@@ -23,11 +27,12 @@ export const ToggleableTextInput: React.FC<ToggleableTextInputProps> = ({
       onChangeText={onChange}
       value={value}
       right={
-        editable ? (
+        editable && clearable && value ? (
           <TextInput.Icon icon="close" onPress={() => onChange("")} />
         ) : undefined
       }
       multiline={true}
+      autoFocus={autoFocus}
     ></TextInput>
   );
 };

@@ -1,27 +1,44 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useState } from "react";
 import { View, ScrollView } from "react-native";
-import { Appbar, Button, Divider, TextInput, Text } from "react-native-paper";
+import { Appbar, Button, Divider, TextInput } from "react-native-paper";
 import { ToggleableFileInput } from "@/components/forms/ToggleableFileInput";
 import { ToggleableTagsInput } from "@/components/forms/ToggleableTagsInput";
 import { useForumQuestionInformation } from "@/hooks/useForumQuestionDetailsHook";
-import { createForumQuestion } from "@/services/forumManagement";
+import {
+  createForumAnswer,
+  createForumQuestion,
+} from "@/services/forumManagement";
+import { useForumAnswerInformation } from "@/hooks/useForumAnswerDetailsHook";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 
-export default function CreateForumQuestionPage() {
+export default function CreateForumAnswerPage() {
   const router = useRouter();
 
-  const { courseId: courseIdParam } = useLocalSearchParams();
+  const [errorMessage, setErrorMessage] = useState("");
+
+  const {
+    courseId: courseIdParam,
+    questionId: questionIdParam,
+    parentAnswerId: parentAnswerIdParam,
+  } = useLocalSearchParams();
   const courseId = courseIdParam as string;
+  const questionId = Number(questionIdParam);
+  const parentAnswerId = parentAnswerIdParam
+    ? Number(parentAnswerIdParam)
+    : null;
 
-  const [errorMessage, setErrorMessage] = useState<string>("");
+  const { forumAnswerInformation, setContent, setFile } =
+    useForumAnswerInformation();
 
-  const { forumQuestionInformation, setTitle, setContent, setTags, setFile } =
-    useForumQuestionInformation();
-
-  const handleCreateForumQuestion = async () => {
+  const handleCreateForumAnswer = async () => {
     try {
-      await createForumQuestion(courseId, forumQuestionInformation);
+      await createForumAnswer(
+        courseId,
+        questionId,
+        parentAnswerId,
+        forumAnswerInformation
+      );
       router.back();
     } catch (error) {
       setErrorMessage((error as Error).message);
@@ -32,7 +49,8 @@ export default function CreateForumQuestionPage() {
     <View style={{ flex: 1 }}>
       <Appbar.Header>
         <Appbar.BackAction onPress={() => router.back()} />
-        <Appbar.Content title="Crear Pregunta en el Foro" />
+        <Appbar.Content title="Responder pregunta" />
+        {/* TODO: Handlear responder pregunta/respuesta */}
       </Appbar.Header>
 
       <ScrollView
@@ -44,46 +62,25 @@ export default function CreateForumQuestionPage() {
       >
         <View style={{ gap: 16 }}>
           <TextInput
-            label="Título"
-            value={forumQuestionInformation.title}
-            onChangeText={setTitle}
-          />
-
-          <TextInput
             label="Contenido"
-            value={forumQuestionInformation.content}
+            value={forumAnswerInformation.content}
             onChangeText={setContent}
             multiline
           />
 
-          <Divider />
-
-          <Text variant="titleMedium">Archivo (opcional)</Text>
-
           <ToggleableFileInput
             files={
-              forumQuestionInformation.file
-                ? [forumQuestionInformation.file]
-                : []
+              forumAnswerInformation.file ? [forumAnswerInformation.file] : []
             }
             editable={true}
             onChange={(files) => setFile(files.length > 0 ? files[0] : null)}
             maxFiles={1}
           />
-
-          <Divider />
-
-          <Text variant="titleMedium">Tags (opcional)</Text>
-
-          <ToggleableTagsInput
-            tags={forumQuestionInformation.tags}
-            onChange={setTags}
-          />
         </View>
 
         <View style={{ paddingTop: 16 }}>
-          <Button mode="contained" onPress={handleCreateForumQuestion}>
-            Crear Pregunta
+          <Button mode="contained" onPress={handleCreateForumAnswer}>
+            Crear respuesta
           </Button>
         </View>
       </ScrollView>

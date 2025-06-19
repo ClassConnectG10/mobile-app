@@ -1,4 +1,5 @@
 import {
+  createForumAnswerRequest,
   createForumQuestionRequest,
   createForumQuestionsRequest,
 } from "@/api/forum";
@@ -14,6 +15,7 @@ import {
   handleError,
   postFile,
 } from "./common";
+import { forumAnswerSchema, forumQuestionSchema } from "@/validations/forum";
 
 export async function getQuestions(
   courseId: string
@@ -30,7 +32,7 @@ export async function getQuestions(
           question.id,
           question.user_id,
           getDateFromBackend(question.created_at),
-          question.answer_count ?? 0, // TODO: check this
+          question.first_level_answers,
           new ForumQuestionInformation(
             question.title,
             question.description,
@@ -54,29 +56,15 @@ export async function getQuestion(
     const response = await request.get("");
     const responseData = response.data.data;
 
-    const question = new ForumQuestion(
-      responseData.id,
-      responseData.user_id,
-      getDateFromBackend(responseData.created_at),
-      responseData.answer_count ?? 0,
-      new ForumQuestionInformation(
-        responseData.title,
-        responseData.description,
-        responseData.tags,
-        getFileFromBackend(responseData.file_name, responseData.file_url)
-      ),
-      responseData.accepted_answer_id
-    );
-
     const answers = (responseData.thread || []).map(
       (answer: any) =>
         new ForumAnswer(
           answer.id,
-          question.id,
+          responseData.id,
           answer.parent_id,
           answer.user_id,
           getDateFromBackend(answer.created_at),
-          answer.answer_count ?? 0, // TODO: check this
+          answer.children_count,
           answer.upvotes,
           answer.downvotes,
           new ForumAnswerInformation(
@@ -84,6 +72,20 @@ export async function getQuestion(
             getFileFromBackend(answer.file_name, answer.file_url)
           )
         )
+    );
+
+    const question = new ForumQuestion(
+      responseData.id,
+      responseData.user_id,
+      getDateFromBackend(responseData.created_at),
+      answers.length,
+      new ForumQuestionInformation(
+        responseData.title,
+        responseData.description,
+        responseData.tags,
+        getFileFromBackend(responseData.file_name, responseData.file_url)
+      ),
+      responseData.accepted_answer_id
     );
 
     return { question, answers };
@@ -97,6 +99,8 @@ export async function createForumQuestion(
   questionInformation: ForumQuestionInformation
 ): Promise<void> {
   try {
+    forumQuestionSchema.parse(questionInformation);
+
     const request = await createForumQuestionsRequest(courseId);
     const body = {
       title: questionInformation.title,
@@ -111,5 +115,30 @@ export async function createForumQuestion(
     }
   } catch (error) {
     throw handleError(error, "crear la pregunta del foro");
+  }
+}
+
+export async function createForumAnswer(
+  courseId: string,
+  questionId: number,
+  parentAnswerId: number | null,
+  answerInformation: ForumAnswerInformation
+): Promise<void> {
+  try {
+    forumAnswerSchema.parse(answerInformation);
+
+    const request = await createForumAnswerRequest(courseId, questionId);
+    const body = {
+      content: answerInformation.content,
+      parent_id: parentAnswerId ? parentAnswerId.toString() : null, // TODO: pedir al back que lo cambien a un number
+    };
+
+    if (answerInformation.file) {
+      await postFile(request, answerInformation.file, body);
+    } else {
+      await request.post("", body);
+    }
+  } catch (error) {
+    throw handleError(error, "crear la respuesta en el foro");
   }
 }
