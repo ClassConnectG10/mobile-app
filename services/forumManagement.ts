@@ -1,7 +1,9 @@
 import {
+  createForumAcceptAnswerRequest,
   createForumAnswerRequest,
   createForumQuestionRequest,
   createForumQuestionsRequest,
+  createForumVoteAnswerRequest,
 } from "@/api/forum";
 import {
   ForumAnswer,
@@ -16,6 +18,7 @@ import {
   postFile,
 } from "./common";
 import { forumAnswerSchema, forumQuestionSchema } from "@/validations/forum";
+import axios from "axios";
 
 export async function getQuestions(
   courseId: string
@@ -67,6 +70,7 @@ export async function getQuestion(
           answer.children_count,
           answer.upvotes,
           answer.downvotes,
+          answer.vote,
           new ForumAnswerInformation(
             answer.content,
             getFileFromBackend(answer.file_name, answer.file_url)
@@ -118,6 +122,47 @@ export async function createForumQuestion(
   }
 }
 
+export async function editForumQuestion(
+  courseId: string,
+  questionId: number,
+  questionInformation: ForumQuestionInformation
+): Promise<void> {
+  try {
+    forumQuestionSchema.parse(questionInformation);
+    const request = await createForumQuestionRequest(courseId, questionId);
+    const body = {
+      title: questionInformation.title,
+      description: questionInformation.content,
+      tags: questionInformation.tags,
+    };
+    console.log("courseId", courseId);
+    console.log("questionId", questionId);
+    console.log("body", body);
+    await request.patch("", body);
+
+    // TODO: Handlear actualización del archivo
+    // if (questionInformation.file) {
+    //   await postFile(request, questionInformation.file, body);
+    // } else {
+    //   await request.patch("", body);
+    // }
+  } catch (error) {
+    throw handleError(error, "editar la pregunta del foro");
+  }
+}
+
+export async function removeForumQuestion(
+  courseId: string,
+  questionId: number
+): Promise<void> {
+  try {
+    const request = await createForumQuestionRequest(courseId, questionId);
+    await request.delete("");
+  } catch (error) {
+    throw handleError(error, "editar la pregunta del foro");
+  }
+}
+
 export async function createForumAnswer(
   courseId: string,
   questionId: number,
@@ -140,5 +185,39 @@ export async function createForumAnswer(
     }
   } catch (error) {
     throw handleError(error, "crear la respuesta en el foro");
+  }
+}
+
+export async function voteAnswer(
+  courseId: string,
+  answerId: number,
+  vote: 0 | 1 | -1
+): Promise<void> {
+  try {
+    const request = await createForumVoteAnswerRequest(
+      courseId,
+      answerId,
+      vote
+    );
+    await request.post(``);
+  } catch (error) {
+    throw handleError(error, "votar la respuesta en el foro");
+  }
+}
+
+export async function acceptAnswer(
+  courseId: string,
+  questionId: number,
+  answerId: number
+): Promise<void> {
+  try {
+    const request = await createForumAcceptAnswerRequest(
+      courseId,
+      questionId,
+      answerId
+    );
+    await request.post(``);
+  } catch (error) {
+    throw handleError(error, "aceptar la respuesta en el foro");
   }
 }

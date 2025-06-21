@@ -53,13 +53,13 @@ export default function CoursePage() {
     },
     {
       key: "participants",
-      title: "Participantes",
+      title: "Miembros",
       focusedIcon: "account-multiple",
       unfocusedIcon: "account-multiple",
     },
     {
       key: "statistics",
-      title: "Estadísticas",
+      title: "Métricas",
       focusedIcon: "chart-bar",
       unfocusedIcon: "chart-bar",
     },
@@ -142,7 +142,7 @@ export default function CoursePage() {
   useFocusEffect(
     useCallback(() => {
       fetchCourse();
-    }, [courseId]),
+    }, [courseId])
   );
 
   return (
@@ -198,7 +198,7 @@ export default function CoursePage() {
               navigationState={{ index: tabIndex, routes }}
               onIndexChange={setTabIndex}
               renderScene={renderScene}
-              labeled={false}
+              labeled={true}
             />
           </>
         )}

@@ -1,4 +1,4 @@
-import { AxiosInstance } from "axios";
+import { AxiosError, AxiosInstance } from "axios";
 import { ZodError } from "zod";
 import { File } from "@/types/file";
 import {
@@ -30,10 +30,44 @@ import {
 
 const STORAGE_PREFIX = process.env.EXPO_PUBLIC_STORAGE_PREFIX;
 
+function codeErrorToMessage(code: number): string {
+  // in spanish
+
+  switch (code) {
+    case 400:
+      return "Solicitud incorrecta. Verifica los datos enviados.";
+    case 401:
+      return "No autorizado. Verifica tus credenciales.";
+    case 403:
+      return "Prohibido. No tienes permiso para acceder a este recurso.";
+    case 404:
+      return "No encontrado. El recurso solicitado no existe.";
+    case 409:
+      return "Conflicto. El recurso ya existe o hay un conflicto con los datos enviados.";
+    case 422:
+      return "Error de validación. Verifica los datos enviados.";
+    case 500:
+      return "Error interno del servidor. Inténtalo de nuevo más tarde.";
+    case 503:
+      return "Servicio no disponible. Inténtalo de nuevo más tarde.";
+    case 504:
+      return "Tiempo de espera agotado. Inténtalo de nuevo más tarde.";
+    default:
+      return `Error desconocido. Código: ${code}. Inténtalo de nuevo más tarde.`;
+  }
+}
+
 export function handleError(error: any, action: string): Error {
   if (error instanceof ZodError) {
     return new Error(
       `Error de validacion al ${action}: ${error.errors[0].message}`
+    );
+  } else if (error instanceof AxiosError) {
+    return new Error(
+      `Error al ${action}: ${
+        error.response?.data?.message ||
+        codeErrorToMessage(error.response?.status || 500)
+      }`
     );
   }
   return new Error(`Error al ${action}: ${error}`);

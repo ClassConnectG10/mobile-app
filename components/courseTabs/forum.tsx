@@ -81,14 +81,14 @@ export const ForumTab: React.FC<ForumTabProps> = ({ course }) => {
 
   const handleCreateQuestion = () => {
     router.push({
-      pathname: "/courses/[courseId]/forum/create",
+      pathname: "/courses/[courseId]/forum/questions/create",
       params: { courseId: course.courseId },
     });
   };
 
   const handleViewQuestion = (question: ForumQuestion) => {
     router.push({
-      pathname: "/courses/[courseId]/forum/[questionId]", // TODO change to forum question details
+      pathname: "/courses/[courseId]/forum/questions/[questionId]",
       params: {
         courseId: course.courseId,
         questionId: question.id,

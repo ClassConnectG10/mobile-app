@@ -30,7 +30,8 @@ export class ForumAnswer {
     public answerCount: number,
     public upVotes: number,
     public downVotes: number,
-    public information: ForumAnswerInformation,
+    public vote: 0 | 1 | -1,
+    public information: ForumAnswerInformation
   ) {}
 }
 

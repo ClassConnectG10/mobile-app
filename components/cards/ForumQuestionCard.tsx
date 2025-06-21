@@ -30,23 +30,13 @@ const ForumQuestionCard: React.FC<ForumQuestionCardProps> = ({
             Publicado el {formatLocalDateTime(createdAt)}
           </Text>
 
-          {acceptedAnswerId ? (
-            <IconButton
-              icon="check-circle"
-              iconColor={theme.colors.primary}
-              accessibilityLabel="Respuesta aceptada"
-              size={18}
-              style={styles.iconButton}
-            />
-          ) : (
-            <IconButton
-              icon="circle-outline"
-              iconColor={theme.colors.primary}
-              accessibilityLabel="Respuesta aceptada"
-              size={18}
-              style={styles.iconButton}
-            />
-          )}
+          <IconButton
+            icon={acceptedAnswerId ? "check-circle" : "help-circle-outline"}
+            iconColor={theme.colors.primary}
+            accessibilityLabel="Respuesta aceptada"
+            size={18}
+            style={styles.iconButton}
+          />
         </View>
 
         <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>

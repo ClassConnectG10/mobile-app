@@ -18,6 +18,7 @@ import { View } from "react-native";
 import ActivitiesTab from "@/components/courseTabs/student/activities";
 import { ParticipantsTab } from "@/components/courseTabs/student/participants";
 import { ModulesTab } from "@/components/courseTabs/student/modules";
+import { ForumTab } from "@/components/courseTabs/forum";
 
 export default function CoursePage() {
   const router = useRouter();
@@ -44,8 +45,14 @@ export default function CoursePage() {
       unfocusedIcon: "bookshelf",
     },
     {
+      key: "forum",
+      title: "Foro",
+      focusedIcon: "forum",
+      unfocusedIcon: "forum",
+    },
+    {
       key: "participants",
-      title: "Participantes",
+      title: "Miembros",
       focusedIcon: "account-multiple",
       unfocusedIcon: "account-multiple",
     },
@@ -66,6 +73,12 @@ export default function CoursePage() {
         return null;
       }
       return <ModulesTab course={courseContext.course} />;
+    },
+    forum: () => {
+      if (!courseContext.course) {
+        return null;
+      }
+      return <ForumTab course={courseContext.course} />;
     },
   });
 

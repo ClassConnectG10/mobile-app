@@ -19,6 +19,7 @@ interface ForumAnswerCardProps {
   showAccepted?: boolean;
   accepted?: boolean;
   onAcceptedPress?: () => void;
+  onVotePress?: (voteType: 0 | 1 | -1) => void;
   onPress?: () => void;
 }
 
@@ -28,7 +29,8 @@ const ForumAnswerCard: React.FC<ForumAnswerCardProps> = ({
   showAccepted = false,
   accepted = false,
   onAcceptedPress = () => {},
-  onPress,
+  onVotePress = () => {},
+  onPress = () => {},
 }) => {
   const theme = useTheme();
   const { content, file } = forumAnswer.information;
@@ -47,7 +49,7 @@ const ForumAnswerCard: React.FC<ForumAnswerCardProps> = ({
 
             {showAccepted && ( // TODO: traer si la respuesta es aceptada o si soy el creador de la pregunta
               <IconButton
-                icon={accepted ? "check-circle" : "circle-outline"}
+                icon={accepted ? "check-circle" : "check-circle-outline"}
                 iconColor={theme.colors.primary}
                 accessibilityLabel="Respuesta aceptada"
                 onPress={onAcceptedPress}
@@ -111,18 +113,28 @@ const ForumAnswerCard: React.FC<ForumAnswerCardProps> = ({
             </View>
             <View style={{ flexDirection: "row", alignItems: "center" }}>
               <Button
-                icon="thumb-up-outline"
+                icon={forumAnswer.vote === 1 ? "thumb-up" : "thumb-up-outline"}
                 mode="text"
-                onPress={() => {}}
+                onPress={
+                  forumAnswer.vote === 1
+                    ? () => onVotePress(0)
+                    : () => onVotePress(1)
+                }
                 accessibilityLabel="Me gusta"
                 style={styles.iconButton}
               >
                 {formatNumberToString(forumAnswer.upVotes)}
               </Button>
               <Button
-                icon="thumb-down-outline"
+                icon={
+                  forumAnswer.vote === -1 ? "thumb-down" : "thumb-down-outline"
+                }
                 mode="text"
-                onPress={() => {}}
+                onPress={
+                  forumAnswer.vote === -1
+                    ? () => onVotePress(0)
+                    : () => onVotePress(-1)
+                }
                 accessibilityLabel="No me gusta"
                 style={styles.iconButton}
               >
