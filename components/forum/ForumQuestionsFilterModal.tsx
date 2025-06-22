@@ -11,13 +11,14 @@ import { FullScreenModal } from "../FullScreenModal";
 
 interface ForumQuestionsFilterModalProps {
   visible: boolean;
+  showTagsPicker?: boolean;
   onDismiss: () => void;
   onApplySearchParams: (forumSearchParams: ForumSearchParams) => void;
 }
 
 export const ForumQuestionsFilterModal: React.FC<
   ForumQuestionsFilterModalProps
-> = ({ visible, onDismiss, onApplySearchParams }) => {
+> = ({ visible, showTagsPicker = true, onDismiss, onApplySearchParams }) => {
   const forumSearchParamsHook = useForumSearchParams();
   const {
     forumSearchParams,
@@ -54,15 +55,18 @@ export const ForumQuestionsFilterModal: React.FC<
         onChange={setEndDate}
         canReset={true}
       />
+      {showTagsPicker && (
+        <View>
+          <Text variant="labelLarge">Tags de búsqueda</Text>
 
-      <Text variant="labelLarge">Tags de búsqueda</Text>
-
-      <ToggleableTagsInput
-        tags={forumSearchParams.tags}
-        onChange={setTags}
-        editable={true}
-        maxTags={5}
-      />
+          <ToggleableTagsInput
+            tags={forumSearchParams.tags}
+            onChange={setTags}
+            editable={true}
+            maxTags={5}
+          />
+        </View>
+      )}
 
       <Divider />
 

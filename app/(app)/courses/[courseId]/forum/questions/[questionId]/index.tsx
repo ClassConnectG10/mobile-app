@@ -7,6 +7,7 @@ import {
   Button,
   useTheme,
   Text,
+  IconButton,
 } from "react-native-paper";
 import { ToggleableTagsInput } from "@/components/forms/ToggleableTagsInput";
 import {
@@ -16,12 +17,19 @@ import {
 } from "@/services/forumManagement";
 import { getBulkUsers } from "@/services/userManagement";
 import { User } from "@/types/user";
-import { ForumAnswer, ForumQuestion } from "@/types/forum";
+import {
+  ForumAnswer,
+  ForumOrderBy,
+  ForumQuestion,
+  ForumSearchParams,
+} from "@/types/forum";
 import ForumAnswerCard from "@/components/cards/ForumAnswerCard";
 import { ToggleableFileInput } from "@/components/forms/ToggleableFileInput";
 import ForumQuestionCard from "@/components/cards/ForumQuestionCard";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import { useUserContext } from "@/utils/storage/userContext";
+import { SearchBar } from "@/components/forms/SearchBar";
+import { ForumQuestionsFilterModal } from "@/components/forum/ForumQuestionsFilterModal";
 
 export default function ForumQuestionPage() {
   const router = useRouter();
@@ -34,8 +42,11 @@ export default function ForumQuestionPage() {
   const userContextHook = useUserContext();
   const userId = userContextHook.user.id;
   const [isLoading, setIsLoading] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [searchParamsModalVisible, setSearchParamsModalVisible] =
+    useState(false);
   const [forumQuestion, setForumQuestion] = useState<ForumQuestion | null>(
     null
   );
@@ -53,18 +64,42 @@ export default function ForumQuestionPage() {
     null
   );
 
+  const defaultForumSearchParams: ForumSearchParams = {
+    searchQuery: "",
+    startDate: null,
+    endDate: null,
+    tags: [],
+    orderBy: ForumOrderBy.RECENT,
+  };
+
+  const [forumQueryParams, setForumQueryParams] = useState<ForumSearchParams>(
+    defaultForumSearchParams
+  );
+
   const fetchForumQuestion = async () => {
-    setIsLoading(true);
+    if (!courseId || !questionId) return;
+    // setIsLoading(true);
+    // setForumQuestion(null);
+    // setForumAnswers(null);
     try {
-      const { question, answers } = await getQuestion(courseId, questionId);
+      const searchParams = isRefreshing
+        ? defaultForumSearchParams
+        : forumQueryParams;
+
+      const { question, answers } = await getQuestion(
+        courseId,
+        questionId,
+        searchParams
+      );
       setForumQuestion(question);
 
       if (question.acceptedAnswerId) {
-        const fetchedAcceptedAnswer = answers.find(
-          (answer: ForumAnswer) => answer.id === question.acceptedAnswerId
-        );
-        setAcceptedAnswer(fetchedAcceptedAnswer);
-
+        if (!isSearching) {
+          const fetchedAcceptedAnswer = answers.find(
+            (answer: ForumAnswer) => answer.id === question.acceptedAnswerId
+          );
+          setAcceptedAnswer(fetchedAcceptedAnswer);
+        }
         const otherAnswers = answers.filter(
           (answer: ForumAnswer) => answer.id !== question.acceptedAnswerId
         );
@@ -89,6 +124,7 @@ export default function ForumQuestionPage() {
         forumAnswers.map((answer: ForumAnswer) => answer.creatorId)
       );
       uniqueUserIds.add(forumQuestion.creatorId);
+
       if (acceptedAnswer) {
         uniqueUserIds.add(acceptedAnswer.creatorId);
       }
@@ -109,6 +145,8 @@ export default function ForumQuestionPage() {
       setIsCreator(questionCreator?.id === userId);
     } catch (error) {
       setErrorMessage((error as Error).message);
+    } finally {
+      setIsSearching(false);
     }
     // setIsLoading(false);
   };
@@ -163,7 +201,7 @@ export default function ForumQuestionPage() {
   useFocusEffect(
     useCallback(() => {
       fetchForumQuestion();
-    }, [courseId, questionId])
+    }, [courseId, questionId, forumQueryParams])
   );
 
   const handleAcceptAnswer = async (newAcceptedAnswer: ForumAnswer) => {
@@ -249,6 +287,15 @@ export default function ForumQuestionPage() {
     });
   };
 
+  const handleSearch = (searchTerm: string) => {
+    if (forumQueryParams.searchQuery === searchTerm) return;
+    setIsSearching(true);
+    setForumQueryParams((prev) => ({
+      ...prev,
+      searchQuery: searchTerm,
+    }));
+  };
+
   // Refactor keyExtractor for better readability
   const keyExtractor = (item: any, index: number): string => {
     if (item?.id) return item.id.toString();
@@ -302,7 +349,7 @@ export default function ForumQuestionPage() {
   const renderAnswersSection =
     (forumAnswers: ForumAnswer[], users: User[]) =>
     ({ item }: { item: ForumAnswer }) =>
-      (
+      !isSearching && (
         <ForumAnswerCard
           user={
             users.find((user) => user.id === item.creatorId) || ({} as User)
@@ -378,7 +425,7 @@ export default function ForumQuestionPage() {
         )}
       </Appbar.Header>
 
-      {isLoading || !forumQuestion || !users || !forumAnswers || !creator ? (
+      {!forumQuestion || !users || !forumAnswers || !creator ? (
         <View
           style={{
             flex: 1,
@@ -403,22 +450,50 @@ export default function ForumQuestionPage() {
               <View style={{ paddingVertical: 8 }}>
                 {title === "Respuestas" ? (
                   <View
-                    style={{
-                      flexDirection: "row",
-                      gap: 4,
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                    }}
+                  // style={{
+                  //   paddingBottom: 8,
+                  // }}
                   >
-                    <Text variant="titleMedium">{title}</Text>
-                    <Button
-                      icon="plus"
-                      contentStyle={{ flexDirection: "row-reverse" }}
-                      onPress={handleCreateAnswer}
-                      accessibilityLabel="Nueva respuesta"
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        gap: 4,
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                      }}
                     >
-                      Añadir respuesta
-                    </Button>
+                      <Text variant="titleMedium">{title}</Text>
+                      <Button
+                        icon="plus"
+                        contentStyle={{ flexDirection: "row-reverse" }}
+                        onPress={handleCreateAnswer}
+                        accessibilityLabel="Nueva respuesta"
+                      >
+                        Añadir respuesta
+                      </Button>
+                    </View>
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        gap: 8,
+                      }}
+                    >
+                      <View style={{ flex: 1 }}>
+                        <SearchBar
+                          placeholder="Buscar respuestas"
+                          onSearch={handleSearch}
+                        />
+                      </View>
+
+                      <IconButton
+                        icon="filter-variant"
+                        onPress={() => {
+                          setSearchParamsModalVisible(true);
+                        }}
+                        disabled={isLoading}
+                      />
+                    </View>
                   </View>
                 ) : (
                   <Text variant="titleMedium">{title}</Text>
@@ -426,17 +501,36 @@ export default function ForumQuestionPage() {
               </View>
             ) : null
           }
-          refreshing={isRefreshing}
-          onRefresh={handleRefresh}
+          // refreshing={isRefreshing}
+          // onRefresh={handleRefresh}
           renderSectionFooter={({ section }) => {
-            if (section.title === "Respuestas" && section.data.length === 0) {
-              return (
-                <View style={{ alignItems: "center", marginVertical: 12 }}>
-                  <Text variant="bodyMedium">
-                    La pregunta no tiene respuestas todavía.
-                  </Text>
-                </View>
-              );
+            if (section.title === "Respuestas") {
+              if (isSearching) {
+                return (
+                  <View
+                    style={{
+                      flex: 1,
+                      justifyContent: "center",
+                      alignItems: "center",
+                      padding: 16,
+                    }}
+                  >
+                    <ActivityIndicator
+                      animating={true}
+                      size="large"
+                      color={theme.colors.primary}
+                    />
+                  </View>
+                );
+              } else if (section.data.length === 0) {
+                return (
+                  <View style={{ alignItems: "center", marginVertical: 12 }}>
+                    <Text variant="bodyMedium">
+                      La pregunta no tiene respuestas todavía.
+                    </Text>
+                  </View>
+                );
+              }
             }
             return null;
           }}
@@ -446,6 +540,15 @@ export default function ForumQuestionPage() {
       <ErrorMessageSnackbar
         message={errorMessage}
         onDismiss={() => setErrorMessage("")}
+      />
+      <ForumQuestionsFilterModal
+        visible={searchParamsModalVisible}
+        showTagsPicker={false}
+        onDismiss={() => setSearchParamsModalVisible(false)}
+        onApplySearchParams={(newForumSearchParams) => {
+          setForumQueryParams(newForumSearchParams);
+          handleSearch(newForumSearchParams.searchQuery);
+        }}
       />
     </View>
   );

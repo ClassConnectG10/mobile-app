@@ -8,6 +8,7 @@ import {
   createGetForumAnswersRequest,
   createRemoveForumAnswerFileRequest,
   createRemoveForumQuestionFileRequest,
+  createSearchForumQuestionRequest,
   createSearchForumQuestionsRequest,
 } from "@/api/forum";
 import {
@@ -60,10 +61,15 @@ export async function getQuestions(
 
 export async function getQuestion(
   courseId: string,
-  questionId: number
+  questionId: number,
+  forumSearchParams: ForumSearchParams
 ): Promise<{ question: ForumQuestion; answers: ForumAnswer[] }> {
   try {
-    const request = await createForumQuestionRequest(courseId, questionId);
+    const request = await createSearchForumQuestionRequest(
+      courseId,
+      questionId,
+      forumSearchParams
+    );
     const response = await request.get("");
     const responseData = response.data.data;
 

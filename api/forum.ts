@@ -42,6 +42,37 @@ export const createForumQuestionsRequest = (courseId: string) => {
   });
 };
 
+export const createSearchForumQuestionRequest = (
+  courseId: string,
+  questionId: number,
+  forumSearchParams: ForumSearchParams
+) => {
+  const params: Record<string, string | string[]> = {};
+
+  if (forumSearchParams.searchQuery && forumSearchParams.searchQuery !== "") {
+    params.search = forumSearchParams.searchQuery;
+  }
+
+  if (forumSearchParams.startDate) {
+    params.start_date = formatDate(forumSearchParams.startDate);
+  }
+
+  if (forumSearchParams.endDate) {
+    params.end_date = formatDate(forumSearchParams.endDate);
+  }
+
+  if (forumSearchParams.orderBy) {
+    params.order_by = forumSearchParams.orderBy;
+  }
+  return createRequest({
+    uri: `courses/${courseId}/forum/questions/${questionId}`,
+    params,
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+};
+
 export const createForumQuestionRequest = (
   courseId: string,
   questionId: number
