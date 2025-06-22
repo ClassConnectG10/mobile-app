@@ -42,23 +42,49 @@ export const ForumTab: React.FC<ForumTabProps> = ({ course }) => {
     orderBy: ForumOrderBy.RECENT,
   });
 
-  const fetchQuestions = async () => {
+  const [offset, setOffset] = useState(0); // Estado para el offset
+  const [isLoadingMore, setIsLoadingMore] = useState(false); // Estado para cargar más preguntas
+
+  const fetchQuestions = async (loadMore = false) => {
     if (!course.courseId) return;
 
-    setQuestions(null);
-    setIsLoading(true);
+    if (loadMore) {
+      setIsLoadingMore(true);
+    } else {
+      setQuestions(null); // Limpiar preguntas si no es carga incremental
+      setIsLoading(true);
+    }
 
     try {
       const fetchedQuestions = await getQuestions(
         course.courseId,
-        0,
+        loadMore ? offset : 0, // Usar offset actual para paginación
         forumQueryParams
       );
-      setQuestions(fetchedQuestions);
+
+      // Imprimir un arreglo con el título de todas las preguntas obtenidas
+      console.log(
+        "Preguntas obtenidas:",
+        fetchedQuestions.map((q) => q.information.title)
+      );
+
+      if (loadMore) {
+        setQuestions((prev) =>
+          prev ? [...prev, ...fetchedQuestions] : fetchedQuestions
+        ); // Agregar nuevas preguntas al final o inicializar si es null
+      } else {
+        setQuestions(fetchedQuestions); // Reemplazar preguntas en carga inicial
+      }
+
+      // Actualizar el offset solo si se cargaron más preguntas
+      if (fetchedQuestions.length > 0) {
+        setOffset((prevOffset) => prevOffset + 10);
+      }
     } catch (error) {
       setErrorMessage((error as Error).message);
     } finally {
-      // setIsLoading(false);
+      setIsLoading(false);
+      setIsLoadingMore(false);
     }
   };
 
@@ -130,20 +156,26 @@ export const ForumTab: React.FC<ForumTabProps> = ({ course }) => {
           keyExtractor={(item) => item.id.toString()}
           refreshing={isRefreshing}
           onRefresh={handleRefresh}
-          renderItem={({ item }) =>
-            users && (
+          onEndReached={() => {
+            if (questions && questions.length >= 10) {
+              fetchQuestions(true);
+            }
+          }} // Solo cargar más si hay al menos 10 preguntas
+          onEndReachedThreshold={0}
+          renderItem={({ item }) => {
+            if (!users) return null;
+            const user = users.find((user) => user.id === item.creatorId);
+            if (!user) return null;
+            return (
               <ForumQuestionCard
-                user={
-                  users.find((user) => user.id === item.creatorId) ||
-                  ({} as User)
-                }
+                user={user}
                 forumQuestion={item}
                 onPress={() => {
                   handleViewQuestion(item);
                 }}
               />
-            )
-          }
+            );
+          }}
           ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
           ListEmptyComponent={
             isLoading ? (
@@ -229,6 +261,13 @@ export const ForumTab: React.FC<ForumTabProps> = ({ course }) => {
                 />
               </View>
             </View>
+          }
+          ListFooterComponent={
+            isLoadingMore ? (
+              <View style={{ padding: 16, alignItems: "center" }}>
+                <ActivityIndicator size="small" color={theme.colors.primary} />
+              </View>
+            ) : null
           }
         />
       </View>
