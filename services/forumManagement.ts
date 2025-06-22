@@ -28,11 +28,13 @@ import { forumAnswerSchema, forumQuestionSchema } from "@/validations/forum";
 
 export async function getQuestions(
   courseId: string,
+  offset: number = 0,
   forumSearchParams: ForumSearchParams
 ): Promise<ForumQuestion[]> {
   try {
     const request = await createSearchForumQuestionsRequest(
       courseId,
+      offset,
       forumSearchParams
     );
     const response = await request.get("");

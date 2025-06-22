@@ -3,9 +3,11 @@ import { createRequest, formatDate } from "./common";
 
 export const createSearchForumQuestionsRequest = (
   courseId: string,
+  offset: number = 0,
   forumSearchParams: ForumSearchParams
 ) => {
   const params: Record<string, string | string[]> = {};
+  params.offset = String(offset);
 
   if (forumSearchParams.searchQuery && forumSearchParams.searchQuery !== "") {
     params.search = forumSearchParams.searchQuery;
@@ -48,6 +50,7 @@ export const createSearchForumQuestionRequest = (
   forumSearchParams: ForumSearchParams
 ) => {
   const params: Record<string, string | string[]> = {};
+  params.thread_limit = "100";
 
   if (forumSearchParams.searchQuery && forumSearchParams.searchQuery !== "") {
     params.search = forumSearchParams.searchQuery;

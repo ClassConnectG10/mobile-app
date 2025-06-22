@@ -51,6 +51,7 @@ export const ForumTab: React.FC<ForumTabProps> = ({ course }) => {
     try {
       const fetchedQuestions = await getQuestions(
         course.courseId,
+        0,
         forumQueryParams
       );
       setQuestions(fetchedQuestions);
