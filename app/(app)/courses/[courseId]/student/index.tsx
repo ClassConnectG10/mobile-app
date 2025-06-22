@@ -173,6 +173,7 @@ export default function CoursePage() {
               style={{
                 padding: 16,
                 gap: 16,
+                backgroundColor: theme.colors.background,
               }}
             >
               {/* Card de curso */}

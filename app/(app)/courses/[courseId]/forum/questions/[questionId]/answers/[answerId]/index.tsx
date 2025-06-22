@@ -8,19 +8,12 @@ import {
   useTheme,
   Text,
 } from "react-native-paper";
-import { ToggleableTagsInput } from "@/components/forms/ToggleableTagsInput";
-import {
-  acceptAnswer,
-  getAnswer,
-  getQuestion,
-  voteAnswer,
-} from "@/services/forumManagement";
+import { getAnswer, voteAnswer } from "@/services/forumManagement";
 import { getBulkUsers } from "@/services/userManagement";
 import { User } from "@/types/user";
-import { ForumAnswer, ForumQuestion } from "@/types/forum";
+import { ForumAnswer } from "@/types/forum";
 import ForumAnswerCard from "@/components/cards/ForumAnswerCard";
 import { ToggleableFileInput } from "@/components/forms/ToggleableFileInput";
-import ForumQuestionCard from "@/components/cards/ForumQuestionCard";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import { useUserContext } from "@/utils/storage/userContext";
 
@@ -36,7 +29,7 @@ export default function ForumAnswerPage() {
   const courseId = courseIdParam as string;
   const questionId = Number(questionIdParam);
   const answerId = Number(answerIdParam);
-  const parentAnswerId = Number(parentAnswerIdParam);
+  // const parentAnswerId = Number(parentAnswerIdParam);
 
   const userContextHook = useUserContext();
   const userId = userContextHook.user.id;
@@ -279,7 +272,7 @@ export default function ForumAnswerPage() {
       <Appbar.Header>
         <Appbar.BackAction onPress={() => router.back()} />
         <Appbar.Content title="Respuesta" />
-        {creator && userId == creator.id && (
+        {creator && userId === creator.id && (
           <Appbar.Action
             icon="pencil"
             onPress={() => {

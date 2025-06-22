@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Searchbar } from "react-native-paper";
+import { Searchbar, useTheme } from "react-native-paper";
 
 interface SearchBarProps {
   placeholder: string;
@@ -13,6 +13,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   placeholder,
   onSearch,
 }) => {
+  const theme = useTheme();
   const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
@@ -41,6 +42,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
       onSubmitEditing={() => {
         onSearch(searchTerm);
       }}
+      style={{ backgroundColor: theme.colors.surface }}
     />
   );
 };

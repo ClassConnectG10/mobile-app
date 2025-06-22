@@ -61,8 +61,9 @@ export default function HomePage() {
   const fetchCourses = async () => {
     if (!searchFilters || !searchOption) return;
 
+    setCourses([]);
+    setIsLoading(true);
     try {
-      setIsLoading(true);
       const coursesData = await searchCourses(searchFilters, searchOption);
       setCourses(coursesData);
     } catch (error) {
@@ -138,7 +139,11 @@ export default function HomePage() {
           }}
         >
           <SegmentedButtons
-            style={{ flex: 1 }}
+            style={{
+              flex: 1,
+              backgroundColor: theme.colors.surface,
+              borderRadius: 100,
+            }}
             value={searchOption}
             onValueChange={(value: SearchOption) => {
               handleSearchOptionChange(value);
@@ -161,7 +166,7 @@ export default function HomePage() {
           <IconButton
             icon="heart"
             size={24}
-            mode={searchFilters.favorites ? "contained" : "outlined"}
+            mode="outlined"
             onPress={() => {
               setSearchFilters((prev) => ({
                 ...prev,
@@ -169,6 +174,11 @@ export default function HomePage() {
               }));
             }}
             disabled={isLoading}
+            style={{
+              backgroundColor: searchFilters.favorites
+                ? theme.colors.secondaryContainer
+                : theme.colors.surface,
+            }}
           />
         </View>
 

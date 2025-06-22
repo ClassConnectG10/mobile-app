@@ -186,6 +186,10 @@ export default function CoursePage() {
         ) : (
           <View style={{ gap: 16, flex: 1 }}>
             <SegmentedButtons
+              style={{
+                backgroundColor: theme.colors.surface,
+                borderRadius: 100,
+              }}
               value={activitiesOption}
               onValueChange={handleActivitiesOptionChange}
               buttons={[
@@ -205,6 +209,10 @@ export default function CoursePage() {
             />
 
             <SegmentedButtons
+              style={{
+                backgroundColor: theme.colors.surface,
+                borderRadius: 100,
+              }}
               value={submitteedActivitiesOption}
               onValueChange={handleSubmitteedActivitiesOptionChange}
               buttons={[

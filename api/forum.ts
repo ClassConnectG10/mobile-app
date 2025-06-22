@@ -1,4 +1,37 @@
-import { createRequest } from "./common";
+import { ForumSearchParams } from "@/types/forum";
+import { createRequest, formatDate } from "./common";
+
+export const createSearchForumQuestionsRequest = (
+  courseId: string,
+  forumSearchParams: ForumSearchParams
+) => {
+  const params: Record<string, string | string[]> = {};
+
+  if (forumSearchParams.searchQuery && forumSearchParams.searchQuery !== "") {
+    params.search = forumSearchParams.searchQuery;
+  }
+
+  if (forumSearchParams.startDate) {
+    params.start_date = formatDate(forumSearchParams.startDate);
+  }
+
+  if (forumSearchParams.endDate) {
+    params.end_date = formatDate(forumSearchParams.endDate);
+  }
+
+  if (forumSearchParams.orderBy) {
+    params.order_by = forumSearchParams.orderBy;
+  }
+
+  if (forumSearchParams.tags.length > 0) {
+    params.tags = forumSearchParams.tags;
+  }
+
+  return createRequest({
+    uri: `courses/${courseId}/forum/questions`,
+    params,
+  });
+};
 
 export const createForumQuestionsRequest = (courseId: string) => {
   return createRequest({

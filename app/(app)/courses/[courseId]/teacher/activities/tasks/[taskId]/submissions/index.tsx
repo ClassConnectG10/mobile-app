@@ -41,7 +41,7 @@ export default function TaskSubmissionsPage() {
     useState<TaskSubmission[]>(null);
   const [students, setStudents] = useState<Record<number, User>>(null);
   const [taskStatusOption, setTaskStatusOption] = useState(
-    ActivityStatusOption.ALL,
+    ActivityStatusOption.ALL
   );
   async function fetchTeacherTask() {
     if (!courseId || !taskId) return;
@@ -81,9 +81,9 @@ export default function TaskSubmissionsPage() {
         taskSubmissions.map(async (submission) => {
           const student = await getUser(submission.studentId);
           return { [submission.studentId]: student };
-        }),
+        })
       ).then((studentsArray) =>
-        studentsArray.reduce((acc, curr) => ({ ...acc, ...curr }), {}),
+        studentsArray.reduce((acc, curr) => ({ ...acc, ...curr }), {})
       );
 
       setStudents(studentsDict);
@@ -134,19 +134,19 @@ export default function TaskSubmissionsPage() {
   useFocusEffect(
     useCallback(() => {
       fetchTeacherTask();
-    }, [courseId, taskId]),
+    }, [courseId, taskId])
   );
 
   useFocusEffect(
     useCallback(() => {
       fetchSubmissions();
-    }, [teacherTask]),
+    }, [teacherTask])
   );
 
   useFocusEffect(
     useCallback(() => {
       fetchStudents();
-    }, [taskSubmissions]),
+    }, [taskSubmissions])
   );
 
   return (
@@ -184,6 +184,10 @@ export default function TaskSubmissionsPage() {
             </Text>
             <SegmentedButtons
               value={taskStatusOption}
+              style={{
+                backgroundColor: theme.colors.surface,
+                borderRadius: 100,
+              }}
               onValueChange={(value: ActivityStatusOption) => {
                 handleSearchOptionChange(value);
               }}

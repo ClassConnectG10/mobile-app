@@ -214,6 +214,10 @@ export default function ActivitiesTab() {
         ) : (
           <View style={{ gap: 16, flex: 1 }}>
             <SegmentedButtons
+              style={{
+                backgroundColor: theme.colors.surface,
+                borderRadius: 100,
+              }}
               value={activitiesOption}
               onValueChange={handleActivitiesOptionChange}
               buttons={[
@@ -234,18 +238,22 @@ export default function ActivitiesTab() {
             {/* Filter de actividades entregadas y/o publicadas */}
 
             <SegmentedButtons
+              style={{
+                backgroundColor: theme.colors.surface,
+                borderRadius: 100,
+              }}
               value={publishedActivitiesOption}
               onValueChange={handlePublishedActivitiesOptionChange}
               buttons={[
                 {
                   value: TeacherActivityFilter.PUBLISHED,
-                  label: "Visibles",
+                  label: "Publicadas",
                   icon: "eye-outline",
                   disabled: isLoading,
                 },
                 {
                   value: TeacherActivityFilter.UNPUBLISHED,
-                  label: "No visibles",
+                  label: "No publicadas",
                   icon: "eye-off-outline",
                   disabled: isLoading,
                 },

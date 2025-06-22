@@ -10,7 +10,7 @@ export function formatDate(date: Date): string {
 export interface AxiosRequestConfig {
   uri?: string;
   headers?: Record<string, string>;
-  params?: Record<string, string>;
+  params?: Record<string, string | string[]>;
 }
 
 async function getAccessToken(): Promise<string> {
@@ -26,18 +26,22 @@ async function getAccessToken(): Promise<string> {
 }
 
 export async function createRequest(
-  axiosRequestConfig: AxiosRequestConfig,
+  axiosRequestConfig: AxiosRequestConfig
 ): Promise<AxiosInstance> {
   const token = await getAccessToken();
   return axios.create({
     baseURL: `${BASE_URL}/${axiosRequestConfig.uri}`,
     headers: {
       Authorization: `Bearer ${token}`,
-      "Content-Type": axiosRequestConfig.headers?.["Content-Type"] || "application/json",
+      "Content-Type":
+        axiosRequestConfig.headers?.["Content-Type"] || "application/json",
       ...axiosRequestConfig.headers,
     },
     params: {
       ...axiosRequestConfig.params,
+    },
+    paramsSerializer: {
+      indexes: null,
     },
   });
 }

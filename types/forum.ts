@@ -1,5 +1,20 @@
 import { File } from "./file";
 
+export enum ForumOrderBy {
+  RECENT = "recent",
+  POPULAR = "popular",
+}
+
+export class ForumSearchParams {
+  constructor(
+    public searchQuery: string,
+    public startDate: Date | null,
+    public endDate: Date | null,
+    public tags: string[],
+    public orderBy: ForumOrderBy
+  ) {}
+}
+
 export class ForumQuestion {
   constructor(
     public id: number,

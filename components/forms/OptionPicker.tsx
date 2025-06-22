@@ -12,6 +12,7 @@ interface OptionPickerProps {
   editable?: boolean;
   setValue: (value: string) => void;
   style?: "default" | "white";
+  canReset?: boolean;
 }
 
 const OptionPicker: React.FC<OptionPickerProps> = ({
@@ -21,6 +22,7 @@ const OptionPicker: React.FC<OptionPickerProps> = ({
   editable = true,
   setValue,
   style = "default",
+  canReset = true,
 }) => {
   const [menuVisible, setMenuVisible] = useState(false);
 
@@ -44,30 +46,31 @@ const OptionPicker: React.FC<OptionPickerProps> = ({
                   style={style}
                 />
               </Pressable>
-              {style === "default" ? (
-                <IconButton
-                  icon="close"
-                  size={20}
-                  mode="contained"
-                  onPress={() => {
-                    setValue("");
-                    setMenuVisible(false);
-                  }}
-                />
-              ) : (
-                <IconButton
-                  icon="close"
-                  size={20}
-                  mode="contained"
-                  onPress={() => {
-                    setValue("");
-                    setMenuVisible(false);
-                  }}
-                  style={{
-                    backgroundColor: "#fff",
-                  }}
-                />
-              )}
+              {canReset &&
+                (style === "default" ? (
+                  <IconButton
+                    icon="close"
+                    size={20}
+                    mode="contained"
+                    onPress={() => {
+                      setValue("");
+                      setMenuVisible(false);
+                    }}
+                  />
+                ) : (
+                  <IconButton
+                    icon="close"
+                    size={20}
+                    mode="contained"
+                    onPress={() => {
+                      setValue("");
+                      setMenuVisible(false);
+                    }}
+                    style={{
+                      backgroundColor: "#fff",
+                    }}
+                  />
+                ))}
             </View>
           }
         >

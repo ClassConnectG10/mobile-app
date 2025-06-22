@@ -1,5 +1,11 @@
 import { View, FlatList, StyleSheet } from "react-native";
-import { ActivityIndicator, Appbar, useTheme, Text, IconButton } from "react-native-paper";
+import {
+  ActivityIndicator,
+  Appbar,
+  useTheme,
+  Text,
+  IconButton,
+} from "react-native-paper";
 import { useFocusEffect, useRouter } from "expo-router";
 import { globalStyles } from "@/styles/globalStyles";
 import { useCallback, useState } from "react";
@@ -24,8 +30,10 @@ export default function SearchCoursesPage() {
   );
 
   const fetchCourses = async () => {
+    setCourses([]);
+    setIsLoading(true);
+
     try {
-      setIsLoading(true);
       const coursesData = await searchCourses(
         searchFilters,
         SearchOption.NOT_RELATED

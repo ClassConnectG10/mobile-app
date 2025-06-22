@@ -1,5 +1,11 @@
 import { View, FlatList, StyleSheet } from "react-native";
-import { ActivityIndicator, Appbar, IconButton, Text, useTheme } from "react-native-paper";
+import {
+  ActivityIndicator,
+  Appbar,
+  IconButton,
+  Text,
+  useTheme,
+} from "react-native-paper";
 import { useFocusEffect, useRouter } from "expo-router";
 import { globalStyles } from "@/styles/globalStyles";
 import { useCallback, useState } from "react";
@@ -24,27 +30,29 @@ export default function SearchCoursesPage() {
     useState(false);
 
   const [searchFilters, setSearchFilters] = useState(
-    new SearchFilters("", null, null, "", "", ""),
+    new SearchFilters("", null, null, "", "", "")
   );
 
   const requiredCoursesContext = useRequiredCoursesContext();
   const { addRequiredCourse } = requiredCoursesContext;
 
   const fetchCourses = async () => {
+    setCourses([]);
+    setIsLoading(true);
+
     try {
-      setIsLoading(true);
       const coursesData = await searchCourses(searchFilters, SearchOption.ALL);
 
       const filteredCourses = coursesData.filter(
         (course) =>
           !requiredCoursesContext.requiredCourses.some(
-            (selectedCourse) => selectedCourse.courseId === course.courseId,
-          ),
+            (selectedCourse) => selectedCourse.courseId === course.courseId
+          )
       );
 
       if (courseContext.course) {
         const filteredCoursesWithSelected = filteredCourses.filter(
-          (course) => course.courseId !== courseContext.course?.courseId,
+          (course) => course.courseId !== courseContext.course?.courseId
         );
 
         setCourses(filteredCoursesWithSelected);
@@ -74,7 +82,7 @@ export default function SearchCoursesPage() {
   useFocusEffect(
     useCallback(() => {
       fetchCourses();
-    }, [searchFilters]),
+    }, [searchFilters])
   );
 
   return (

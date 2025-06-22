@@ -84,7 +84,9 @@ export default function ExamSubmissionsPage() {
     if (!examSubmissions) return;
     setIsLoading(students === null);
     try {
-      const studentIds = examSubmissions.map(submission => submission.studentId);
+      const studentIds = examSubmissions.map(
+        (submission) => submission.studentId
+      );
       const studentsArray = await getBulkUsers(studentIds);
 
       const studentsDict = studentsArray.reduce((acc, student) => {
@@ -110,8 +112,8 @@ export default function ExamSubmissionsPage() {
       currentActivityStatusOption === ActivityStatusOption.SUBMITTED
         ? examSubmissions.filter((submission) => submission.submited)
         : currentActivityStatusOption === ActivityStatusOption.PENDING
-          ? examSubmissions.filter((submission) => !submission.submited)
-          : examSubmissions;
+        ? examSubmissions.filter((submission) => !submission.submited)
+        : examSubmissions;
 
     setFilteredSubmissions(filteredSubmissions);
   };
@@ -190,6 +192,10 @@ export default function ExamSubmissionsPage() {
             </Text>
             <SegmentedButtons
               value={activityStatusOption}
+              style={{
+                backgroundColor: theme.colors.surface,
+                borderRadius: 100,
+              }}
               onValueChange={(value: ActivityStatusOption) => {
                 handleSearchOptionChange(value);
               }}

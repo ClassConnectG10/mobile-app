@@ -187,6 +187,10 @@ export default function StudentSubmissionsPage() {
               de {studentSubmissions.length} entregas recibidas
             </Text>
             <SegmentedButtons
+              style={{
+                backgroundColor: theme.colors.surface,
+                borderRadius: 100,
+              }}
               value={activityStatusOption}
               onValueChange={(value: ActivityStatusOption) => {
                 handleSearchOptionChange(value);

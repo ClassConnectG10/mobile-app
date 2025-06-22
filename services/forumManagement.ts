@@ -8,12 +8,14 @@ import {
   createGetForumAnswersRequest,
   createRemoveForumAnswerFileRequest,
   createRemoveForumQuestionFileRequest,
+  createSearchForumQuestionsRequest,
 } from "@/api/forum";
 import {
   ForumAnswer,
   ForumQuestion,
   ForumQuestionInformation,
   ForumAnswerInformation,
+  ForumSearchParams,
 } from "@/types/forum";
 import {
   getDateFromBackend,
@@ -22,14 +24,16 @@ import {
   postFile,
 } from "./common";
 import { forumAnswerSchema, forumQuestionSchema } from "@/validations/forum";
-import axios from "axios";
 
 export async function getQuestions(
-  courseId: string
-  // TODO: Questions filters
+  courseId: string,
+  forumSearchParams: ForumSearchParams
 ): Promise<ForumQuestion[]> {
   try {
-    const request = await createForumQuestionsRequest(courseId);
+    const request = await createSearchForumQuestionsRequest(
+      courseId,
+      forumSearchParams
+    );
     const response = await request.get("");
     const responseData = response.data.data;
 
