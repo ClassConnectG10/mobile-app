@@ -33,6 +33,45 @@ export const createForumAnswerRequest = (
   });
 };
 
+export const createGetForumAnswersRequest = (
+  courseId: string,
+  answerId: number
+) => {
+  return createRequest({
+    uri: `courses/${courseId}/forum/answers/${answerId}/thread`,
+  });
+};
+
+export const createEditForumAnswerRequest = (
+  courseId: string,
+  answerId: number
+) => {
+  return createRequest({
+    uri: `courses/${courseId}/forum/answers/${answerId}`,
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+};
+
+export const createRemoveForumQuestionFileRequest = (
+  courseId: string,
+  questionId: number
+) => {
+  return createRequest({
+    uri: `courses/${courseId}/forum/questions/${questionId}/file`,
+  });
+};
+
+export const createRemoveForumAnswerFileRequest = (
+  courseId: string,
+  answerId: number
+) => {
+  return createRequest({
+    uri: `courses/${courseId}/forum/answers/${answerId}/file`,
+  });
+};
+
 export const createForumVoteAnswerRequest = (
   courseId: string,
   answerId: number,

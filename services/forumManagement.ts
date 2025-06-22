@@ -1,9 +1,13 @@
 import {
+  createEditForumAnswerRequest,
   createForumAcceptAnswerRequest,
   createForumAnswerRequest,
   createForumQuestionRequest,
   createForumQuestionsRequest,
   createForumVoteAnswerRequest,
+  createGetForumAnswersRequest,
+  createRemoveForumAnswerFileRequest,
+  createRemoveForumQuestionFileRequest,
 } from "@/api/forum";
 import {
   ForumAnswer,
@@ -125,29 +129,51 @@ export async function createForumQuestion(
 export async function editForumQuestion(
   courseId: string,
   questionId: number,
-  questionInformation: ForumQuestionInformation
+  questionInformation: ForumQuestionInformation,
+  fileChanged: boolean = false
 ): Promise<void> {
   try {
     forumQuestionSchema.parse(questionInformation);
     const request = await createForumQuestionRequest(courseId, questionId);
-    const body = {
-      title: questionInformation.title,
-      description: questionInformation.content,
-      tags: questionInformation.tags,
-    };
-    console.log("courseId", courseId);
-    console.log("questionId", questionId);
-    console.log("body", body);
-    await request.patch("", body);
+    const formData = new FormData();
 
-    // TODO: Handlear actualización del archivo
-    // if (questionInformation.file) {
-    //   await postFile(request, questionInformation.file, body);
-    // } else {
-    //   await request.patch("", body);
-    // }
+    // TODO: Fix this
+    if (questionInformation.tags.length > 0) {
+      formData.append("tags", questionInformation.tags.join(","));
+    } else {
+      formData.append("tags", "");
+    }
+
+    if (fileChanged) {
+      if (questionInformation.file) {
+        formData.append("file", {
+          uri: questionInformation.file.localUri,
+          name: questionInformation.file.name,
+          type: questionInformation.file.type,
+        } as any);
+      } else {
+        await deleteForumQuestionFile(courseId, questionId);
+      }
+    }
+
+    await request.patch("", formData);
   } catch (error) {
     throw handleError(error, "editar la pregunta del foro");
+  }
+}
+
+export async function deleteForumQuestionFile(
+  courseId: string,
+  questionId: number
+): Promise<void> {
+  try {
+    const request = await createRemoveForumQuestionFileRequest(
+      courseId,
+      questionId
+    );
+    await request.delete("");
+  } catch (error) {
+    throw handleError(error, "eliminar el archivo de la respuesta del foro");
   }
 }
 
@@ -219,5 +245,115 @@ export async function acceptAnswer(
     await request.post(``);
   } catch (error) {
     throw handleError(error, "aceptar la respuesta en el foro");
+  }
+}
+
+export async function getAnswer(
+  courseId: string,
+  questionId: number,
+  answerId: number
+): Promise<{ answer: ForumAnswer; childrenAnswers: ForumAnswer[] }> {
+  try {
+    const request = await createGetForumAnswersRequest(courseId, answerId);
+    const response = await request.get("");
+    const responseData = response.data.data;
+
+    const answer = new ForumAnswer(
+      answerId,
+      questionId,
+      responseData.parent_id,
+      responseData.user_id,
+      getDateFromBackend(responseData.created_at),
+      responseData.children_count,
+      responseData.upvotes,
+      responseData.downvotes,
+      responseData.vote,
+      new ForumAnswerInformation(
+        responseData.content,
+        getFileFromBackend(responseData.file_name, responseData.file_url)
+      )
+    );
+
+    const childrenAnswers = (responseData.children || []).map(
+      (answer: any) =>
+        new ForumAnswer(
+          answer.id,
+          questionId,
+          answerId,
+          answer.user_id,
+          getDateFromBackend(answer.created_at),
+          answer.children_count,
+          answer.upvotes,
+          answer.downvotes,
+          answer.vote,
+          new ForumAnswerInformation(
+            answer.content,
+            getFileFromBackend(answer.file_name, answer.file_url)
+          )
+        )
+    );
+    return { answer, childrenAnswers };
+  } catch (error) {
+    throw handleError(error, "obtener la respuesta del foro");
+  }
+}
+
+export async function editForumAnswer(
+  courseId: string,
+  answerId: number,
+  answerInformation: ForumAnswerInformation,
+  fileChanged: boolean = false
+): Promise<void> {
+  try {
+    forumAnswerSchema.parse(answerInformation);
+    const request = await createEditForumAnswerRequest(courseId, answerId);
+
+    const formData = new FormData();
+
+    formData.append("content", answerInformation.content);
+    await request.patch("", formData);
+
+    if (fileChanged) {
+      if (answerInformation.file) {
+        formData.append("file", {
+          uri: answerInformation.file.localUri,
+          name: answerInformation.file.name,
+          type: answerInformation.file.type,
+        } as any);
+      } else {
+        await deleteForumAnswerFile(courseId, answerId);
+      }
+    }
+
+    await request.patch("", formData);
+  } catch (error) {
+    throw handleError(error, "editar la respuesta del foro");
+  }
+}
+
+export async function deleteForumAnswerFile(
+  courseId: string,
+  answerId: number
+): Promise<void> {
+  try {
+    const request = await createRemoveForumAnswerFileRequest(
+      courseId,
+      answerId
+    );
+    await request.delete("");
+  } catch (error) {
+    throw handleError(error, "eliminar el archivo de la respuesta del foro");
+  }
+}
+
+export async function removeForumAnswer(
+  courseId: string,
+  answerId: number
+): Promise<void> {
+  try {
+    const request = await createEditForumAnswerRequest(courseId, answerId);
+    await request.delete("");
+  } catch (error) {
+    throw handleError(error, "editar la respuesta del foro");
   }
 }

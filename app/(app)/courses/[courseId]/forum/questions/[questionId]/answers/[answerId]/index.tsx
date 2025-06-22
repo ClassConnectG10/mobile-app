@@ -11,6 +11,7 @@ import {
 import { ToggleableTagsInput } from "@/components/forms/ToggleableTagsInput";
 import {
   acceptAnswer,
+  getAnswer,
   getQuestion,
   voteAnswer,
 } from "@/services/forumManagement";
@@ -23,56 +24,43 @@ import ForumQuestionCard from "@/components/cards/ForumQuestionCard";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import { useUserContext } from "@/utils/storage/userContext";
 
-export default function ForumQuestionPage() {
+export default function ForumAnswerPage() {
   const router = useRouter();
   const theme = useTheme();
-  const { courseId: courseIdParam, questionId: quesionIdParam } =
-    useLocalSearchParams();
+  const {
+    courseId: courseIdParam,
+    questionId: questionIdParam,
+    answerId: answerIdParam,
+    parentAnswerId: parentAnswerIdParam,
+  } = useLocalSearchParams();
   const courseId = courseIdParam as string;
-  const questionId = Number(quesionIdParam);
+  const questionId = Number(questionIdParam);
+  const answerId = Number(answerIdParam);
+  const parentAnswerId = Number(parentAnswerIdParam);
 
   const userContextHook = useUserContext();
   const userId = userContextHook.user.id;
   const [isLoading, setIsLoading] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const [forumQuestion, setForumQuestion] = useState<ForumQuestion | null>(
-    null
-  );
-  const [forumAnswers, setForumAnswers] = useState(null);
+  const [forumAnswer, setForumAnswer] = useState<ForumAnswer | null>(null);
+  const [answers, setAnswers] = useState(null);
   const [users, setUsers] = useState<User[] | null>(null);
 
   const [creator, setCreator] = useState<User | null>(null);
   const [isCreator, setIsCreator] = useState(false);
 
-  const [acceptedAnswer, setAcceptedAnswer] = useState<ForumAnswer | null>(
-    null
-  );
-
-  const [acceptedAnswerUser, setAcceptedAnswerUser] = useState<User | null>(
-    null
-  );
-
-  const fetchForumQuestion = async () => {
+  const fetchForumAnswer = async () => {
     setIsLoading(true);
     try {
-      const { question, answers } = await getQuestion(courseId, questionId);
-      setForumQuestion(question);
+      const { answer, childrenAnswers } = await getAnswer(
+        courseId,
+        questionId,
+        answerId
+      );
+      setForumAnswer(answer);
 
-      if (question.acceptedAnswerId) {
-        const fetchedAcceptedAnswer = answers.find(
-          (answer: ForumAnswer) => answer.id === question.acceptedAnswerId
-        );
-        setAcceptedAnswer(fetchedAcceptedAnswer);
-
-        const otherAnswers = answers.filter(
-          (answer: ForumAnswer) => answer.id !== question.acceptedAnswerId
-        );
-        setForumAnswers(otherAnswers);
-      } else {
-        setAcceptedAnswer(null);
-        setForumAnswers(answers);
-      }
+      setAnswers(childrenAnswers);
     } catch (error) {
       setErrorMessage((error as Error).message);
     } finally {
@@ -81,29 +69,18 @@ export default function ForumQuestionPage() {
   };
 
   const fetchUsers = async () => {
-    if (!courseId || !forumAnswers || !forumQuestion) return;
+    if (!courseId || !answers || !forumAnswer) return;
     // setIsLoading(true);
 
     try {
       const uniqueUserIds: Set<number> = new Set(
-        forumAnswers.map((answer: ForumAnswer) => answer.creatorId)
+        answers.map((answer: ForumAnswer) => answer.creatorId)
       );
-      uniqueUserIds.add(forumQuestion.creatorId);
-      if (acceptedAnswer) {
-        uniqueUserIds.add(acceptedAnswer.creatorId);
-      }
-
+      uniqueUserIds.add(forumAnswer.creatorId);
       const fetchedUsers = await getBulkUsers(Array.from(uniqueUserIds));
-
-      if (acceptedAnswer) {
-        const fetchedAcceptedAnswerUser = fetchedUsers.find(
-          (user) => user.id === acceptedAnswer.creatorId
-        );
-        setAcceptedAnswerUser(fetchedAcceptedAnswerUser);
-      }
       setUsers(fetchedUsers);
       const questionCreator = fetchedUsers.find(
-        (user) => user.id === forumQuestion.creatorId
+        (user) => user.id === forumAnswer.creatorId
       );
       setCreator(questionCreator);
       setIsCreator(questionCreator?.id === userId);
@@ -120,29 +97,29 @@ export default function ForumQuestionPage() {
       params: {
         courseId: courseId,
         questionId: questionId,
-        parentAnswerId: null,
+        parentAnswerId: answerId,
       },
     });
   };
 
   const handleCreatorProfilePress = () => {
-    if (!forumQuestion) return;
+    if (!forumAnswer) return;
 
     router.push({
       pathname: "/users/[userId]",
-      params: { userId: forumQuestion.creatorId },
+      params: { userId: forumAnswer.creatorId },
     });
   };
 
-  const handleAnswerPress = (answerId: number) => {
+  const handleAnswerPress = (id: number) => {
     router.push({
       pathname:
         "/courses/[courseId]/forum/questions/[questionId]/answers/[answerId]",
       params: {
         courseId: courseId,
         questionId: questionId,
-        answerId: answerId,
-        parentAnswerId: null,
+        answerId: id,
+        parentAnswerId: answerId,
       },
     });
   };
@@ -150,7 +127,7 @@ export default function ForumQuestionPage() {
   const handleRefresh = async () => {
     setIsRefreshing(true);
     try {
-      await fetchForumQuestion();
+      await fetchForumAnswer();
     } finally {
       setIsRefreshing(false);
     }
@@ -158,48 +135,13 @@ export default function ForumQuestionPage() {
 
   useEffect(() => {
     fetchUsers();
-  }, [forumAnswers]);
+  }, [answers]);
 
   useFocusEffect(
     useCallback(() => {
-      fetchForumQuestion();
+      fetchForumAnswer();
     }, [courseId, questionId])
   );
-
-  const handleAcceptAnswer = async (newAcceptedAnswer: ForumAnswer) => {
-    if (!forumQuestion || !forumAnswers || !users) return;
-    setIsLoading(true);
-
-    try {
-      const newAcceptedAnswerId = newAcceptedAnswer.id;
-      await acceptAnswer(courseId, questionId, newAcceptedAnswerId);
-      const updatedQuestion = {
-        ...forumQuestion,
-        acceptedAnswerId: newAcceptedAnswerId,
-      };
-
-      const newAcceptedAnswerUser = users?.find(
-        (user: User) => user.id === newAcceptedAnswer.creatorId
-      );
-
-      const updatedAnswers = forumAnswers.filter(
-        (answer: ForumAnswer) => answer.id !== newAcceptedAnswerId
-      );
-
-      if (acceptedAnswer) {
-        updatedAnswers.push(acceptedAnswer);
-      }
-
-      setForumQuestion(updatedQuestion);
-      setAcceptedAnswerUser(newAcceptedAnswerUser);
-      setAcceptedAnswer(newAcceptedAnswer);
-      setForumAnswers(updatedAnswers);
-    } catch (error) {
-      setErrorMessage((error as Error).message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const updateVoteCount = (
     answer: ForumAnswer,
@@ -216,22 +158,30 @@ export default function ForumQuestionPage() {
     return { ...answer, upVotes, downVotes, vote };
   };
 
-  const handleVoteAnswer = async (answerId: number, vote: 0 | 1 | -1) => {
-    if (!forumAnswers) return;
+  const handleVoteForumAnswer = async (vote: 0 | 1 | -1) => {
+    if (!forumAnswer) return;
 
     try {
-      if (acceptedAnswer && acceptedAnswer.id === answerId) {
-        const updatedAcceptedAnswer = updateVoteCount(acceptedAnswer, vote);
-        setAcceptedAnswer(updatedAcceptedAnswer);
-      } else {
-        const updatedAnswers = forumAnswers.map((answer: ForumAnswer) => {
-          if (answer.id === answerId) {
-            return updateVoteCount(answer, vote);
-          }
-          return answer;
-        });
-        setForumAnswers(updatedAnswers);
-      }
+      setForumAnswer((prev) => {
+        if (!prev) return null;
+        return updateVoteCount(prev, vote);
+      });
+      await voteAnswer(courseId, forumAnswer.id, vote);
+    } catch (error) {
+      setErrorMessage((error as Error).message);
+    }
+  };
+
+  const handleVoteChildAnswer = async (answerId: number, vote: 0 | 1 | -1) => {
+    if (!answers) return;
+    try {
+      const updatedAnswers = answers.map((answer: ForumAnswer) => {
+        if (answer.id === answerId) {
+          return updateVoteCount(answer, vote);
+        }
+        return answer;
+      });
+      setAnswers(updatedAnswers);
 
       await voteAnswer(courseId, answerId, vote);
     } catch (error) {
@@ -239,12 +189,14 @@ export default function ForumQuestionPage() {
     }
   };
 
-  const handleEditQuestion = () => {
+  const handleEditAnswer = () => {
     router.push({
-      pathname: "/courses/[courseId]/forum/questions/[questionId]/edit",
+      pathname:
+        "/courses/[courseId]/forum/questions/[questionId]/answers/[answerId]/edit",
       params: {
         courseId: courseId,
-        questionId: forumQuestion.id,
+        questionId: questionId,
+        answerId: answerId,
       },
     });
   };
@@ -258,15 +210,14 @@ export default function ForumQuestionPage() {
   };
 
   // Render functions for each section
-  const renderQuestionSection = (
-    forumQuestion: ForumQuestion,
-    creator: User
-  ) => (
-    <ForumQuestionCard
-      forumQuestion={forumQuestion}
+  const renderAnswerSection = (forumAnswer: ForumAnswer, creator: User) => (
+    <ForumAnswerCard
+      forumAnswer={forumAnswer}
       user={creator}
+      showAccepted={false}
       onPress={handleCreatorProfilePress}
-      fullAnswer={true}
+      onAcceptedPress={() => {}}
+      onVotePress={(vote) => handleVoteForumAnswer(vote)}
     />
   );
 
@@ -279,28 +230,8 @@ export default function ForumQuestionPage() {
     />
   );
 
-  const renderTagsSection = (tags: string[]) => (
-    <ToggleableTagsInput tags={tags} onChange={() => {}} editable={false} />
-  );
-
-  const renderAcceptedAnswerSection = (
-    acceptedAnswer: ForumAnswer,
-    acceptedAnswerUser: User
-  ) => (
-    <ForumAnswerCard
-      user={acceptedAnswerUser}
-      forumAnswer={acceptedAnswer}
-      showAccepted={true}
-      accepted={true}
-      onPress={() => handleAnswerPress(acceptedAnswer.id)}
-      onAcceptedPress={() => {}}
-      onVotePress={(vote) => handleVoteAnswer(acceptedAnswer.id, vote)}
-    />
-  );
-
-  // Corrección final para renderItem en SectionList
-  const renderAnswersSection =
-    (forumAnswers: ForumAnswer[], users: User[]) =>
+  const renderChildrenAnswersSection =
+    (childrenAnswers: ForumAnswer[], users: User[]) =>
     ({ item }: { item: ForumAnswer }) =>
       (
         <ForumAnswerCard
@@ -309,45 +240,26 @@ export default function ForumQuestionPage() {
           }
           forumAnswer={item}
           onPress={() => handleAnswerPress(item.id)}
-          onAcceptedPress={() => handleAcceptAnswer(item)}
-          showAccepted={isCreator}
+          onAcceptedPress={() => {}}
+          showAccepted={false}
           accepted={false}
-          onVotePress={(vote) => handleVoteAnswer(item.id, vote)}
+          onVotePress={(vote) => handleVoteChildAnswer(item.id, vote)}
         />
       );
 
   // Ajustar las secciones para que sean compatibles con SectionList
   const sections = [
     {
-      title: "Pregunta",
-      data: [forumQuestion],
-      renderItem: () => renderQuestionSection(forumQuestion, creator),
+      title: "Respuesta",
+      data: [forumAnswer],
+      renderItem: () => renderAnswerSection(forumAnswer, creator),
     },
-    ...(forumQuestion && forumQuestion.information.file
+    ...(forumAnswer && forumAnswer.information.file
       ? [
           {
             title: "Archivo",
-            data: [forumQuestion.information.file],
-            renderItem: () => renderFileSection(forumQuestion.information.file),
-          },
-        ]
-      : []),
-    ...(forumQuestion && forumQuestion.information.tags.length > 0
-      ? [
-          {
-            title: "Tags",
-            data: [forumQuestion.information.tags],
-            renderItem: () => renderTagsSection(forumQuestion.information.tags),
-          },
-        ]
-      : []),
-    ...(creator && acceptedAnswer && acceptedAnswerUser
-      ? [
-          {
-            title: "Respuesta aceptada",
-            data: [acceptedAnswer],
-            renderItem: () =>
-              renderAcceptedAnswerSection(acceptedAnswer, acceptedAnswerUser),
+            data: [forumAnswer.information.file],
+            renderItem: () => renderFileSection(forumAnswer.information.file),
           },
         ]
       : []),
@@ -355,8 +267,8 @@ export default function ForumQuestionPage() {
       ? [
           {
             title: "Respuestas",
-            data: forumAnswers,
-            renderItem: renderAnswersSection(forumAnswers, users),
+            data: answers,
+            renderItem: renderChildrenAnswersSection(answers, users),
           },
         ]
       : []),
@@ -366,19 +278,19 @@ export default function ForumQuestionPage() {
     <View style={{ flex: 1 }}>
       <Appbar.Header>
         <Appbar.BackAction onPress={() => router.back()} />
-        <Appbar.Content title="Pregunta" />
+        <Appbar.Content title="Respuesta" />
         {creator && userId == creator.id && (
           <Appbar.Action
             icon="pencil"
             onPress={() => {
-              handleEditQuestion();
+              handleEditAnswer();
             }}
-            accessibilityLabel="Editar pregunta"
+            accessibilityLabel="Editar respuesta"
           />
         )}
       </Appbar.Header>
 
-      {isLoading || !forumQuestion || !users || !forumAnswers || !creator ? (
+      {isLoading || !forumAnswer || !users || !answers || !creator ? (
         <View
           style={{
             flex: 1,

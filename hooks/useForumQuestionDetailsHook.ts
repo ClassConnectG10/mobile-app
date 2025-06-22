@@ -5,7 +5,7 @@ import { ForumQuestionInformation } from "@/types/forum";
 export interface ForumQuestionInformationHook {
   forumQuestionInformation: ForumQuestionInformation;
   setForumQuestionInformation: (
-    forumQuestionInformation: ForumQuestionInformation,
+    forumQuestionInformation: ForumQuestionInformation
   ) => void;
   setTitle: (title: string) => void;
   setContent: (content: string) => void;

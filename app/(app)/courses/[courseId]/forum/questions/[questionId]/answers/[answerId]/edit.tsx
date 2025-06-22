@@ -11,49 +11,49 @@ import {
   useTheme,
 } from "react-native-paper";
 import { ToggleableFileInput } from "@/components/forms/ToggleableFileInput";
-import { ToggleableTagsInput } from "@/components/forms/ToggleableTagsInput";
-import { useForumQuestionInformation } from "@/hooks/useForumQuestionDetailsHook";
+import { useForumAnswerInformation } from "@/hooks/useForumAnswerDetailsHook";
 import {
-  editForumQuestion,
-  getQuestion,
-  removeForumQuestion,
+  editForumAnswer,
+  getAnswer,
+  removeForumAnswer,
 } from "@/services/forumManagement";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
-import { ForumQuestion } from "@/types/forum";
+import { ForumAnswer } from "@/types/forum";
 
-export default function EditForumQuestionPage() {
+export default function EditAnswerAnswerPage() {
   const router = useRouter();
   const theme = useTheme();
-  const { courseId: courseIdParam, questionId: questionIdParam } =
-    useLocalSearchParams();
+  const {
+    courseId: courseIdParam,
+    answerId: answerIdParam,
+    questionId: questionIdParam,
+  } = useLocalSearchParams();
+
   const courseId = courseIdParam as string;
   const questionId = Number(questionIdParam);
+  const answerId = Number(answerIdParam);
 
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const [forumQuestion, setForumQuestion] = useState<ForumQuestion | null>(
-    null
-  );
+  const [forumAnswer, setForumAnswer] = useState<ForumAnswer | null>(null);
   const [fileChanged, setFileChanged] = useState<boolean>(false);
 
   const {
-    forumQuestionInformation,
-    setForumQuestionInformation,
-    setTitle,
+    forumAnswerInformation,
+    setForumAnswerInformation,
     setContent,
-    setTags,
     setFile,
-  } = useForumQuestionInformation();
+  } = useForumAnswerInformation();
 
-  const fetchForumQuestion = async () => {
-    if (!courseId || !questionId) return;
-
+  const fetchForumAnswer = async () => {
+    if (!courseId || !questionId || !answerId) return;
     setIsLoading(true);
+
     try {
-      const { question } = await getQuestion(courseId, questionId);
-      setForumQuestion(question);
-      setForumQuestionInformation(question.information);
+      const { answer } = await getAnswer(courseId, questionId, answerId);
+      setForumAnswer(answer);
+      setForumAnswerInformation(answer.information);
     } catch (error) {
       setErrorMessage((error as Error).message);
     } finally {
@@ -61,12 +61,12 @@ export default function EditForumQuestionPage() {
     }
   };
 
-  const handleUpdateForumQuestion = async () => {
+  const handleUpdateForumAnswer = async () => {
     try {
-      await editForumQuestion(
+      await editForumAnswer(
         courseId,
-        questionId,
-        forumQuestionInformation,
+        answerId,
+        forumAnswerInformation,
         fileChanged
       );
       router.back();
@@ -75,9 +75,9 @@ export default function EditForumQuestionPage() {
     }
   };
 
-  const handleDeleteForumQuestion = async () => {
+  const handleDeleteForumAnswer = async () => {
     try {
-      await removeForumQuestion(courseId, questionId);
+      await removeForumAnswer(courseId, answerId);
       router.back();
       router.back();
     } catch (error) {
@@ -97,24 +97,24 @@ export default function EditForumQuestionPage() {
 
   useFocusEffect(
     useCallback(() => {
-      fetchForumQuestion();
-    }, [courseId, questionId])
+      fetchForumAnswer();
+    }, [courseId, questionId, answerId])
   );
 
   return (
     <View style={{ flex: 1 }}>
       <Appbar.Header>
         <Appbar.BackAction onPress={() => router.back()} />
-        <Appbar.Content title="Editar pregunta" />
+        <Appbar.Content title="Editar respuesta" />
         <Appbar.Action
           icon="check"
           onPress={() => {
-            handleUpdateForumQuestion();
+            handleUpdateForumAnswer();
           }}
         />
       </Appbar.Header>
 
-      {isLoading || !forumQuestion ? (
+      {isLoading || !forumAnswer ? (
         <View
           style={{
             flex: 1,
@@ -138,40 +138,20 @@ export default function EditForumQuestionPage() {
         >
           <View style={{ gap: 16 }}>
             <TextInput
-              label="Título"
-              value={forumQuestionInformation.title}
-              onChangeText={setTitle}
-            />
-
-            <TextInput
               label="Contenido"
-              value={forumQuestionInformation.content}
+              value={forumAnswerInformation.content}
               onChangeText={setContent}
               multiline
             />
-
             <Divider />
-
             <Text variant="titleMedium">Archivo (opcional)</Text>
-
             <ToggleableFileInput
               files={
-                forumQuestionInformation.file
-                  ? [forumQuestionInformation.file]
-                  : []
+                forumAnswerInformation.file ? [forumAnswerInformation.file] : []
               }
               editable={true}
               onChange={handleFileChange}
               maxFiles={1}
-            />
-
-            <Divider />
-
-            <Text variant="titleMedium">Tags (opcional)</Text>
-
-            <ToggleableTagsInput
-              tags={forumQuestionInformation.tags}
-              onChange={setTags}
             />
           </View>
 
@@ -180,7 +160,7 @@ export default function EditForumQuestionPage() {
               icon="trash-can"
               mode="contained"
               onPress={() => {
-                handleDeleteForumQuestion();
+                handleDeleteForumAnswer();
               }}
             >
               Eliminar pregunta
