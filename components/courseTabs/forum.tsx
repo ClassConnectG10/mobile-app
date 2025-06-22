@@ -17,6 +17,7 @@ import { getBulkUsers } from "@/services/userManagement";
 import ForumQuestionCard from "@/components/cards/ForumQuestionCard";
 import { SearchBar } from "../forms/SearchBar";
 import { ForumQuestionsFilterModal } from "../forum/ForumQuestionsFilterModal";
+import { set } from "zod";
 
 interface ForumTabProps {
   course: Course;
@@ -44,6 +45,7 @@ export const ForumTab: React.FC<ForumTabProps> = ({ course }) => {
 
   const [offset, setOffset] = useState(0); // Estado para el offset
   const [isLoadingMore, setIsLoadingMore] = useState(false); // Estado para cargar más preguntas
+  const [hasMoreData, setHasMoreData] = useState(true); // Estado para controlar si hay más datos para cargar
 
   const fetchQuestions = async (loadMore = false) => {
     if (!course.courseId) return;
@@ -80,6 +82,9 @@ export const ForumTab: React.FC<ForumTabProps> = ({ course }) => {
       if (fetchedQuestions.length > 0) {
         setOffset((prevOffset) => prevOffset + 10);
       }
+
+      // Actualizar hasMoreData según la cantidad de preguntas obtenidas
+      setHasMoreData(fetchedQuestions.length === 10);
     } catch (error) {
       setErrorMessage((error as Error).message);
     } finally {
@@ -106,6 +111,8 @@ export const ForumTab: React.FC<ForumTabProps> = ({ course }) => {
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
+    setOffset(0);
+    setHasMoreData(true);
     try {
       await fetchQuestions();
     } finally {
@@ -157,7 +164,7 @@ export const ForumTab: React.FC<ForumTabProps> = ({ course }) => {
           refreshing={isRefreshing}
           onRefresh={handleRefresh}
           onEndReached={() => {
-            if (questions && questions.length >= 10) {
+            if (questions && hasMoreData && !isLoadingMore) {
               fetchQuestions(true);
             }
           }} // Solo cargar más si hay al menos 10 preguntas
