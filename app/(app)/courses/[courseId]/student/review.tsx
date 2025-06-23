@@ -14,7 +14,10 @@ import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import { ToggleableTextInput } from "@/components/forms/ToggleableTextInput";
 import ReviewPicker from "@/components/forms/ReviewPicker";
 import { AlertText } from "@/components/AlertText";
-import { createCourseReview } from "@/services/courseManagement";
+import {
+  createCourseReview,
+  getCourseReview,
+} from "@/services/courseManagement";
 
 export default function ReviewCoursePage() {
   const theme = useTheme();
@@ -37,7 +40,11 @@ export default function ReviewCoursePage() {
     setIsLoading(true);
 
     try {
-      // TODO: Fetchear la reseña del curso y actualizar hasPreviousReview
+      const { mark: fetchedMark, comment: fetchedComment } =
+        await getCourseReview(courseId);
+      setMark(fetchedMark ?? 5);
+      setComment(fetchedComment ?? "");
+      setHasPreviousReview(!!fetchedMark);
     } catch (error) {
       setErrorMessage((error as Error).message);
     } finally {

@@ -413,3 +413,22 @@ export async function createCourseReview(
     throw handleError(error, "crear el comentario del curso");
   }
 }
+
+export async function getCourseReview(
+  courseId: string
+): Promise<{ mark: number | null; comment: string | null }> {
+  try {
+    const request = await createCourseFeedbackRequest(courseId);
+    const response = await request.get("");
+    console.log("Response data:", response.data);
+    return {
+      mark: response.data.data.mark,
+      comment: response.data.data.feedback,
+    };
+  } catch (error) {
+    if (error.response.status === 404 || error.response.status === 403) {
+      return { mark: null, comment: null }; // No se encontró la reseña o no pertenece al curso
+    }
+    throw handleError(error, "obtener la reseña del curso");
+  }
+}
