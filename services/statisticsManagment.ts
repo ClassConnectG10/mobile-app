@@ -58,7 +58,7 @@ export async function getStudentStatistics(
     responseData.completion_rate / 100,
     responseData.forum.questions_count,
     responseData.forum.answers_count,
-    responseData.forum.recieved_answers_count,
+    responseData.forum.received_answers_count,
     responseData.activities.map(
       (activity: any) =>
         new StudentActivityStatistics(

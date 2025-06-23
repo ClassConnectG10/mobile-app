@@ -426,7 +426,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course }) => {
                   {
                     icon: "comment-question",
                     value: statistics.avgAnswersPerQuestion.toFixed(2),
-                    label: "Respuestas por pregunta",
+                    label: "Respuestas promedio por pregunta",
                     color: theme.colors.primary,
                   },
                 ]}
