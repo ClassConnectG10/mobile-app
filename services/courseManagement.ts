@@ -11,17 +11,20 @@ import {
   courseDetailsSchema,
   courseDetailsUpdateSchema,
   markAndCommentSchema,
+  reviewMarkAndCommentSchema,
 } from "@/validations/courses";
 import {
   createAddAssistantRequest,
   createAssistantLogsRequest,
   createAssistantRequest,
   createAssistantsRequest,
+  createCourseFeedbackRequest,
   createCourseRequest,
   createCoursesRequest,
   createEnrollCourseRequest,
   createFavoriteCourseRequest,
   createFeedbacksRequest,
+  createFinishCourseRequest,
   createMarksRequest,
   createSearchCoursesRequest,
   createStartCourseRequest,
@@ -230,6 +233,15 @@ export async function startCourse(courseId: string): Promise<void> {
   }
 }
 
+export async function finishCourse(courseId: string): Promise<void> {
+  try {
+    const request = await createFinishCourseRequest(courseId);
+    await request.post("");
+  } catch (error) {
+    throw handleError(error, "finalizar el curso");
+  }
+}
+
 export async function getCourseAssistants(courseId: string): Promise<User[]> {
   try {
     const request = await createAssistantsRequest(courseId);
@@ -382,5 +394,22 @@ export async function getFeedbacks(
     return feedbacks;
   } catch (error) {
     throw handleError(error, "obtener los comentarios del curso");
+  }
+}
+
+export async function createCourseReview(
+  courseId: string,
+  mark: number,
+  comment: string | null = null
+): Promise<void> {
+  try {
+    reviewMarkAndCommentSchema.parse({ mark, comment });
+    const request = await createCourseFeedbackRequest(courseId);
+    await request.post("", {
+      mark: mark,
+      feedback: comment,
+    });
+  } catch (error) {
+    throw handleError(error, "crear el comentario del curso");
   }
 }

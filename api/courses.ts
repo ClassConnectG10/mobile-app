@@ -78,6 +78,12 @@ export const createStartCourseRequest = (courseId: string) => {
   });
 };
 
+export const createFinishCourseRequest = (courseId: string) => {
+  return createRequest({
+    uri: `courses/${courseId}/finish`,
+  });
+};
+
 export const createAssistantsRequest = (courseId: string) => {
   return createRequest({
     uri: `courses/${courseId}/instructors`,
@@ -172,5 +178,11 @@ export const createFeedbacksRequest = (
   return createRequest({
     uri: `courses/my-feedbacks`,
     params,
+  });
+};
+
+export const createCourseFeedbackRequest = (courseId: string) => {
+  return createRequest({
+    uri: `courses/${courseId}/feedback`,
   });
 };

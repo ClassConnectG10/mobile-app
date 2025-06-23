@@ -151,7 +151,6 @@ export async function editForumQuestion(
     let clearTags = false;
 
     formData.append("title", questionInformation.title);
-    formData.append("description", questionInformation.content);
 
     if (questionInformation.tags.length > 0) {
       formData.append("tags", questionInformation.tags.join(","));

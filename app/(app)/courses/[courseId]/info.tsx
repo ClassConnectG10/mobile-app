@@ -25,6 +25,7 @@ import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import {
   deleteCourse,
   editCourse,
+  finishCourse,
   getCourse,
   startCourse,
 } from "@/services/courseManagement";
@@ -50,6 +51,7 @@ export default function CreateCoursePage() {
   const [errorMessage, setErrorMessage] = useState("");
   const [showConfirmationDelete, setShowConfirmationDelete] = useState(false);
   const [showConfirmationStart, setShowConfirmationStart] = useState(false);
+  const [showConfirmationEnd, setShowConfirmationEnd] = useState(false);
   const [isOwner, setIsOwner] = useState(false);
   const [courseOwner, setCourseOwner] = useState(null);
 
@@ -69,9 +71,9 @@ export default function CreateCoursePage() {
     });
 
     const requiredCourses = await Promise.all(
-      courseContext.course.courseDetails.dependencies.map(
-        (courseId) => getCourse(courseId),
-      ),
+      courseContext.course.courseDetails.dependencies.map((courseId) =>
+        getCourse(courseId)
+      )
     );
 
     requiredCoursesContext.setRequiredCourses(requiredCourses);
@@ -89,7 +91,7 @@ export default function CreateCoursePage() {
 
       const updatedCourseDetails = await editCourse(
         courseContext.course,
-        newCourseDetails,
+        newCourseDetails
       );
 
       courseContext.setCourse({
@@ -147,6 +149,25 @@ export default function CreateCoursePage() {
     }
   };
 
+  const handleFinishCourse = async () => {
+    if (!courseContext.course) return;
+    setIsLoading(true);
+
+    try {
+      await finishCourse(courseContext.course.courseId);
+      courseContext.setCourse({
+        ...courseContext.course,
+        courseStatus: CourseStatus.FINISHED,
+      });
+      router.back();
+    } catch (error) {
+      setErrorMessage((error as Error).message);
+    } finally {
+      setIsLoading(false);
+      setShowConfirmationEnd(false);
+    }
+  };
+
   async function fetchCourse() {
     try {
       setIsLoading(true);
@@ -184,8 +205,8 @@ export default function CreateCoursePage() {
       setIsLoading(true);
       const requiredCourses = await Promise.all(
         courseContext.course.courseDetails.dependencies.map(
-          async (courseId) => await getCourse(courseId),
-        ),
+          async (courseId) => await getCourse(courseId)
+        )
       );
 
       requiredCoursesContext.setRequiredCourses(requiredCourses);
@@ -241,10 +262,10 @@ export default function CreateCoursePage() {
         </Appbar.Header>
 
         {isLoading ||
-          !courseContext.course ||
-          !courseDetails ||
-          !courseOwner ||
-          !requiredCourses ? (
+        !courseContext.course ||
+        !courseDetails ||
+        !courseOwner ||
+        !requiredCourses ? (
           <View
             style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
           >
@@ -341,47 +362,47 @@ export default function CreateCoursePage() {
             {((courseContext.course &&
               courseContext.course.courseDetails.dependencies.length > 0) ||
               isEditing) && (
-                <View style={{ gap: 10 }}>
-                  <Text variant="titleMedium">Cursos requeridos</Text>
-                  {requiredCourses.map((course) => (
-                    <View
-                      key={course.courseId}
-                      style={{
-                        flexDirection: "row",
-                        justifyContent: "space-between",
-                        gap: 10,
-                      }}
-                    >
-                      <CourseCard
-                        course={course}
-                        small={true}
-                        onPress={() => handleRequiredCoursePress(course)}
-                        horizontal={true}
+              <View style={{ gap: 10 }}>
+                <Text variant="titleMedium">Cursos requeridos</Text>
+                {requiredCourses.map((course) => (
+                  <View
+                    key={course.courseId}
+                    style={{
+                      flexDirection: "row",
+                      justifyContent: "space-between",
+                      gap: 10,
+                    }}
+                  >
+                    <CourseCard
+                      course={course}
+                      small={true}
+                      onPress={() => handleRequiredCoursePress(course)}
+                      horizontal={true}
+                    />
+                    {isEditing && (
+                      <IconButton
+                        icon="delete"
+                        mode="contained"
+                        size={20}
+                        onPress={() => {
+                          requiredCoursesContext.deleteRequiredCourse(course);
+                        }}
                       />
-                      {isEditing && (
-                        <IconButton
-                          icon="delete"
-                          mode="contained"
-                          size={20}
-                          onPress={() => {
-                            requiredCoursesContext.deleteRequiredCourse(course);
-                          }}
-                        />
-                      )}
-                    </View>
-                  ))}
+                    )}
+                  </View>
+                ))}
 
-                  {isEditing && (
-                    <Button
-                      onPress={() => router.push("/courses/searchRequired")}
-                      mode="outlined"
-                      icon="plus"
-                    >
-                      Agregar curso requerido
-                    </Button>
-                  )}
-                </View>
-              )}
+                {isEditing && (
+                  <Button
+                    onPress={() => router.push("/courses/searchRequired")}
+                    mode="outlined"
+                    icon="plus"
+                  >
+                    Agregar curso requerido
+                  </Button>
+                )}
+              </View>
+            )}
 
             {isEditing && isOwner && (
               <Button
@@ -404,6 +425,19 @@ export default function CreateCoursePage() {
                   disabled={isLoading}
                 >
                   Iniciar curso
+                </Button>
+              )}
+
+            {!isEditing &&
+              isOwner &&
+              courseContext.course.courseStatus === CourseStatus.STARTED && (
+                <Button
+                  onPress={() => setShowConfirmationEnd(true)}
+                  mode="contained"
+                  icon="stop"
+                  disabled={isLoading}
+                >
+                  Finalizar curso
                 </Button>
               )}
           </ScrollView>
@@ -437,7 +471,8 @@ export default function CreateCoursePage() {
           <Dialog.Title>Atención</Dialog.Title>
           <Dialog.Content>
             <Text variant="bodyMedium">
-              ¿Deseas iniciar el curso '{courseDetails.title}'?
+              ¿Deseas iniciar el curso '{courseDetails.title}'? Esta acción no
+              se puede deshacer.
             </Text>
           </Dialog.Content>
           <Dialog.Actions>
@@ -445,6 +480,27 @@ export default function CreateCoursePage() {
               Cancelar
             </Button>
             <Button onPress={handleStartCourse}>Iniciar</Button>
+          </Dialog.Actions>
+        </Dialog>
+
+        {/* End confirmation Dialog */}
+
+        <Dialog
+          visible={showConfirmationEnd}
+          onDismiss={() => setShowConfirmationEnd(false)}
+        >
+          <Dialog.Title>Atención</Dialog.Title>
+          <Dialog.Content>
+            <Text variant="bodyMedium">
+              ¿Deseas finalizar el curso '{courseDetails.title}'? Esta acción no
+              se puede deshacer.
+            </Text>
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button onPress={() => setShowConfirmationEnd(false)}>
+              Cancelar
+            </Button>
+            <Button onPress={handleFinishCourse}>Finalizar</Button>
           </Dialog.Actions>
         </Dialog>
       </View>

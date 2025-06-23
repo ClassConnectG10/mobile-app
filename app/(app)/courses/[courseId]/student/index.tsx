@@ -147,6 +147,15 @@ export default function CoursePage() {
           />
           <Appbar.Content title={courseContext.course?.courseDetails.title} />
           <Appbar.Action
+            icon="star-box-multiple"
+            onPress={() => {
+              router.push({
+                pathname: "/courses/[courseId]/student/review",
+                params: { courseId },
+              });
+            }}
+          />
+          <Appbar.Action
             icon={courseContext.course?.isFavorite ? "heart" : "heart-outline"}
             onPress={handleFavoritePress}
             disabled={isLoading || !courseContext.course}

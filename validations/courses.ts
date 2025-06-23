@@ -87,7 +87,6 @@ export const courseDetailsUpdateSchema = z
     message: "La fecha de inicio debe ser anterior a la fecha de finalización",
   });
 
-// Genera un esquema de validación para una nota (mark) y un comentario (comment)
 export const markAndCommentSchema = z
   .object({
     mark: z
@@ -97,11 +96,33 @@ export const markAndCommentSchema = z
       })
       .min(0, "La nota debe ser mayor o igual a 0")
       .max(10, "La nota debe ser menor o igual a 10"),
-    comment: z.string({
-      required_error: "El comentario es obligatorio",
-      invalid_type_error: "El comentario debe ser un texto",
-    }),
+    comment: z
+      .string({
+        required_error: "El comentario es obligatorio",
+        invalid_type_error: "El comentario debe ser un texto",
+      })
+      .min(1, "El comentario es obligatorio"),
   })
   .refine((data) => data.mark >= 0 && data.mark <= 10, {
     message: "La nota debe estar entre 0 y 10",
+  });
+
+export const reviewMarkAndCommentSchema = z
+  .object({
+    mark: z
+      .number({
+        required_error: "La nota es obligatoria",
+        invalid_type_error: "La nota debe ser un número",
+      })
+      .min(0, "La nota debe ser mayor o igual a 0")
+      .max(5, "La nota debe ser menor o igual a 5"),
+    comment: z
+      .string({
+        required_error: "El comentario es obligatorio",
+        invalid_type_error: "El comentario debe ser un texto",
+      })
+      .min(1, "El comentario es obligatorio"),
+  })
+  .refine((data) => data.mark >= 0 && data.mark <= 5, {
+    message: "La nota debe estar entre 0 y 5",
   });

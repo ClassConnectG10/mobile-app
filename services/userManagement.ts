@@ -264,6 +264,7 @@ export async function getBulkUsers(userIds: number[]): Promise<User[]> {
         user.is_blocked ? true : false
       );
     });
+
     return users;
   } catch (error) {
     throw handleError(error, "obtener los usuarios");
