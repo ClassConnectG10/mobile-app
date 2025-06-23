@@ -19,7 +19,7 @@ import {
   removeForumQuestion,
 } from "@/services/forumManagement";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
-import { ForumQuestion } from "@/types/forum";
+import { ForumOrderBy, ForumQuestion, ForumSearchParams } from "@/types/forum";
 
 export default function EditForumQuestionPage() {
   const router = useRouter();

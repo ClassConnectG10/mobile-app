@@ -34,8 +34,8 @@ export const ParticipantsTab: React.FC<ParticipantsTabProps> = ({ course }) => {
   const [errorMessage, setErrorMessage] = useState("");
 
   const [courseOwner, setCourseOwner] = useState<User | null>(null);
-  const [assistants, setAssistants] = useState<User[]>([]);
-  const [students, setStudents] = useState<User[]>([]);
+  const [assistants, setAssistants] = useState<User[] | null>(null);
+  const [students, setStudents] = useState<User[] | null>(null);
 
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [selectedUserRole, setSelectedUserRole] = useState<
@@ -67,8 +67,10 @@ export const ParticipantsTab: React.FC<ParticipantsTabProps> = ({ course }) => {
   }
 
   async function fetchCourseOwner() {
+    if (!course.ownerId) return;
+    setIsLoading(true);
+
     try {
-      setIsLoading(true);
       const courseOwner = await getUser(course.ownerId);
       setCourseOwner(courseOwner);
     } catch (error) {
@@ -134,15 +136,19 @@ export const ParticipantsTab: React.FC<ParticipantsTabProps> = ({ course }) => {
     }
   }
 
+  const fetchAll = async () => {
+    await Promise.all([
+      fetchIsOwner(),
+      fetchCourseOwner(),
+      fetchAssistants(),
+      fetchStudents(),
+    ]);
+  };
+
   const handleRefresh = async () => {
     setIsRefreshing(true);
     try {
-      await Promise.all([
-        fetchIsOwner(),
-        fetchCourseOwner(),
-        fetchAssistants(),
-        fetchStudents(),
-      ]);
+      await fetchAll();
     } finally {
       setIsRefreshing(false);
     }
@@ -150,10 +156,7 @@ export const ParticipantsTab: React.FC<ParticipantsTabProps> = ({ course }) => {
 
   useFocusEffect(
     useCallback(() => {
-      fetchIsOwner();
-      fetchCourseOwner();
-      fetchAssistants();
-      fetchStudents();
+      fetchAll();
     }, [course])
   );
 
@@ -200,7 +203,7 @@ export const ParticipantsTab: React.FC<ParticipantsTabProps> = ({ course }) => {
 
   return (
     <View style={{ paddingHorizontal: 16, flex: 1 }}>
-      {isLoading || !courseOwner ? (
+      {isLoading || !courseOwner || !assistants || !students ? (
         <View
           style={{
             flex: 1,

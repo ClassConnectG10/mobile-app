@@ -68,3 +68,5 @@ export const MODALITIES = new BiMap([
 export const defaultLevel = "UNIVERSITY";
 export const defaultCategory = "OTHER";
 export const defaultModality = "VIRTUAL";
+
+export const MINIMUM_APPROVAL_MARK = 4;

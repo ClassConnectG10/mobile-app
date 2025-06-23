@@ -1,4 +1,9 @@
-import { SearchFilters, SearchOption } from "@/types/course";
+import {
+  CourseFeedbackSearchParams,
+  FeedbackType,
+  SearchFilters,
+  SearchOption,
+} from "@/types/course";
 import { createRequest, formatDate } from "./common";
 
 export const createCoursesRequest = () => {
@@ -21,7 +26,7 @@ export const createEnrollCourseRequest = (courseId: string) => {
 
 export const createSearchCoursesRequest = (
   searchFilters: SearchFilters,
-  searchOption: SearchOption,
+  searchOption: SearchOption
 ) => {
   const params: Record<string, string> = {
     search_option: searchOption,
@@ -81,7 +86,7 @@ export const createAssistantsRequest = (courseId: string) => {
 
 export const createAddAssistantRequest = (
   courseId: string,
-  assistantId: number,
+  assistantId: number
 ) => {
   return createRequest({
     uri: `courses/${courseId}/instructors`,
@@ -93,7 +98,7 @@ export const createAddAssistantRequest = (
 
 export const createAssistantRequest = (
   courseId: string,
-  assistantId: number,
+  assistantId: number
 ) => {
   return createRequest({
     uri: `courses/${courseId}/instructors/${assistantId}`,
@@ -114,7 +119,7 @@ export const createStudentRequest = (courseId: string, studentId: number) => {
 
 export const createStudentMarkRequest = (
   courseId: string,
-  studentId: number,
+  studentId: number
 ) => {
   return createRequest({
     uri: `courses/${courseId}/marks/students/${studentId}`,
@@ -129,9 +134,43 @@ export const createMarksRequest = (courseId: string) => {
 
 export const createAssistantLogsRequest = (
   courseId: string,
-  assistantId: number,
+  assistantId: number
 ) => {
   return createRequest({
     uri: `courses/${courseId}/instructors/${assistantId}/logs`,
+  });
+};
+
+export const createFeedbacksRequest = (
+  searchParams: CourseFeedbackSearchParams | null
+) => {
+  const params: Record<string, string | string[]> = {};
+
+  params.limit = "100";
+
+  if (searchParams?.searchQuery && searchParams.searchQuery !== "") {
+    params.feedback_search = searchParams.searchQuery;
+  }
+
+  if (searchParams.startDate) {
+    params.from_date = formatDate(searchParams.startDate);
+  }
+
+  if (searchParams.endDate) {
+    params.to_date = formatDate(searchParams.endDate);
+  }
+
+  switch (searchParams?.feedbackType) {
+    case FeedbackType.PASSED:
+      params.mark_min = "4";
+      break;
+    case FeedbackType.FAILED:
+      params.mark_max = "3";
+      break;
+  }
+
+  return createRequest({
+    uri: `courses/my-feedbacks`,
+    params,
   });
 };

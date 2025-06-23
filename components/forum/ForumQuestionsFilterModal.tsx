@@ -1,6 +1,6 @@
 import { ORDER_OPTIONS } from "@/utils/constants/forumSearchParams";
 import { View } from "react-native";
-import { Modal, Divider, Button, Text } from "react-native-paper";
+import { Divider, Button, Text } from "react-native-paper";
 import { DatePickerButton } from "../forms/DatePickerButton";
 import OptionPicker from "../forms/OptionPicker";
 import { StyleSheet } from "react-native";

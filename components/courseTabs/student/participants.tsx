@@ -24,8 +24,8 @@ export const ParticipantsTab: React.FC<ParticipantsTabProps> = ({ course }) => {
   const [errorMessage, setErrorMessage] = useState("");
 
   const [courseOwner, setCourseOwner] = useState<User | null>(null);
-  const [assistants, setAssistants] = useState<User[]>([]);
-  const [students, setStudents] = useState<User[]>([]);
+  const [assistants, setAssistants] = useState<User[] | null>(null);
+  const [students, setStudents] = useState<User[] | null>(null);
 
   const participantsSections = [
     {
@@ -108,7 +108,7 @@ export const ParticipantsTab: React.FC<ParticipantsTabProps> = ({ course }) => {
 
   return (
     <View style={{ paddingHorizontal: 16, flex: 1 }}>
-      {isLoading || !courseOwner ? (
+      {isLoading || !courseOwner || !assistants || !students ? (
         <View
           style={{
             flex: 1,

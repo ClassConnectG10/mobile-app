@@ -64,7 +64,7 @@ export async function getQuestions(
 export async function getQuestion(
   courseId: string,
   questionId: number,
-  forumSearchParams: ForumSearchParams
+  forumSearchParams: ForumSearchParams | null = null
 ): Promise<{ question: ForumQuestion; answers: ForumAnswer[] }> {
   try {
     const request = await createSearchForumQuestionRequest(
@@ -146,15 +146,24 @@ export async function editForumQuestion(
 ): Promise<void> {
   try {
     forumQuestionSchema.parse(questionInformation);
-    const request = await createForumQuestionRequest(courseId, questionId);
-    const formData = new FormData();
 
-    // TODO: Fix this
+    const formData = new FormData();
+    let clearTags = false;
+
+    formData.append("title", questionInformation.title);
+    formData.append("description", questionInformation.content);
+
     if (questionInformation.tags.length > 0) {
       formData.append("tags", questionInformation.tags.join(","));
     } else {
-      formData.append("tags", "");
+      clearTags = true;
     }
+
+    const request = await createForumQuestionRequest(
+      courseId,
+      questionId,
+      clearTags
+    );
 
     if (fileChanged) {
       if (questionInformation.file) {

@@ -27,12 +27,11 @@ import { hasNoSeats, SeatsField } from "@/components/courses/SeatsField";
 import {
   CATEGORIES,
   LEVELS,
+  MINIMUM_APPROVAL_MARK,
   MODALITIES,
 } from "@/utils/constants/courseDetails";
 import { customColors } from "@/utils/constants/colors";
 import { AlertText } from "@/components/AlertText";
-
-const MINIMUM_APPROVAL_MARK = 4;
 
 export default function CourseIncriptionDetails() {
   const router = useRouter();
@@ -60,8 +59,8 @@ export default function CourseIncriptionDetails() {
 
       const courseDependencies = await Promise.all(
         fetchedCourse.courseDetails.dependencies.map((dependency) =>
-          getCourse(dependency),
-        ),
+          getCourse(dependency)
+        )
       );
 
       setDependencies(courseDependencies);
@@ -80,7 +79,7 @@ export default function CourseIncriptionDetails() {
         course.courseDetails.dependencies.map(async (dependency) => {
           const mark = await getStudentMark(dependency, userContext.user?.id);
           return { courseId: dependency, mark };
-        }),
+        })
       );
       const marks = courseDependenciesMarks.reduce((acc, curr) => {
         acc[curr.courseId] = curr.mark;
@@ -121,7 +120,7 @@ export default function CourseIncriptionDetails() {
       });
     } catch (error) {
       setErrorMessage(
-        `Error al inscribirse al curso: ${(error as Error).message}`,
+        `Error al inscribirse al curso: ${(error as Error).message}`
       );
     } finally {
       setIsLoading(false);
@@ -152,7 +151,7 @@ export default function CourseIncriptionDetails() {
     useCallback(() => {
       fetchCourseOwner();
       fetchCourseDependenciesMarks();
-    }, [course]),
+    }, [course])
   );
 
   function hasDependencyApproval(dependency: string) {
@@ -294,10 +293,10 @@ export default function CourseIncriptionDetails() {
               course.courseStatus !== CourseStatus.NEW ||
               hasNoSeats(
                 course.courseDetails.maxNumberOfStudents,
-                course.numberOfStudens || 0,
+                course.numberOfStudens || 0
               ) ||
               course.courseDetails.dependencies.some(
-                (dependency) => !hasDependencyApproval(dependency),
+                (dependency) => !hasDependencyApproval(dependency)
               )
             }
             onPress={handleEnrollCourse}

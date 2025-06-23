@@ -17,7 +17,6 @@ import { getBulkUsers } from "@/services/userManagement";
 import ForumQuestionCard from "@/components/cards/ForumQuestionCard";
 import { SearchBar } from "../forms/SearchBar";
 import { ForumQuestionsFilterModal } from "../forum/ForumQuestionsFilterModal";
-import { set } from "zod";
 
 interface ForumTabProps {
   course: Course;

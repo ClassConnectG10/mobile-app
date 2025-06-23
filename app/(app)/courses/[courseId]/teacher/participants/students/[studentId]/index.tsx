@@ -16,6 +16,7 @@ import { getStudentMark, setStudentMark } from "@/services/courseManagement";
 import { ToggleableNumberInput } from "@/components/forms/ToggleableNumberInput";
 import { AlertDialog } from "@/components/AlertDialog";
 import { AlertText } from "@/components/AlertText";
+import { ToggleableTextInput } from "@/components/forms/ToggleableTextInput";
 
 const MAX_MARK = 10;
 const DEFAULT_MARK = 4;
@@ -34,6 +35,8 @@ export default function TeacherStudentDetialsPage() {
   const [student, setStudent] = useState<User | null>(null);
   const [mark, setMark] = useState<number | null>(null);
   const [temporaryMark, setTemporaryMark] = useState<number>(DEFAULT_MARK);
+  const [comment, setComment] = useState<string>("");
+  const [temporaryComment, setTemporaryComment] = useState<string>("");
   const [
     showConfirmationUpdateMarkDialog,
     setShowConfirmationUpdateMarkDialog,
@@ -44,10 +47,17 @@ export default function TeacherStudentDetialsPage() {
     setIsLoading(true);
 
     try {
-      const fetchedMark = await getStudentMark(courseId, Number(studentId));
+      const { mark: fetchedMark, comment: fetchedComment } =
+        await getStudentMark(courseId, Number(studentId));
       setMark(fetchedMark);
+      setComment(fetchedComment || "");
       if (fetchedMark !== null) {
         setTemporaryMark(fetchedMark);
+      }
+      if (fetchedComment !== null) {
+        setTemporaryComment(fetchedComment);
+      } else {
+        setTemporaryComment("");
       }
     } catch (error) {
       setErrorMessage((error as Error).message);
@@ -104,8 +114,14 @@ export default function TeacherStudentDetialsPage() {
     setIsLoading(true);
 
     try {
-      await setStudentMark(courseId, Number(studentId), temporaryMark);
+      await setStudentMark(
+        courseId,
+        Number(studentId),
+        temporaryMark,
+        temporaryComment
+      );
       setMark(temporaryMark);
+      setComment(temporaryComment);
     } catch (error) {
       setErrorMessage((error as Error).message);
     } finally {
@@ -172,6 +188,15 @@ export default function TeacherStudentDetialsPage() {
               value={temporaryMark}
               onChange={(mark) => setTemporaryMark(mark)}
               maxValue={MAX_MARK}
+            />
+
+            <ToggleableTextInput
+              label="Comentario"
+              placeholder="Comentario de retroalimentación"
+              value={temporaryComment}
+              editable={true}
+              onChange={(comment) => setTemporaryComment(comment)}
+              autoFocus={false}
             />
 
             {mark == null && (

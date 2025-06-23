@@ -47,26 +47,29 @@ export const createForumQuestionsRequest = (courseId: string) => {
 export const createSearchForumQuestionRequest = (
   courseId: string,
   questionId: number,
-  forumSearchParams: ForumSearchParams
+  forumSearchParams: ForumSearchParams | null = null
 ) => {
   const params: Record<string, string | string[]> = {};
   params.thread_limit = "100";
 
-  if (forumSearchParams.searchQuery && forumSearchParams.searchQuery !== "") {
-    params.search = forumSearchParams.searchQuery;
+  if (forumSearchParams) {
+    if (forumSearchParams.searchQuery && forumSearchParams.searchQuery !== "") {
+      params.search = forumSearchParams.searchQuery;
+    }
+
+    if (forumSearchParams.startDate) {
+      params.start_date = formatDate(forumSearchParams.startDate);
+    }
+
+    if (forumSearchParams.endDate) {
+      params.end_date = formatDate(forumSearchParams.endDate);
+    }
+
+    if (forumSearchParams.orderBy) {
+      params.order_by = forumSearchParams.orderBy;
+    }
   }
 
-  if (forumSearchParams.startDate) {
-    params.start_date = formatDate(forumSearchParams.startDate);
-  }
-
-  if (forumSearchParams.endDate) {
-    params.end_date = formatDate(forumSearchParams.endDate);
-  }
-
-  if (forumSearchParams.orderBy) {
-    params.order_by = forumSearchParams.orderBy;
-  }
   return createRequest({
     uri: `courses/${courseId}/forum/questions/${questionId}`,
     params,
@@ -78,13 +81,19 @@ export const createSearchForumQuestionRequest = (
 
 export const createForumQuestionRequest = (
   courseId: string,
-  questionId: number
+  questionId: number,
+  clearTags: boolean = false
 ) => {
+  const params = {
+    clear_tags: clearTags ? "true" : "false",
+  };
+
   return createRequest({
     uri: `courses/${courseId}/forum/questions/${questionId}`,
     headers: {
       "Content-Type": "multipart/form-data",
     },
+    params,
   });
 };
 

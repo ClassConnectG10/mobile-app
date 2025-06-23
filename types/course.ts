@@ -19,6 +19,12 @@ export enum CourseStatus {
   FINISHED = "FINISHED",
 }
 
+export enum FeedbackType {
+  PASSED = "PASSED",
+  FAILED = "FAILED",
+  ALL = "ALL",
+}
+
 export class SearchFilters {
   constructor(
     public searchQuery: string,
@@ -27,8 +33,8 @@ export class SearchFilters {
     public level: string,
     public modality: string,
     public category: string,
-    public favorites: boolean = false,
-  ) { }
+    public favorites: boolean = false
+  ) {}
 }
 
 export class Course {
@@ -39,8 +45,8 @@ export class Course {
     public courseStatus?: CourseStatus,
     public ownerId?: number,
     public numberOfStudens?: number,
-    public isFavorite?: boolean,
-  ) { }
+    public isFavorite?: boolean
+  ) {}
 }
 
 export class CourseDetails {
@@ -53,6 +59,25 @@ export class CourseDetails {
     public level: string,
     public modality: string,
     public category: string,
-    public dependencies: string[] = [],
-  ) { }
+    public dependencies: string[] = []
+  ) {}
+}
+
+export class CourseFeedback {
+  constructor(
+    public courseId: string,
+    public mark: number,
+    public feedback: string,
+    public createdAt: Date,
+    public userId?: number
+  ) {}
+}
+
+export class CourseFeedbackSearchParams {
+  constructor(
+    public searchQuery: string = "",
+    public startDate: Date | null = null,
+    public endDate: Date | null = null,
+    public feedbackType: FeedbackType = FeedbackType.ALL
+  ) {}
 }

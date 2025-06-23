@@ -1,6 +1,8 @@
 import {
   Course,
   CourseDetails,
+  CourseFeedback,
+  CourseFeedbackSearchParams,
   SearchFilters,
   SearchOption,
 } from "@/types/course";
@@ -8,6 +10,7 @@ import { handleError } from "./common";
 import {
   courseDetailsSchema,
   courseDetailsUpdateSchema,
+  markAndCommentSchema,
 } from "@/validations/courses";
 import {
   createAddAssistantRequest,
@@ -18,6 +21,7 @@ import {
   createCoursesRequest,
   createEnrollCourseRequest,
   createFavoriteCourseRequest,
+  createFeedbacksRequest,
   createMarksRequest,
   createSearchCoursesRequest,
   createStartCourseRequest,
@@ -29,6 +33,7 @@ import { User } from "@/types/user";
 import { getBulkUsers } from "./userManagement";
 import { AssistantLog } from "@/types/assistantLog";
 import { getDateFromBackend } from "./common";
+import { get } from "react-native/Libraries/TurboModule/TurboModuleRegistry";
 
 function formatDate(date: Date): string {
   return date.toISOString().split("T")[0];
@@ -296,14 +301,17 @@ export async function removeStudentFromCourse(
 export async function getStudentMark(
   courseId: string,
   studentId: number
-): Promise<number | null> {
+): Promise<{ mark: number | null; comment: string | null }> {
   try {
     const request = await createStudentMarkRequest(courseId, studentId);
     const response = await request.get("");
-    return response.data.data.mark;
+    return {
+      mark: response.data.data.mark,
+      comment: response.data.data.feedback,
+    };
   } catch (error) {
     if (error.response.status === 404 || error.response.status === 403) {
-      return null; // No se encontró la calificación o no pertenece al curso
+      return { mark: null, comment: null }; // No se encontró la calificación o no pertenece al curso
     }
     throw handleError(error, "obtener la calificación del estudiante");
   }
@@ -312,13 +320,16 @@ export async function getStudentMark(
 export async function setStudentMark(
   courseId: string,
   studentId: number,
-  mark: number
+  mark: number,
+  comment: string | null = null
 ): Promise<void> {
   try {
+    markAndCommentSchema.parse({ mark, comment });
     const request = await createMarksRequest(courseId);
     await request.post("", {
       user_id: studentId,
       mark: mark,
+      feedback: comment,
     });
   } catch (error) {
     throw handleError(error, "establecer la calificación del estudiante");
@@ -347,5 +358,29 @@ export async function getAssistantLogs(
     return logs;
   } catch (error) {
     throw handleError(error, "obtener los registros del asistente");
+  }
+}
+
+export async function getFeedbacks(
+  searchParams: CourseFeedbackSearchParams | null
+): Promise<CourseFeedback[]> {
+  try {
+    const request = await createFeedbacksRequest(searchParams);
+    const response = await request.get("");
+    const feedbacksData = response.data.data;
+
+    const feedbacks: CourseFeedback[] = feedbacksData.map(
+      (feedback: any) =>
+        new CourseFeedback(
+          feedback.course_id,
+          feedback.mark,
+          feedback.feedback,
+          getDateFromBackend(feedback.created_at)
+        )
+    );
+
+    return feedbacks;
+  } catch (error) {
+    throw handleError(error, "obtener los comentarios del curso");
   }
 }

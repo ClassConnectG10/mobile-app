@@ -2,6 +2,7 @@ import {
   ActivityIndicator,
   Appbar,
   Button,
+  Divider,
   useTheme,
 } from "react-native-paper";
 import { COUNTRIES } from "@/utils/constants/countries";
@@ -110,6 +111,12 @@ export default function UserProfilePage() {
   const handleCancelEdit = () => {
     userInformationHook.setUserInformation({ ...userContext.userInformation });
     setIsEditing(false);
+  };
+
+  const handleViewFeedbacks = () => {
+    router.push({
+      pathname: "/courses/feedbacks",
+    });
   };
 
   // Logout solo para perfil propio
@@ -225,13 +232,25 @@ export default function UserProfilePage() {
               )}
 
               {isMe && (
-                <OptionPicker
-                  label="País de residencia"
-                  value={userInformation.country}
-                  setValue={userInformationHook.setCountry}
-                  items={COUNTRIES}
-                  editable={isMe && isEditing}
-                />
+                <View style={{ gap: 16 }}>
+                  <OptionPicker
+                    label="País de residencia"
+                    value={userInformation.country}
+                    setValue={userInformationHook.setCountry}
+                    items={COUNTRIES}
+                    editable={isMe && isEditing}
+                  />
+                  <Divider />
+
+                  <Button
+                    mode="contained"
+                    icon="checkbox-multiple-outline"
+                    onPress={handleViewFeedbacks}
+                    disabled={isLoading}
+                  >
+                    Mis notas
+                  </Button>
+                </View>
               )}
             </View>
 
