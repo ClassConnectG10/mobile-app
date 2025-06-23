@@ -11,12 +11,15 @@ export class Statistics {
     public onTimeSubmissions: number,
     public lateSubmissions: number,
     public avgTimeDifferenceHours: number,
-    public completionRate: number
-  ) {}
+    public completionRate: number,
+    public questionsCount: number,
+    public answersCount: number,
+    public avgAnswersPerQuestion: number,
+  ) { }
 }
 
 export class GradePerActivity {
-  constructor(public activityId: number, public avgGrade: number) {}
+  constructor(public activityId: number, public avgGrade: number) { }
 }
 
 export class SubmissionStatisticsParams {
@@ -26,11 +29,11 @@ export class SubmissionStatisticsParams {
     public activityType?: ActivitiesOption,
     public activityId?: number,
     public studentId?: number
-  ) {}
+  ) { }
 }
 
 export class SubmissionStatistic {
-  constructor(public date: Date, public count: number) {}
+  constructor(public date: Date, public count: number) { }
 }
 
 export class StudentActivityStatistics {
@@ -43,7 +46,7 @@ export class StudentActivityStatistics {
     public submited: boolean,
     public grade?: number,
     public submissionDate?: Date
-  ) {}
+  ) { }
 }
 
 export class StudentStatistics {
@@ -57,6 +60,9 @@ export class StudentStatistics {
     public avgTaskGrade: number,
     public avgExamGrade: number,
     public completionRate: number,
+    public questionsCount: number,
+    public answersCount: number,
+    public recievedAnswersCount: number,
     public activities: StudentActivityStatistics[]
-  ) {}
+  ) { }
 }

@@ -5,7 +5,7 @@ export class Notification {
     public id: string,
     public title: string,
     public body: string,
-    public date: Date
+    public date: Date,
   ) { }
 }
 
@@ -22,6 +22,13 @@ export enum NotificationEvent {
   COURSE_GRADE = "COURSE_GRADE",
   RESOURCE_PUBLISHED = "RESOURCE_PUBLISHED",
   STUDENT_KICKED = "STUDENT_KICKED",
+  AUTOCORRECTION_COMPLETED = "AUTOCORRECTION_COMPLETED",
+  FEEDBACK_REGISTERED = "FEEDBACK REGISTERED",
+  FORUM_QUESTION = "FORUM_QUESTION",
+  FORUM_ANSWER = "FORUM_ANSWER",
+  FORUM_THREAD_ANSWER = "FORUM_THREAD_ANSWER",
+  FORUM_ANSWER_ACCEPTED = "FORUM_ANSWER_ACCEPTED",
+  FORUM_ANSWER_VOTE = "FORUM_ANSWER_VOTE",
 }
 
 export const notificationEventBiMap = new BiMap([
@@ -37,6 +44,16 @@ export const notificationEventBiMap = new BiMap([
   ["Calificación del Curso", NotificationEvent.COURSE_GRADE],
   ["Recurso Publicado", NotificationEvent.RESOURCE_PUBLISHED],
   ["Estudiante Expulsado", NotificationEvent.STUDENT_KICKED],
+  [
+    "Corrección Automática Completada",
+    NotificationEvent.AUTOCORRECTION_COMPLETED,
+  ],
+  ["Nota Registrada", NotificationEvent.FEEDBACK_REGISTERED],
+  ["Nueva Pregunta en Foro", NotificationEvent.FORUM_QUESTION],
+  ["Nueva Respuesta en Foro", NotificationEvent.FORUM_ANSWER],
+  ["Nueva Respuesta en Hilo de Foro", NotificationEvent.FORUM_THREAD_ANSWER],
+  ["Respuesta Aceptada en Foro", NotificationEvent.FORUM_ANSWER_ACCEPTED],
+  ["Voto en Respuesta de Foro", NotificationEvent.FORUM_ANSWER_VOTE],
 ]);
 
 export const notificationEventIconBiMap = new BiMap([
@@ -52,6 +69,13 @@ export const notificationEventIconBiMap = new BiMap([
   ["star", NotificationEvent.COURSE_GRADE],
   ["folder-upload", NotificationEvent.RESOURCE_PUBLISHED],
   ["account-remove", NotificationEvent.STUDENT_KICKED],
+  ["check-all", NotificationEvent.AUTOCORRECTION_COMPLETED],
+  ["pencil", NotificationEvent.FEEDBACK_REGISTERED],
+  ["forum", NotificationEvent.FORUM_QUESTION],
+  ["comment", NotificationEvent.FORUM_ANSWER],
+  ["comment-multiple", NotificationEvent.FORUM_THREAD_ANSWER],
+  ["check-bold", NotificationEvent.FORUM_ANSWER_ACCEPTED],
+  ["thumb-up", NotificationEvent.FORUM_ANSWER_VOTE],
 ]);
 
 export enum NotificationAudience {
@@ -59,6 +83,7 @@ export enum NotificationAudience {
   STUDENT = "STUDENT",
   TEACHER = "TEACHER",
   ASSISTANT = "ASSISTANT",
+  FORUM = "FORUM",
 }
 
 export const notificationAudienceBiMap = new BiMap([
@@ -66,6 +91,7 @@ export const notificationAudienceBiMap = new BiMap([
   ["Alumno", NotificationAudience.STUDENT],
   ["Docente", NotificationAudience.TEACHER],
   ["Auxiliar", NotificationAudience.ASSISTANT],
+  ["Foro", NotificationAudience.FORUM],
 ]);
 
 export enum NotificationConfig {
@@ -139,5 +165,40 @@ export const notificationEventMeta: NotificationEventMeta[] = [
     event: NotificationEvent.STUDENT_KICKED,
     audience: NotificationAudience.STUDENT,
     configurable: NotificationConfig.NO_CONFIGURABLE,
+  },
+  {
+    event: NotificationEvent.AUTOCORRECTION_COMPLETED,
+    audience: NotificationAudience.TEACHER,
+    configurable: NotificationConfig.CONFIGURABLE,
+  },
+  {
+    event: NotificationEvent.FEEDBACK_REGISTERED,
+    audience: NotificationAudience.STUDENT,
+    configurable: NotificationConfig.CONFIGURABLE,
+  },
+  {
+    event: NotificationEvent.FORUM_QUESTION,
+    audience: NotificationAudience.FORUM,
+    configurable: NotificationConfig.CONFIGURABLE,
+  },
+  {
+    event: NotificationEvent.FORUM_ANSWER,
+    audience: NotificationAudience.FORUM,
+    configurable: NotificationConfig.CONFIGURABLE,
+  },
+  {
+    event: NotificationEvent.FORUM_THREAD_ANSWER,
+    audience: NotificationAudience.FORUM,
+    configurable: NotificationConfig.CONFIGURABLE,
+  },
+  {
+    event: NotificationEvent.FORUM_ANSWER_ACCEPTED,
+    audience: NotificationAudience.FORUM,
+    configurable: NotificationConfig.CONFIGURABLE,
+  },
+  {
+    event: NotificationEvent.FORUM_ANSWER_VOTE,
+    audience: NotificationAudience.FORUM,
+    configurable: NotificationConfig.CONFIGURABLE,
   },
 ];

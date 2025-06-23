@@ -187,8 +187,8 @@ export default function StudentStatisticsPage() {
               Valor:
                 studentStatistics.avgTimeDifferenceHours !== undefined
                   ? `${studentStatistics.avgTimeDifferenceHours.toFixed(
-                      2
-                    )} horas`
+                    2
+                  )} horas`
                   : "-",
             },
           ],
@@ -251,6 +251,24 @@ export default function StudentStatisticsPage() {
                 Nota: activity.grade,
               };
             }),
+        },
+        // 7. Foro
+        {
+          sheetName: "Foro",
+          table: [
+            {
+              Métrica: "Preguntas",
+              Valor: studentStatistics.questionsCount,
+            },
+            {
+              Métrica: "Respuestas",
+              Valor: studentStatistics.answersCount,
+            },
+            {
+              Métrica: "Respuestas Recibidas",
+              Valor: studentStatistics.recievedAnswersCount,
+            },
+          ],
         },
       ];
 
@@ -360,7 +378,7 @@ export default function StudentStatisticsPage() {
                 value: getSimpleRelativeTimeFromNow(
                   new Date(
                     Date.now() +
-                      studentStatistics.avgTimeDifferenceHours * 60 * 60 * 1000
+                    studentStatistics.avgTimeDifferenceHours * 60 * 60 * 1000
                   )
                 ),
                 label:
@@ -440,7 +458,7 @@ export default function StudentStatisticsPage() {
                   activity.type === ActivityType.TASK &&
                   activity.submited &&
                   activity.submissionDate.getTime() <=
-                    activity.dueDate.getTime()
+                  activity.dueDate.getTime()
               )
               .map((activity) => ({
                 label: activity.title,
@@ -526,7 +544,7 @@ export default function StudentStatisticsPage() {
                   activity.type === ActivityType.EXAM &&
                   activity.submited &&
                   activity.submissionDate.getTime() <=
-                    activity.dueDate.getTime()
+                  activity.dueDate.getTime()
               )
               .map((activity) => ({
                 label: activity.title,
@@ -565,6 +583,30 @@ export default function StudentStatisticsPage() {
               const displayDate = new Date(Date.now() - value);
               return getSimpleRelativeTimeFromNow(displayDate);
             }}
+          />
+          {/* Foro */}
+          <ListStatCard
+            title={"Foro"}
+            indicators={[
+              {
+                icon: "comment-question",
+                value: studentStatistics.questionsCount,
+                label: "Preguntas",
+                color: customColors.info,
+              },
+              {
+                icon: "comment-text-multiple",
+                value: studentStatistics.answersCount,
+                label: "Respuestas",
+                color: customColors.info,
+              },
+              {
+                icon: "comment-check",
+                value: studentStatistics.recievedAnswersCount,
+                label: "Respuestas recibidas",
+                color: customColors.info,
+              },
+            ]}
           />
 
           <Text style={{ fontWeight: "bold", fontSize: 18 }}>

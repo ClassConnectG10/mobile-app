@@ -31,7 +31,10 @@ export async function getStatistics(courseId: string): Promise<Statistics> {
     responseData.on_time_submissions,
     responseData.late_submissions,
     responseData.avg_time_difference_hours,
-    responseData.completion_rate / 100
+    responseData.completion_rate / 100,
+    responseData.forum.questions_count,
+    responseData.forum.answers_count,
+    responseData.forum.avg_answers_per_question
   );
 }
 
@@ -53,6 +56,9 @@ export async function getStudentStatistics(
     responseData.avg_task_grade,
     responseData.avg_exam_grade,
     responseData.completion_rate / 100,
+    responseData.forum.questions_count,
+    responseData.forum.answers_count,
+    responseData.forum.recieved_answers_count,
     responseData.activities.map(
       (activity: any) =>
         new StudentActivityStatistics(

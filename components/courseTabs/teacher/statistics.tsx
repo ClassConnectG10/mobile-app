@@ -216,6 +216,17 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course }) => {
             "Promedio de Calificación": activity.avgGrade.toFixed(2),
           })),
         },
+        {
+          sheetName: "Foro",
+          table: [
+            { Métrica: "Preguntas", Valor: statistics.questionsCount },
+            { Métrica: "Respuestas", Valor: statistics.answersCount },
+            {
+              Métrica: "Respuestas por Pregunta",
+              Valor: statistics.avgAnswersPerQuestion.toFixed(2),
+            },
+          ],
+        },
       ];
 
       // Unificar entregas de tareas y exámenes en una sola tabla
@@ -396,6 +407,31 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course }) => {
                 displayValue={(value) => value.toFixed(2)}
               />
 
+              {/* Foro */}
+              <ListStatCard
+                title={"Foro"}
+                indicators={[
+                  {
+                    icon: "forum",
+                    value: statistics.questionsCount,
+                    label: "Preguntas",
+                    color: theme.colors.primary,
+                  },
+                  {
+                    icon: "comment-text-multiple",
+                    value: statistics.answersCount,
+                    label: "Respuestas",
+                    color: theme.colors.primary,
+                  },
+                  {
+                    icon: "comment-question",
+                    value: statistics.avgAnswersPerQuestion.toFixed(2),
+                    label: "Respuestas por pregunta",
+                    color: theme.colors.primary,
+                  },
+                ]}
+              />
+
               {/* Entregas */}
               <ListStatCard
                 title={"Entregas"}
@@ -411,7 +447,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course }) => {
                     value: getSimpleRelativeTimeFromNow(
                       new Date(
                         Date.now() +
-                          statistics.avgTimeDifferenceHours * 60 * 60 * 1000
+                        statistics.avgTimeDifferenceHours * 60 * 60 * 1000
                       )
                     ),
                     label:
@@ -561,6 +597,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course }) => {
               />
             </>
           )}
+
           <Button icon="file-excel" mode="contained" onPress={handleExport}>
             Exportar estadísticas
           </Button>
