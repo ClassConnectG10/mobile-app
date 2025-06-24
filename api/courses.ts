@@ -1,5 +1,7 @@
 import {
   CourseFeedbackSearchParams,
+  CourseReview,
+  CourseReviewSearchParams,
   FeedbackType,
   SearchFilters,
   SearchOption,
@@ -184,5 +186,35 @@ export const createFeedbacksRequest = (
 export const createCourseFeedbackRequest = (courseId: string) => {
   return createRequest({
     uri: `courses/${courseId}/feedback`,
+  });
+};
+
+export const createCourseFeedbacksRequest = (
+  courseId: string,
+  searchParams: CourseReviewSearchParams | null
+) => {
+  const params: Record<string, string | string[]> = {};
+
+  params.limit = "100";
+
+  if (searchParams?.searchQuery && searchParams.searchQuery !== "") {
+    params.feedback_search = searchParams.searchQuery;
+  }
+
+  if (searchParams?.startDate) {
+    params.from_date = formatDate(searchParams.startDate);
+  }
+
+  if (searchParams?.endDate) {
+    params.to_date = formatDate(searchParams.endDate);
+  }
+
+  if (searchParams?.mark !== undefined && searchParams?.mark !== null) {
+    params.mark = searchParams.mark.toString();
+  }
+
+  return createRequest({
+    uri: `courses/${courseId}/feedbacks`,
+    params,
   });
 };

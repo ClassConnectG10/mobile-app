@@ -5,7 +5,7 @@ import {
 } from "@/services/courseManagement";
 import { useCourseContext } from "@/utils/storage/courseContext";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Appbar,
@@ -20,6 +20,8 @@ import { ParticipantsTab } from "@/components/courseTabs/teacher/participants";
 import { ModulesTab } from "@/components/courseTabs/teacher/modules";
 import { StatisticsTab } from "@/components/courseTabs/teacher/statistics";
 import { ForumTab } from "@/components/courseTabs/forum";
+import { CourseStatus } from "@/types/course";
+import { ReviewsTab } from "@/components/courseTabs/teacher/reviews";
 
 export default function CoursePage() {
   const router = useRouter();
@@ -31,8 +33,11 @@ export default function CoursePage() {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
+  const courseContext = useCourseContext();
+  const { setCourse } = courseContext;
+
   const [tabIndex, setTabIndex] = useState(0);
-  const [routes] = useState([
+  const [routes, setRoutes] = useState([
     {
       key: "activities",
       title: "Actividades",
@@ -64,8 +69,80 @@ export default function CoursePage() {
       unfocusedIcon: "chart-bar",
     },
   ]);
-  const courseContext = useCourseContext();
-  const { setCourse } = courseContext;
+
+  // Update routes if course is finished
+  useEffect(() => {
+    if (
+      courseContext.course &&
+      courseContext.course.courseStatus === CourseStatus.FINISHED
+    ) {
+      setRoutes([
+        {
+          key: "reviews",
+          title: "Reseñas",
+          focusedIcon: "star",
+          unfocusedIcon: "star",
+        },
+        {
+          key: "modules",
+          title: "Módulos",
+          focusedIcon: "bookshelf",
+          unfocusedIcon: "bookshelf",
+        },
+        {
+          key: "forum",
+          title: "Foro",
+          focusedIcon: "forum",
+          unfocusedIcon: "forum",
+        },
+        {
+          key: "participants",
+          title: "Miembros",
+          focusedIcon: "account-multiple",
+          unfocusedIcon: "account-multiple",
+        },
+        {
+          key: "statistics",
+          title: "Métricas",
+          focusedIcon: "chart-bar",
+          unfocusedIcon: "chart-bar",
+        },
+      ]);
+    } else {
+      setRoutes([
+        {
+          key: "activities",
+          title: "Actividades",
+          focusedIcon: "clipboard-text",
+          unfocusedIcon: "clipboard-text",
+        },
+        {
+          key: "modules",
+          title: "Módulos",
+          focusedIcon: "bookshelf",
+          unfocusedIcon: "bookshelf",
+        },
+        {
+          key: "forum",
+          title: "Foro",
+          focusedIcon: "forum",
+          unfocusedIcon: "forum",
+        },
+        {
+          key: "participants",
+          title: "Miembros",
+          focusedIcon: "account-multiple",
+          unfocusedIcon: "account-multiple",
+        },
+        {
+          key: "statistics",
+          title: "Métricas",
+          focusedIcon: "chart-bar",
+          unfocusedIcon: "chart-bar",
+        },
+      ]);
+    }
+  }, [courseContext.course]);
 
   const renderScene = BottomNavigation.SceneMap({
     activities: ActivitiesTab,
@@ -92,6 +169,12 @@ export default function CoursePage() {
         return null;
       }
       return <StatisticsTab course={courseContext.course} />;
+    },
+    reviews: () => {
+      if (!courseContext.course) {
+        return null;
+      }
+      return <ReviewsTab course={courseContext.course} />;
     },
   });
 

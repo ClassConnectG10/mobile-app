@@ -3,6 +3,8 @@ import {
   CourseDetails,
   CourseFeedback,
   CourseFeedbackSearchParams,
+  CourseReview,
+  CourseReviewSearchParams,
   SearchFilters,
   SearchOption,
 } from "@/types/course";
@@ -19,6 +21,7 @@ import {
   createAssistantRequest,
   createAssistantsRequest,
   createCourseFeedbackRequest,
+  createCourseFeedbacksRequest,
   createCourseRequest,
   createCoursesRequest,
   createEnrollCourseRequest,
@@ -430,5 +433,27 @@ export async function getCourseReview(
       return { mark: null, comment: null }; // No se encontró la reseña o no pertenece al curso
     }
     throw handleError(error, "obtener la reseña del curso");
+  }
+}
+
+export async function getCourseReviews(
+  courseId: string,
+  searchParams?: CourseReviewSearchParams
+): Promise<CourseReview[]> {
+  try {
+    console.log("AAAAAAA");
+    const request = await createCourseFeedbacksRequest(courseId, searchParams);
+    const response = await request.get("");
+    const reviewsData = response.data.data;
+
+    return reviewsData.map((review: any) => ({
+      userId: review.user_id,
+      courseId: review.course_id,
+      mark: review.mark,
+      comment: review.feedback,
+      createdAt: getDateFromBackend(review.created_at),
+    }));
+  } catch (error) {
+    throw handleError(error, "obtener las reseñas del curso");
   }
 }

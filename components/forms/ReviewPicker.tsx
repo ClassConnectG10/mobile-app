@@ -4,14 +4,22 @@ import { IconButton, useTheme } from "react-native-paper";
 
 interface ReviewPickerProps {
   editable: boolean;
-  value: number;
-  onChange: (value: number) => void;
+  value: number | null;
+  onChange: (value: number | null) => void;
+  backgroundColor?: string;
+  borderColor?: string;
+  iconSize?: number;
+  compact?: boolean;
 }
 
 const ReviewPicker: React.FC<ReviewPickerProps> = ({
   editable,
   value,
   onChange: setValue,
+  backgroundColor,
+  borderColor,
+  iconSize = 24,
+  compact = false,
 }) => {
   const theme = useTheme();
   const handlePress = (index: number) => {
@@ -26,8 +34,8 @@ const ReviewPicker: React.FC<ReviewPickerProps> = ({
         style={[
           styles.container,
           {
-            backgroundColor: theme.colors.inverseOnSurface,
-            borderColor: theme.colors.outline,
+            backgroundColor: backgroundColor || theme.colors.inverseOnSurface,
+            borderColor: borderColor || theme.colors.outline,
           },
         ]}
       >
@@ -37,18 +45,18 @@ const ReviewPicker: React.FC<ReviewPickerProps> = ({
             icon="star"
             mode="contained-tonal"
             iconColor={
-              index < value
+              value !== null && index < value
                 ? theme.colors.primary
                 : theme.colors.onSurfaceVariant
             }
             containerColor="transparent"
-            size={24}
+            size={iconSize}
             onPress={() => {
               if (editable) {
                 handlePress(index);
               }
             }}
-            style={styles.starButton}
+            style={{ marginHorizontal: compact ? -5 : 0, marginVertical: 0 }}
           />
         ))}
       </View>
@@ -65,9 +73,6 @@ const styles = StyleSheet.create({
     padding: 0, // Eliminar espaciado interno
     borderRadius: 8, // Bordes redondeados
     borderWidth: 1, // Añadir borde
-  },
-  starButton: {
-    marginHorizontal: 0, // Reducir margen horizontal entre botones
   },
 });
 

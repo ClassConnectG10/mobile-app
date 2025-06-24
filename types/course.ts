@@ -81,3 +81,22 @@ export class CourseFeedbackSearchParams {
     public feedbackType: FeedbackType = FeedbackType.ALL
   ) {}
 }
+
+export class CourseReview {
+  constructor(
+    public userId: number,
+    public courseId: string,
+    public mark: number,
+    public comment: string,
+    public createdAt: Date
+  ) {}
+}
+
+export class CourseReviewSearchParams {
+  constructor(
+    public searchQuery: string = "",
+    public startDate: Date | null = null,
+    public endDate: Date | null = null,
+    public mark: number | null = null
+  ) {}
+}
