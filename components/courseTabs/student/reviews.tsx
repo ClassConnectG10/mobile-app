@@ -1,30 +1,46 @@
-import { View, ScrollView } from "react-native";
+import { getModules, orderModules } from "@/services/resourceManagment";
 import {
-  Appbar,
+  Course,
+  CourseFeedbackSearchParams,
+  CourseReview,
+  CourseReviewSearchParams,
+} from "@/types/course";
+import { Module } from "@/types/resources";
+import { useFocusEffect, useRouter } from "expo-router";
+import { useState, useCallback, useEffect } from "react";
+import { FlatList, ScrollView, View } from "react-native";
+import {
   Button,
-  Text,
   useTheme,
-  Dialog,
+  Text,
   ActivityIndicator,
+  IconButton,
+  Appbar,
 } from "react-native-paper";
-import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
-
-import { useCallback, useState } from "react";
-import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
-import { ToggleableTextInput } from "@/components/forms/ToggleableTextInput";
-import ReviewPicker from "@/components/forms/ReviewPicker";
-import { AlertText } from "@/components/AlertText";
+import ErrorMessageSnackbar from "../../ErrorMessageSnackbar";
+import ModuleCard from "../../cards/ModuleCard";
 import {
   createCourseReview,
   getCourseReview,
+  getCourseReviews,
 } from "@/services/courseManagement";
+import { getBulkUsers } from "@/services/userManagement";
+import { User } from "@/types/user";
+import CourseReviewCard from "@/components/cards/CourseReviewCard";
+import { SearchBar } from "@/components/forms/SearchBar";
+import { CourseReviewFilterModal } from "@/components/courses/CourseReviewFilterModal";
+import { AlertText } from "@/components/AlertText";
+import ReviewPicker from "@/components/forms/ReviewPicker";
+import { ToggleableTextInput } from "@/components/forms/ToggleableTextInput";
+import { FullScreenModal } from "@/components/FullScreenModal";
 
-export default function ReviewCoursePage() {
+interface ReviewsTabProps {
+  course: Course;
+}
+
+export const ReviewsTab: React.FC<ReviewsTabProps> = ({ course }) => {
   const theme = useTheme();
   const router = useRouter();
-
-  const { courseId: courseIdParam } = useLocalSearchParams();
-  const courseId = courseIdParam as string;
 
   const [isLoading, setIsLoading] = useState(false);
   const [showReviewSentModal, setShowReviewSentModal] = useState(false);
@@ -36,12 +52,12 @@ export default function ReviewCoursePage() {
   const [hasPreviousReview, setHasPreviousReview] = useState(false);
 
   const handleFetchReview = async () => {
-    if (!courseId) return;
+    if (!course.courseId) return;
     setIsLoading(true);
 
     try {
       const { mark: fetchedMark, comment: fetchedComment } =
-        await getCourseReview(courseId);
+        await getCourseReview(course.courseId);
       setMark(fetchedMark ?? 5);
       setComment(fetchedComment ?? "");
       setHasPreviousReview(!!fetchedMark);
@@ -53,11 +69,11 @@ export default function ReviewCoursePage() {
   };
 
   const handleSubmitReview = async () => {
-    if (!courseId) return;
+    if (!course.courseId) return;
     setIsLoading(true);
 
     try {
-      await createCourseReview(courseId, mark, comment);
+      await createCourseReview(course.courseId, mark, comment);
       setShowReviewSentModal(true);
       setHasPreviousReview(true);
     } catch (error) {
@@ -70,20 +86,12 @@ export default function ReviewCoursePage() {
   useFocusEffect(
     useCallback(() => {
       handleFetchReview();
-    }, [courseId])
+    }, [course.courseId])
   );
 
   return (
     <>
       <View style={{ flex: 1 }}>
-        <Appbar.Header>
-          <Appbar.BackAction
-            onPress={() => {
-              router.back();
-            }}
-          />
-          <Appbar.Content title="Reseña del curso" />
-        </Appbar.Header>
         {isLoading ? (
           <View
             style={{
@@ -101,6 +109,7 @@ export default function ReviewCoursePage() {
         ) : (
           <View style={{ flex: 1, padding: 16 }}>
             <ScrollView contentContainerStyle={{ gap: 16, paddingBottom: 80 }}>
+              <Text variant="titleMedium">Reseña del curso</Text>
               {!hasPreviousReview && (
                 <AlertText
                   text="No has enviado una reseña para este curso todavía."
@@ -135,22 +144,16 @@ export default function ReviewCoursePage() {
             </ScrollView>
           </View>
         )}
-        <Dialog
+        <FullScreenModal
           visible={showReviewSentModal}
           onDismiss={() => setShowReviewSentModal(false)}
         >
-          <Dialog.Title>Reseña enviada</Dialog.Title>
-          <Dialog.Content>
-            <Text variant="bodyMedium">
-              Su reseña ha sido enviada con éxito.
-            </Text>
-          </Dialog.Content>
-          <Dialog.Actions>
-            <Button onPress={() => setShowReviewSentModal(false)}>
-              Aceptar
-            </Button>
-          </Dialog.Actions>
-        </Dialog>
+          <Text variant="titleLarge">Reseña enviada</Text>
+          <Text variant="bodyMedium">Su reseña ha sido enviada con éxito.</Text>
+          <Button onPress={() => setShowReviewSentModal(false)} mode="text">
+            Aceptar
+          </Button>
+        </FullScreenModal>
       </View>
       <ErrorMessageSnackbar
         message={errorMessage}
@@ -158,4 +161,4 @@ export default function ReviewCoursePage() {
       />
     </>
   );
-}
+};

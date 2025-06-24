@@ -82,7 +82,6 @@ export const ReviewsTab: React.FC<ReviewsTabProps> = ({ course }) => {
   };
 
   const handleSearch = (searchTerm: string) => {
-    console.log("Search term:", searchTerm);
     if (courseReviewSearchParams.searchQuery === searchTerm) return;
     setCourseReviewSearchParams((prev) => ({
       ...prev,

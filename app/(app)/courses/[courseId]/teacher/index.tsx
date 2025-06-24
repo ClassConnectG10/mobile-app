@@ -70,8 +70,7 @@ export default function CoursePage() {
     },
   ]);
 
-  // Update routes if course is finished
-  useEffect(() => {
+  const updateTabs = () => {
     if (
       courseContext.course &&
       courseContext.course.courseStatus === CourseStatus.FINISHED
@@ -142,7 +141,7 @@ export default function CoursePage() {
         },
       ]);
     }
-  }, [courseContext.course]);
+  };
 
   const renderScene = BottomNavigation.SceneMap({
     activities: ActivitiesTab,
@@ -222,9 +221,14 @@ export default function CoursePage() {
     });
   };
 
+  useEffect(() => {
+    updateTabs();
+  }, [courseContext.course]);
+
   useFocusEffect(
     useCallback(() => {
       fetchCourse();
+      updateTabs();
     }, [courseId])
   );
 

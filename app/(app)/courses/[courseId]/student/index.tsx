@@ -5,7 +5,7 @@ import {
 } from "@/services/courseManagement";
 import { useCourseContext } from "@/utils/storage/courseContext";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Appbar,
@@ -19,6 +19,8 @@ import ActivitiesTab from "@/components/courseTabs/student/activities";
 import { ParticipantsTab } from "@/components/courseTabs/student/participants";
 import { ModulesTab } from "@/components/courseTabs/student/modules";
 import { ForumTab } from "@/components/courseTabs/forum";
+import { CourseStatus } from "@/types/course";
+import { ReviewsTab } from "@/components/courseTabs/student/reviews";
 
 export default function CoursePage() {
   const router = useRouter();
@@ -29,9 +31,11 @@ export default function CoursePage() {
 
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const courseContext = useCourseContext();
+  const { setCourse } = courseContext;
 
   const [tabIndex, setTabIndex] = useState(0);
-  const [routes] = useState([
+  const [routes, setRoutes] = useState([
     {
       key: "activities",
       title: "Actividades",
@@ -57,8 +61,67 @@ export default function CoursePage() {
       unfocusedIcon: "account-multiple",
     },
   ]);
-  const courseContext = useCourseContext();
-  const { setCourse } = courseContext;
+
+  const updateTabs = () => {
+    if (
+      courseContext.course &&
+      courseContext.course.courseStatus === CourseStatus.FINISHED
+    ) {
+      setRoutes([
+        {
+          key: "review",
+          title: "Reseña",
+          focusedIcon: "star",
+          unfocusedIcon: "star",
+        },
+        {
+          key: "modules",
+          title: "Módulos",
+          focusedIcon: "bookshelf",
+          unfocusedIcon: "bookshelf",
+        },
+        {
+          key: "forum",
+          title: "Foro",
+          focusedIcon: "forum",
+          unfocusedIcon: "forum",
+        },
+        {
+          key: "participants",
+          title: "Miembros",
+          focusedIcon: "account-multiple",
+          unfocusedIcon: "account-multiple",
+        },
+      ]);
+    } else {
+      setRoutes([
+        {
+          key: "activities",
+          title: "Actividades",
+          focusedIcon: "clipboard-text",
+          unfocusedIcon: "clipboard-text",
+        },
+        {
+          key: "modules",
+          title: "Módulos",
+          focusedIcon: "bookshelf",
+          unfocusedIcon: "bookshelf",
+        },
+        {
+          key: "forum",
+          title: "Foro",
+          focusedIcon: "forum",
+          unfocusedIcon: "forum",
+        },
+        {
+          key: "participants",
+          title: "Miembros",
+          focusedIcon: "account-multiple",
+          unfocusedIcon: "account-multiple",
+        },
+      ]);
+    }
+  };
 
   const renderScene = BottomNavigation.SceneMap({
     activities: ActivitiesTab,
@@ -79,6 +142,12 @@ export default function CoursePage() {
         return null;
       }
       return <ForumTab course={courseContext.course} />;
+    },
+    review: () => {
+      if (!courseContext.course) {
+        return null;
+      }
+      return <ReviewsTab course={courseContext.course} />;
     },
   });
 
@@ -126,6 +195,10 @@ export default function CoursePage() {
     });
   };
 
+  useEffect(() => {
+    updateTabs();
+  }, [courseContext.course]);
+
   useFocusEffect(
     useCallback(() => {
       fetchCourse();
@@ -146,15 +219,6 @@ export default function CoursePage() {
             }}
           />
           <Appbar.Content title={courseContext.course?.courseDetails.title} />
-          <Appbar.Action
-            icon="star-box-multiple"
-            onPress={() => {
-              router.push({
-                pathname: "/courses/[courseId]/student/review",
-                params: { courseId },
-              });
-            }}
-          />
           <Appbar.Action
             icon={courseContext.course?.isFavorite ? "heart" : "heart-outline"}
             onPress={handleFavoritePress}

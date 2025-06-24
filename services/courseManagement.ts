@@ -423,7 +423,6 @@ export async function getCourseReview(
   try {
     const request = await createCourseFeedbackRequest(courseId);
     const response = await request.get("");
-    console.log("Response data:", response.data);
     return {
       mark: response.data.data.mark,
       comment: response.data.data.feedback,
@@ -441,7 +440,6 @@ export async function getCourseReviews(
   searchParams?: CourseReviewSearchParams
 ): Promise<CourseReview[]> {
   try {
-    console.log("AAAAAAA");
     const request = await createCourseFeedbacksRequest(courseId, searchParams);
     const response = await request.get("");
     const reviewsData = response.data.data;

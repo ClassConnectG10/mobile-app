@@ -63,12 +63,6 @@ export const ForumTab: React.FC<ForumTabProps> = ({ course }) => {
         forumQueryParams
       );
 
-      // Imprimir un arreglo con el título de todas las preguntas obtenidas
-      console.log(
-        "Preguntas obtenidas:",
-        fetchedQuestions.map((q) => q.information.title)
-      );
-
       if (loadMore) {
         setQuestions((prev) =>
           prev ? [...prev, ...fetchedQuestions] : fetchedQuestions
