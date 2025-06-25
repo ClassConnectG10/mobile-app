@@ -150,7 +150,7 @@ export default function CreateExam() {
         />
         {teacherExam &&
           !teacherExam.visible &&
-          course.courseStatus !== CourseStatus.FINISHED && (
+          course?.courseStatus !== CourseStatus.FINISHED && (
             <Appbar.Action
               icon={isEditing ? "check" : "pencil"}
               onPress={isEditing ? handleEditExam : () => setIsEditing(true)}

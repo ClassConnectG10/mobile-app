@@ -66,6 +66,7 @@ export default function EditResourcePage() {
       temporalResourceDetailsHook.setResourceDetails({
         ...fetchedResource.resourceDetails,
       });
+      console.log("Attachments:", fetchedResource.resourceDetails.attachments);
       setTemporalFilesAttachments(
         fetchedResource.resourceDetails.attachments
           ?.filter((a) => a.attachmentType === AttachmentType.FILE)
@@ -169,7 +170,7 @@ export default function EditResourcePage() {
           onPress={isEditing ? handleDiscardChanges : () => router.back()}
         />
         <Appbar.Content title="Detalles del recurso" />
-        {course.courseStatus !== CourseStatus.FINISHED && (
+        {course?.courseStatus !== CourseStatus.FINISHED && (
           <Appbar.Action
             icon={isEditing ? "check" : "pencil"}
             onPress={isEditing ? handleSave : handleEdit}
@@ -259,7 +260,7 @@ export default function EditResourcePage() {
                 }}
                 maxLinks={5}
               />
-              {isEditing && course.courseStatus !== CourseStatus.FINISHED && (
+              {isEditing && course?.courseStatus !== CourseStatus.FINISHED && (
                 <Button
                   mode="outlined"
                   onPress={handleDeleteResource}

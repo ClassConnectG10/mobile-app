@@ -235,7 +235,7 @@ export default function StudentExamPage() {
 
           {studentTask &&
             !studentTask.submited &&
-            course.courseStatus !== CourseStatus.FINISHED && (
+            course?.courseStatus !== CourseStatus.FINISHED && (
               <Button
                 mode="contained"
                 onPress={handleSubmitResponse}

@@ -192,7 +192,7 @@ export default function TeacherExamPage() {
         />
         {teacherTask &&
           !teacherTask.visible &&
-          course.courseStatus !== CourseStatus.FINISHED && (
+          course?.courseStatus !== CourseStatus.FINISHED && (
             <Appbar.Action
               icon={isEditing ? "check" : "pencil"}
               onPress={isEditing ? handleEditTask : () => setIsEditing(true)}

@@ -144,7 +144,7 @@ export const ModulesTab: React.FC<ModulesTabProps> = ({ course }) => {
           >
             <Text variant="titleMedium">Módulos</Text>
 
-            {course.courseStatus !== CourseStatus.FINISHED &&
+            {course?.courseStatus !== CourseStatus.FINISHED &&
               (!isEditing ? (
                 <View style={{ flexDirection: "row", gap: 4 }}>
                   <IconButton

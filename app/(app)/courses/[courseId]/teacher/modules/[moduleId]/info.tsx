@@ -126,7 +126,7 @@ export default function CreateCoursePage() {
             }
           />
           <Appbar.Content title="Detalles del módulo" />
-          {course.courseStatus !== CourseStatus.FINISHED && (
+          {course?.courseStatus !== CourseStatus.FINISHED && (
             <Appbar.Action
               icon={isEditing ? "check" : "pencil"}
               onPress={isEditing ? handleEditModule : () => setIsEditing(true)}
@@ -164,7 +164,7 @@ export default function CreateCoursePage() {
                 onChange={setTemporalModuleDescription}
                 editable={isEditing}
               />
-              {isEditing && course.courseStatus !== CourseStatus.FINISHED && (
+              {isEditing && course?.courseStatus !== CourseStatus.FINISHED && (
                 <Button
                   onPress={() => setShowConfirmationDelete(true)}
                   mode="contained"

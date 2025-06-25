@@ -210,7 +210,7 @@ export default function StudentExamPage() {
                   {examGrade ? "Ver entrega calificada" : "Ver entrega"}
                 </Button>
               ) : (
-                course.courseStatus !== CourseStatus.FINISHED && (
+                course?.courseStatus !== CourseStatus.FINISHED && (
                   <Button
                     mode="contained"
                     onPress={handleViewQuestions}

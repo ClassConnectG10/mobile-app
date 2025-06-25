@@ -187,7 +187,7 @@ export default function TeacherExamPage() {
         />
         {teacherExam &&
           !teacherExam.visible &&
-          course.courseStatus !== CourseStatus.FINISHED && (
+          course?.courseStatus !== CourseStatus.FINISHED && (
             <Appbar.Action
               icon={isEditing ? "check" : "pencil"}
               onPress={isEditing ? handleEditExam : () => setIsEditing(true)}
@@ -269,7 +269,7 @@ export default function TeacherExamPage() {
             {!isEditing &&
               teacherExam &&
               !teacherExam.visible &&
-              course.courseStatus !== CourseStatus.FINISHED && (
+              course?.courseStatus !== CourseStatus.FINISHED && (
                 <Button
                   onPress={() => setShowConfirmationPublish(true)}
                   mode="contained"
@@ -321,7 +321,7 @@ export default function TeacherExamPage() {
                 />
               )}
 
-            {isEditing && course.courseStatus !== CourseStatus.FINISHED && (
+            {isEditing && course?.courseStatus !== CourseStatus.FINISHED && (
               <Button
                 onPress={() => setShowConfirmationDelete(true)}
                 mode="contained"
