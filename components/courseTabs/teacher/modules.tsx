@@ -1,5 +1,5 @@
 import { getModules, orderModules } from "@/services/resourceManagment";
-import { Course } from "@/types/course";
+import { Course, CourseStatus } from "@/types/course";
 import { Module } from "@/types/resources";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useState, useCallback } from "react";
@@ -55,7 +55,7 @@ export const ModulesTab: React.FC<ModulesTabProps> = ({ course }) => {
   useFocusEffect(
     useCallback(() => {
       fetchModules();
-    }, [course.courseId]),
+    }, [course.courseId])
   );
 
   const handleEditModulesOrder = async () => {
@@ -144,41 +144,42 @@ export const ModulesTab: React.FC<ModulesTabProps> = ({ course }) => {
           >
             <Text variant="titleMedium">Módulos</Text>
 
-            {!isEditing ? (
-              <View style={{ flexDirection: "row", gap: 4 }}>
-                <IconButton
-                  icon="pencil"
-                  size={24}
-                  style={{ margin: 0 }}
-                  onPress={handleStartEditModulesOrder}
-                  accessibilityLabel="Editar orden de módulos"
-                />
-                <IconButton
-                  icon="plus"
-                  size={24}
-                  style={{ margin: 0 }}
-                  onPress={handleCreateModule}
-                  accessibilityLabel="Agregar módulo"
-                />
-              </View>
-            ) : (
-              <View style={{ flexDirection: "row", gap: 4 }}>
-                <IconButton
-                  icon="close"
-                  size={24}
-                  style={{ margin: 0 }}
-                  onPress={handleCancelEditModulesOrder}
-                  accessibilityLabel="Cancelar"
-                />
-                <IconButton
-                  icon="check"
-                  size={24}
-                  style={{ margin: 0 }}
-                  onPress={handleEditModulesOrder}
-                  accessibilityLabel="Guardar orden"
-                />
-              </View>
-            )}
+            {course.courseStatus !== CourseStatus.FINISHED &&
+              (!isEditing ? (
+                <View style={{ flexDirection: "row", gap: 4 }}>
+                  <IconButton
+                    icon="pencil"
+                    size={24}
+                    style={{ margin: 0 }}
+                    onPress={handleStartEditModulesOrder}
+                    accessibilityLabel="Editar orden de módulos"
+                  />
+                  <IconButton
+                    icon="plus"
+                    size={24}
+                    style={{ margin: 0 }}
+                    onPress={handleCreateModule}
+                    accessibilityLabel="Agregar módulo"
+                  />
+                </View>
+              ) : (
+                <View style={{ flexDirection: "row", gap: 4 }}>
+                  <IconButton
+                    icon="close"
+                    size={24}
+                    style={{ margin: 0 }}
+                    onPress={handleCancelEditModulesOrder}
+                    accessibilityLabel="Cancelar"
+                  />
+                  <IconButton
+                    icon="check"
+                    size={24}
+                    style={{ margin: 0 }}
+                    onPress={handleEditModulesOrder}
+                    accessibilityLabel="Guardar orden"
+                  />
+                </View>
+              ))}
           </View>
           <FlatList
             data={temporalModules}

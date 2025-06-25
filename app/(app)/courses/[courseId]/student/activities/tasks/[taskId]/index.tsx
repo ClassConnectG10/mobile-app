@@ -27,6 +27,8 @@ import { File } from "@/types/file";
 import { useUserContext } from "@/utils/storage/userContext";
 import { TextField } from "@/components/forms/TextField";
 import { formatDateTime } from "@/utils/date";
+import { Course, CourseStatus } from "@/types/course";
+import { getCourse } from "@/services/courseManagement";
 
 export default function StudentExamPage() {
   const router = useRouter();
@@ -50,7 +52,23 @@ export default function StudentExamPage() {
 
   const [taskGrade, setTaskGrade] = useState<TaskGrade | null>(null);
 
+  const [course, setCourse] = useState<Course | null>(null);
+
   const userContext = useUserContext();
+
+  async function fetchCourse() {
+    if (!courseId) return;
+    setIsLoading(true);
+
+    try {
+      const fetchedCourse = await getCourse(courseId);
+      setCourse(fetchedCourse);
+    } catch (error) {
+      setErrorMessage((error as Error).message);
+    } finally {
+      setIsLoading(false);
+    }
+  }
 
   async function fetchStudentTask() {
     if (!courseId || !taskId) return;
@@ -215,20 +233,22 @@ export default function StudentExamPage() {
             maxFiles={1}
           />
 
-          {studentTask && !studentTask.submited && (
-            <Button
-              mode="contained"
-              onPress={handleSubmitResponse}
-              disabled={
-                isLoading ||
-                studentTask.submited ||
-                !submittedFiles ||
-                submittedFiles.length === 0
-              }
-            >
-              Enviar respuesta
-            </Button>
-          )}
+          {studentTask &&
+            !studentTask.submited &&
+            course.courseStatus !== CourseStatus.FINISHED && (
+              <Button
+                mode="contained"
+                onPress={handleSubmitResponse}
+                disabled={
+                  isLoading ||
+                  studentTask.submited ||
+                  !submittedFiles ||
+                  submittedFiles.length === 0
+                }
+              >
+                Enviar respuesta
+              </Button>
+            )}
 
           {taskGrade && (
             <View style={{ flex: 1, gap: 16 }}>

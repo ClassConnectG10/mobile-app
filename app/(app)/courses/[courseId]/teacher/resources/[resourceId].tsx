@@ -24,6 +24,8 @@ import {
   LinkAttachment,
   Resource,
 } from "@/types/resources";
+import { getCourse } from "@/services/courseManagement";
+import { Course, CourseStatus } from "@/types/course";
 
 export default function EditResourcePage() {
   const theme = useTheme();
@@ -43,7 +45,7 @@ export default function EditResourcePage() {
 
   // Estado original y temporal
   const [resource, setResource] = useState<Resource | null>(null);
-
+  const [course, setCourse] = useState<Course | null>(null);
   const temporalResourceDetailsHook = useResourceDetails();
   const temporalResourceDetails = temporalResourceDetailsHook.resourceDetails;
 
@@ -67,15 +69,28 @@ export default function EditResourcePage() {
       setTemporalFilesAttachments(
         fetchedResource.resourceDetails.attachments
           ?.filter((a) => a.attachmentType === AttachmentType.FILE)
-          .map((a) => a as FileAttachment) || [],
+          .map((a) => a as FileAttachment) || []
       );
       setTemporalLinksAttachments(
         fetchedResource.resourceDetails.attachments
           ?.filter((a) => a.attachmentType === AttachmentType.LINK)
-          .map((a) => a as LinkAttachment) || [],
+          .map((a) => a as LinkAttachment) || []
       );
     } catch (error) {
       setErrorMessage((error as Error).message);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  async function fetchCourse() {
+    try {
+      setIsLoading(true);
+      const fetchedCourse = await getCourse(courseId);
+      setCourse(fetchedCourse);
+    } catch (error) {
+      setErrorMessage((error as Error).message);
+      setCourse(null);
     } finally {
       setIsLoading(false);
     }
@@ -90,12 +105,12 @@ export default function EditResourcePage() {
         moduleId,
         resourceId,
         temporalResourceDetails,
-        resource.resourceDetails.attachments,
+        resource.resourceDetails.attachments
       );
       setResource((prev) =>
         prev
           ? { ...prev, resourceDetails: { ...temporalResourceDetails } }
-          : prev,
+          : prev
       );
       setIsEditing(false);
     } catch (error) {
@@ -118,12 +133,12 @@ export default function EditResourcePage() {
     setTemporalFilesAttachments(
       resource.resourceDetails.attachments
         ?.filter((a) => a.attachmentType === AttachmentType.FILE)
-        .map((a) => a as FileAttachment) || [],
+        .map((a) => a as FileAttachment) || []
     );
     setTemporalLinksAttachments(
       resource.resourceDetails.attachments
         ?.filter((a) => a.attachmentType === AttachmentType.LINK)
-        .map((a) => a as LinkAttachment) || [],
+        .map((a) => a as LinkAttachment) || []
     );
     setIsEditing(false);
   };
@@ -143,7 +158,8 @@ export default function EditResourcePage() {
   useFocusEffect(
     useCallback(() => {
       fetchResource();
-    }, [courseId, moduleId, resourceId]),
+      fetchCourse();
+    }, [courseId, moduleId, resourceId])
   );
 
   return (
@@ -153,11 +169,13 @@ export default function EditResourcePage() {
           onPress={isEditing ? handleDiscardChanges : () => router.back()}
         />
         <Appbar.Content title="Detalles del recurso" />
-        <Appbar.Action
-          icon={isEditing ? "check" : "pencil"}
-          onPress={isEditing ? handleSave : handleEdit}
-          disabled={isLoading}
-        />
+        {course.courseStatus !== CourseStatus.FINISHED && (
+          <Appbar.Action
+            icon={isEditing ? "check" : "pencil"}
+            onPress={isEditing ? handleSave : handleEdit}
+            disabled={isLoading}
+          />
+        )}
       </Appbar.Header>
       <View
         style={{
@@ -200,7 +218,7 @@ export default function EditResourcePage() {
               <Divider />
               <ToggleableFileInput
                 files={temporalFilesAttachments.map(
-                  (fileAttachment) => fileAttachment.file,
+                  (fileAttachment) => fileAttachment.file
                 )}
                 editable={isEditing}
                 onChange={(files) => {
@@ -209,7 +227,7 @@ export default function EditResourcePage() {
                       (a) =>
                         a.file === file ||
                         (a.file.firebaseUrl &&
-                          a.file.firebaseUrl === file.firebaseUrl),
+                          a.file.firebaseUrl === file.firebaseUrl)
                     );
                     return existing
                       ? { ...existing, file }
@@ -231,7 +249,7 @@ export default function EditResourcePage() {
                   const newAttachments = links.map(
                     (link) =>
                       temporalLinksAttachments.find((a) => a.link === link) ??
-                      new LinkAttachment(link),
+                      new LinkAttachment(link)
                   );
                   setTemporalLinksAttachments(newAttachments);
                   temporalResourceDetailsHook.setAttachments([
@@ -241,7 +259,7 @@ export default function EditResourcePage() {
                 }}
                 maxLinks={5}
               />
-              {isEditing && (
+              {isEditing && course.courseStatus !== CourseStatus.FINISHED && (
                 <Button
                   mode="outlined"
                   onPress={handleDeleteResource}

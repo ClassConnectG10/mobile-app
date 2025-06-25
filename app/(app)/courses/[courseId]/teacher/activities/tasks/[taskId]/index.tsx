@@ -190,12 +190,14 @@ export default function TeacherExamPage() {
         <Appbar.Content
           title={isEditing ? "Editado tarea" : "Información de la tarea"}
         />
-        {teacherTask && !teacherTask.visible && (
-          <Appbar.Action
-            icon={isEditing ? "check" : "pencil"}
-            onPress={isEditing ? handleEditTask : () => setIsEditing(true)}
-          />
-        )}
+        {teacherTask &&
+          !teacherTask.visible &&
+          course.courseStatus !== CourseStatus.FINISHED && (
+            <Appbar.Action
+              icon={isEditing ? "check" : "pencil"}
+              onPress={isEditing ? handleEditTask : () => setIsEditing(true)}
+            />
+          )}
       </Appbar.Header>
       {isLoading || !course ? (
         <View

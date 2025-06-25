@@ -3,12 +3,14 @@ import ModuleCard from "@/components/cards/ModuleCard";
 import ResourceCard from "@/components/cards/ResourceCard";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import { getModuleTeacherActivities } from "@/services/activityManagement";
+import { getCourse } from "@/services/courseManagement";
 import {
   getModule,
   getResources,
   orderResources,
 } from "@/services/resourceManagment";
 import { ActivityType, TeacherActivity } from "@/types/activity";
+import { CourseStatus } from "@/types/course";
 import { Module, Resource } from "@/types/resources";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
@@ -31,7 +33,7 @@ class ModuleElement {
   constructor(
     public id: number,
     public type: ModuleElementType,
-    public element: Resource | TeacherActivity,
+    public element: Resource | TeacherActivity
   ) {}
 }
 
@@ -48,6 +50,7 @@ export default function ModulePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isEditingResources, setIsEditingResources] = useState(false);
+  const [course, setCourse] = useState(null);
 
   const [activitiesDisplayElements, setActivitiesDisplayElements] = useState<
     ModuleElement[]
@@ -96,8 +99,8 @@ export default function ModulePage() {
           new ModuleElement(
             resource.resourceId,
             ModuleElementType.RESOURCE,
-            resource,
-          ),
+            resource
+          )
       );
       setResourcesDisplayElements(fetchedResources);
       setTemporalResourcesDisplayElements(fetchedResources);
@@ -119,12 +122,25 @@ export default function ModulePage() {
           return new ModuleElement(
             activity.activity.resourceId,
             ModuleElementType.ACTIVITY,
-            activity,
+            activity
           );
-        }),
+        })
       );
     } catch (error) {
       setErrorMessage((error as Error).message);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  async function fetchCourse() {
+    try {
+      setIsLoading(true);
+      const fetchedCourse = await getCourse(courseId);
+      setCourse(fetchedCourse);
+    } catch (error) {
+      setErrorMessage((error as Error).message);
+      setCourse(null);
     } finally {
       setIsLoading(false);
     }
@@ -214,7 +230,8 @@ export default function ModulePage() {
       fetchModule();
       fetchActivities();
       fetchResources();
-    }, [courseId, moduleId]),
+      fetchCourse();
+    }, [courseId, moduleId])
   );
 
   return (
@@ -336,41 +353,43 @@ export default function ModulePage() {
                       }}
                     >
                       <Text variant="titleMedium">{title}</Text>
-                      {!isEditingResources ? (
-                        <View style={{ flexDirection: "row", gap: 4 }}>
-                          <IconButton
-                            icon="pencil"
-                            size={24}
-                            style={{ margin: 0 }}
-                            onPress={handleEditResourcesOrder}
-                            accessibilityLabel="Editar orden de módulos"
-                          />
-                          <IconButton
-                            icon="plus"
-                            size={24}
-                            style={{ margin: 0 }}
-                            onPress={handleCreateResource}
-                            accessibilityLabel="Editar orden de módulos"
-                          />
-                        </View>
-                      ) : (
-                        <View style={{ flexDirection: "row", gap: 4 }}>
-                          <IconButton
-                            icon="close"
-                            size={24}
-                            style={{ margin: 0 }}
-                            onPress={handleCancelResourcesOrder}
-                            accessibilityLabel="Cancelar"
-                          />
-                          <IconButton
-                            icon="check"
-                            size={24}
-                            style={{ margin: 0 }}
-                            onPress={handleOrderResources}
-                            accessibilityLabel="Guardar orden"
-                          />
-                        </View>
-                      )}
+                      {course &&
+                        course.status !== CourseStatus.FINISHED &&
+                        (!isEditingResources ? (
+                          <View style={{ flexDirection: "row", gap: 4 }}>
+                            <IconButton
+                              icon="pencil"
+                              size={24}
+                              style={{ margin: 0 }}
+                              onPress={handleEditResourcesOrder}
+                              accessibilityLabel="Editar orden de módulos"
+                            />
+                            <IconButton
+                              icon="plus"
+                              size={24}
+                              style={{ margin: 0 }}
+                              onPress={handleCreateResource}
+                              accessibilityLabel="Editar orden de módulos"
+                            />
+                          </View>
+                        ) : (
+                          <View style={{ flexDirection: "row", gap: 4 }}>
+                            <IconButton
+                              icon="close"
+                              size={24}
+                              style={{ margin: 0 }}
+                              onPress={handleCancelResourcesOrder}
+                              accessibilityLabel="Cancelar"
+                            />
+                            <IconButton
+                              icon="check"
+                              size={24}
+                              style={{ margin: 0 }}
+                              onPress={handleOrderResources}
+                              accessibilityLabel="Guardar orden"
+                            />
+                          </View>
+                        ))}
                     </View>
                   );
                 }

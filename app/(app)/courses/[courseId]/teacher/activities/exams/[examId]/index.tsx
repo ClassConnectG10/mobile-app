@@ -185,12 +185,14 @@ export default function TeacherExamPage() {
         <Appbar.Content
           title={isEditing ? "Editando examen" : "Información del examen"}
         />
-        {teacherExam && !teacherExam.visible && (
-          <Appbar.Action
-            icon={isEditing ? "check" : "pencil"}
-            onPress={isEditing ? handleEditExam : () => setIsEditing(true)}
-          />
-        )}
+        {teacherExam &&
+          !teacherExam.visible &&
+          course.courseStatus !== CourseStatus.FINISHED && (
+            <Appbar.Action
+              icon={isEditing ? "check" : "pencil"}
+              onPress={isEditing ? handleEditExam : () => setIsEditing(true)}
+            />
+          )}
       </Appbar.Header>
       {isLoading || !course ? (
         <View
@@ -264,18 +266,21 @@ export default function TeacherExamPage() {
               </Button>
             )}
 
-            {!isEditing && teacherExam && !teacherExam.visible && (
-              <Button
-                onPress={() => setShowConfirmationPublish(true)}
-                mode="contained"
-                disabled={
-                  isLoading || course.courseStatus !== CourseStatus.STARTED
-                }
-                icon="file-eye"
-              >
-                Publicar examen
-              </Button>
-            )}
+            {!isEditing &&
+              teacherExam &&
+              !teacherExam.visible &&
+              course.courseStatus !== CourseStatus.FINISHED && (
+                <Button
+                  onPress={() => setShowConfirmationPublish(true)}
+                  mode="contained"
+                  disabled={
+                    isLoading || course.courseStatus !== CourseStatus.STARTED
+                  }
+                  icon="file-eye"
+                >
+                  Publicar examen
+                </Button>
+              )}
 
             {!isEditing &&
               course.courseStatus === CourseStatus.NEW &&
@@ -316,7 +321,7 @@ export default function TeacherExamPage() {
                 />
               )}
 
-            {isEditing && (
+            {isEditing && course.courseStatus !== CourseStatus.FINISHED && (
               <Button
                 onPress={() => setShowConfirmationDelete(true)}
                 mode="contained"

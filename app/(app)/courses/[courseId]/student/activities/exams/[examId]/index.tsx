@@ -25,6 +25,8 @@ import { TextField } from "@/components/forms/TextField";
 import { formatDateTime } from "@/utils/date";
 import { useUserContext } from "@/utils/storage/userContext";
 import ExamSubmissionCard from "@/components/cards/ExamSubmissionCard";
+import { Course, CourseStatus } from "@/types/course";
+import { getCourse } from "@/services/courseManagement";
 
 export default function StudentExamPage() {
   const router = useRouter();
@@ -46,6 +48,22 @@ export default function StudentExamPage() {
   const userContextHook = useUserContext();
   const userContext = userContextHook.user;
   const studentId = userContext.id;
+
+  const [course, setCourse] = useState<Course | null>(null);
+
+  async function fetchCourse() {
+    if (!courseId) return;
+    setIsLoading(true);
+
+    try {
+      const fetchedCourse = await getCourse(courseId);
+      setCourse(fetchedCourse);
+    } catch (error) {
+      setErrorMessage((error as Error).message);
+    } finally {
+      setIsLoading(false);
+    }
+  }
 
   const fetchStudentExam = async () => {
     if (!courseId || !examId) return;
@@ -114,6 +132,7 @@ export default function StudentExamPage() {
     useCallback(() => {
       fetchStudentExam();
       fetchExamGrade();
+      fetchCourse();
     }, [courseId, examId])
   );
 
@@ -191,14 +210,16 @@ export default function StudentExamPage() {
                   {examGrade ? "Ver entrega calificada" : "Ver entrega"}
                 </Button>
               ) : (
-                <Button
-                  mode="contained"
-                  onPress={handleViewQuestions}
-                  disabled={isLoading}
-                  icon="pen"
-                >
-                  Comenzar examen
-                </Button>
+                course.courseStatus !== CourseStatus.FINISHED && (
+                  <Button
+                    mode="contained"
+                    onPress={handleViewQuestions}
+                    disabled={isLoading}
+                    icon="pen"
+                  >
+                    Comenzar examen
+                  </Button>
+                )
               )}
             </View>
           </>

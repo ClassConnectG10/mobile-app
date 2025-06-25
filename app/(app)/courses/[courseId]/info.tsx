@@ -253,12 +253,15 @@ export default function CreateCoursePage() {
             }
           />
           <Appbar.Content title="Detalles del curso" />
-          {isOwner && (
-            <Appbar.Action
-              icon={isEditing ? "check" : "pencil"}
-              onPress={isEditing ? handleEditCourse : () => setIsEditing(true)}
-            />
-          )}
+          {isOwner &&
+            courseContext.course.courseStatus !== CourseStatus.FINISHED && (
+              <Appbar.Action
+                icon={isEditing ? "check" : "pencil"}
+                onPress={
+                  isEditing ? handleEditCourse : () => setIsEditing(true)
+                }
+              />
+            )}
         </Appbar.Header>
 
         {isLoading ||

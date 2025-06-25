@@ -63,6 +63,10 @@ export function handleError(error: any, action: string): Error {
       `Error de validacion al ${action}: ${error.errors[0].message}`
     );
   } else if (error instanceof AxiosError) {
+    // Puedes imprimir el body del response así:
+    if (error.response) {
+      console.log("Response body:", error.response.data);
+    }
     return new Error(
       `Error al ${action}: ${
         error.response?.data?.message ||

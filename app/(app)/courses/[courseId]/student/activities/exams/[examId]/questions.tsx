@@ -25,6 +25,8 @@ import { FullScreenModal } from "@/components/FullScreenModal";
 import { customColors } from "@/utils/constants/colors";
 import { AlertDialog } from "@/components/AlertDialog";
 import { getSimpleRelativeTimeFromNow } from "@/utils/date";
+import { Course } from "@/types/course";
+import { getCourse } from "@/services/courseManagement";
 
 export default function StudentFillExam() {
   const router = useRouter();
@@ -47,6 +49,22 @@ export default function StudentFillExam() {
   const [remainingTimeModalVisible, setRemainingTimeModalVisible] =
     useState(false);
   const [remainingTime, setRemainingTime] = useState<number | null>(null);
+
+  const [course, setCourse] = useState<Course | null>(null);
+
+  async function fetchCourse() {
+    if (!courseId) return;
+    setIsLoading(true);
+
+    try {
+      const fetchedCourse = await getCourse(courseId);
+      setCourse(fetchedCourse);
+    } catch (error) {
+      setErrorMessage((error as Error).message);
+    } finally {
+      setIsLoading(false);
+    }
+  }
 
   const userContextHook = useUserContext();
   const studentId = userContextHook.user.id;
@@ -211,6 +229,7 @@ export default function StudentFillExam() {
     useCallback(() => {
       fetchStudentExam();
       fetchExamGrade();
+      fetchCourse();
     }, [courseId, examId])
   );
 
@@ -302,7 +321,8 @@ export default function StudentFillExam() {
               />
             )}
             ListFooterComponent={
-              !examSubmission.submited && (
+              !examSubmission.submited &&
+              course.courseStatus && (
                 <View
                   style={{
                     paddingTop: 16,

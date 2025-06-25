@@ -18,6 +18,8 @@ import {
   getModule,
   updateModule,
 } from "@/services/resourceManagment";
+import { getCourse } from "@/services/courseManagement";
+import { Course, CourseStatus } from "@/types/course";
 
 export default function CreateCoursePage() {
   const theme = useTheme();
@@ -34,6 +36,7 @@ export default function CreateCoursePage() {
   const [errorMessage, setErrorMessage] = useState("");
   const [moduleTitle, setModuleTitle] = useState("");
   const [moduleDescription, setModuleDescription] = useState("");
+  const [course, setCourse] = useState<Course | null>(null);
 
   const [temporalModuleTitle, setTemporalModuleTitle] = useState("");
   const [temporalModuleDescription, setTemporalModuleDescription] =
@@ -66,7 +69,7 @@ export default function CreateCoursePage() {
       setIsLoading(true);
       const newModuleDetails = new ModuleDetails(
         temporalModuleTitle,
-        temporalModuleDescription,
+        temporalModuleDescription
       );
       await updateModule(courseId, moduleId, newModuleDetails);
       setIsEditing(false);
@@ -93,10 +96,24 @@ export default function CreateCoursePage() {
     }
   };
 
+  async function fetchCourse() {
+    try {
+      setIsLoading(true);
+      const fetchedCourse = await getCourse(courseId);
+      setCourse(fetchedCourse);
+    } catch (error) {
+      setErrorMessage((error as Error).message);
+      setCourse(null);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
   useFocusEffect(
     useCallback(() => {
       fetchModule();
-    }, [courseId]),
+      fetchCourse();
+    }, [courseId])
   );
 
   return (
@@ -109,10 +126,12 @@ export default function CreateCoursePage() {
             }
           />
           <Appbar.Content title="Detalles del módulo" />
-          <Appbar.Action
-            icon={isEditing ? "check" : "pencil"}
-            onPress={isEditing ? handleEditModule : () => setIsEditing(true)}
-          />
+          {course.courseStatus !== CourseStatus.FINISHED && (
+            <Appbar.Action
+              icon={isEditing ? "check" : "pencil"}
+              onPress={isEditing ? handleEditModule : () => setIsEditing(true)}
+            />
+          )}
         </Appbar.Header>
         {isLoading ? (
           <View
@@ -145,7 +164,7 @@ export default function CreateCoursePage() {
                 onChange={setTemporalModuleDescription}
                 editable={isEditing}
               />
-              {isEditing && (
+              {isEditing && course.courseStatus !== CourseStatus.FINISHED && (
                 <Button
                   onPress={() => setShowConfirmationDelete(true)}
                   mode="contained"

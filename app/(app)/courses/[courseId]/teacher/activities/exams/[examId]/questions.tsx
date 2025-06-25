@@ -25,6 +25,8 @@ import { ExamItemCard } from "@/components/cards/examCards/ExamItemCard";
 import { useFocusEffect } from "@react-navigation/native";
 import { getTeacherExam, updateExam } from "@/services/activityManagement";
 import { ExamItemMode } from "@/components/cards/examCards/examItemMode";
+import { Course, CourseStatus } from "@/types/course";
+import { getCourse } from "@/services/courseManagement";
 
 export default function CreateExam() {
   const router = useRouter();
@@ -44,10 +46,24 @@ export default function CreateExam() {
   const [isEditing, setIsEditing] = useState(false);
   const [teacherExam, setTeacherExam] = useState(null);
 
+  const [course, setCourse] = useState<Course | null>(null);
+
   const [examItemTypeSelectorVisible, setExamItemTypeSelectorVisible] =
     useState(false);
 
   const flatListRef = useRef<FlatList>(null);
+
+  async function fetchCourse() {
+    try {
+      setIsLoading(true);
+      const fetchedCourse = await getCourse(courseId);
+      setCourse(fetchedCourse);
+    } catch (error) {
+      setErrorMessage((error as Error).message);
+    } finally {
+      setIsLoading(false);
+    }
+  }
 
   async function fetchTeacherExam() {
     if (!courseId || !examId) return;
@@ -117,6 +133,7 @@ export default function CreateExam() {
   useFocusEffect(
     useCallback(() => {
       fetchTeacherExam();
+      fetchCourse();
     }, [courseId, examId])
   );
 
@@ -131,12 +148,14 @@ export default function CreateExam() {
         <Appbar.Content
           title={isEditing ? "Editado las preguntas" : "Preguntas del examen"}
         />
-        {teacherExam && !teacherExam.visible && (
-          <Appbar.Action
-            icon={isEditing ? "check" : "pencil"}
-            onPress={isEditing ? handleEditExam : () => setIsEditing(true)}
-          />
-        )}
+        {teacherExam &&
+          !teacherExam.visible &&
+          course.courseStatus !== CourseStatus.FINISHED && (
+            <Appbar.Action
+              icon={isEditing ? "check" : "pencil"}
+              onPress={isEditing ? handleEditExam : () => setIsEditing(true)}
+            />
+          )}
       </Appbar.Header>
       {isLoading || !teacherExam ? (
         <View
