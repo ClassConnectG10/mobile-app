@@ -1,6 +1,5 @@
 import {
   CourseFeedbackSearchParams,
-  CourseReview,
   CourseReviewSearchParams,
   FeedbackType,
   SearchFilters,

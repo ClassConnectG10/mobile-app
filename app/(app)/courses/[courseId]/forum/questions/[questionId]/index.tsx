@@ -48,7 +48,7 @@ export default function ForumQuestionPage() {
   const [searchParamsModalVisible, setSearchParamsModalVisible] =
     useState(false);
   const [forumQuestion, setForumQuestion] = useState<ForumQuestion | null>(
-    null
+    null,
   );
   const [forumAnswers, setForumAnswers] = useState(null);
   const [users, setUsers] = useState<User[] | null>(null);
@@ -57,11 +57,11 @@ export default function ForumQuestionPage() {
   const [isCreator, setIsCreator] = useState(false);
 
   const [acceptedAnswer, setAcceptedAnswer] = useState<ForumAnswer | null>(
-    null
+    null,
   );
 
   const [acceptedAnswerUser, setAcceptedAnswerUser] = useState<User | null>(
-    null
+    null,
   );
 
   const defaultForumSearchParams: ForumSearchParams = {
@@ -73,7 +73,7 @@ export default function ForumQuestionPage() {
   };
 
   const [forumQueryParams, setForumQueryParams] = useState<ForumSearchParams>(
-    defaultForumSearchParams
+    defaultForumSearchParams,
   );
 
   const fetchForumQuestion = async () => {
@@ -89,19 +89,19 @@ export default function ForumQuestionPage() {
       const { question, answers } = await getQuestion(
         courseId,
         questionId,
-        searchParams
+        searchParams,
       );
       setForumQuestion(question);
 
       if (question.acceptedAnswerId) {
         if (!isSearching) {
           const fetchedAcceptedAnswer = answers.find(
-            (answer: ForumAnswer) => answer.id === question.acceptedAnswerId
+            (answer: ForumAnswer) => answer.id === question.acceptedAnswerId,
           );
           setAcceptedAnswer(fetchedAcceptedAnswer);
         }
         const otherAnswers = answers.filter(
-          (answer: ForumAnswer) => answer.id !== question.acceptedAnswerId
+          (answer: ForumAnswer) => answer.id !== question.acceptedAnswerId,
         );
         setForumAnswers(otherAnswers);
       } else {
@@ -121,7 +121,7 @@ export default function ForumQuestionPage() {
 
     try {
       const uniqueUserIds: Set<number> = new Set(
-        forumAnswers.map((answer: ForumAnswer) => answer.creatorId)
+        forumAnswers.map((answer: ForumAnswer) => answer.creatorId),
       );
       uniqueUserIds.add(forumQuestion.creatorId);
 
@@ -133,13 +133,13 @@ export default function ForumQuestionPage() {
 
       if (acceptedAnswer) {
         const fetchedAcceptedAnswerUser = fetchedUsers.find(
-          (user) => user.id === acceptedAnswer.creatorId
+          (user) => user.id === acceptedAnswer.creatorId,
         );
         setAcceptedAnswerUser(fetchedAcceptedAnswerUser);
       }
       setUsers(fetchedUsers);
       const questionCreator = fetchedUsers.find(
-        (user) => user.id === forumQuestion.creatorId
+        (user) => user.id === forumQuestion.creatorId,
       );
       setCreator(questionCreator);
       setIsCreator(questionCreator?.id === userId);
@@ -201,7 +201,7 @@ export default function ForumQuestionPage() {
   useFocusEffect(
     useCallback(() => {
       fetchForumQuestion();
-    }, [courseId, questionId, forumQueryParams])
+    }, [courseId, questionId, forumQueryParams]),
   );
 
   const handleAcceptAnswer = async (newAcceptedAnswer: ForumAnswer) => {
@@ -217,11 +217,11 @@ export default function ForumQuestionPage() {
       };
 
       const newAcceptedAnswerUser = users?.find(
-        (user: User) => user.id === newAcceptedAnswer.creatorId
+        (user: User) => user.id === newAcceptedAnswer.creatorId,
       );
 
       const updatedAnswers = forumAnswers.filter(
-        (answer: ForumAnswer) => answer.id !== newAcceptedAnswerId
+        (answer: ForumAnswer) => answer.id !== newAcceptedAnswerId,
       );
 
       if (acceptedAnswer) {
@@ -241,7 +241,7 @@ export default function ForumQuestionPage() {
 
   const updateVoteCount = (
     answer: ForumAnswer,
-    vote: 0 | 1 | -1
+    vote: 0 | 1 | -1,
   ): ForumAnswer => {
     let { upVotes, downVotes } = answer;
 
@@ -307,7 +307,7 @@ export default function ForumQuestionPage() {
   // Render functions for each section
   const renderQuestionSection = (
     forumQuestion: ForumQuestion,
-    creator: User
+    creator: User,
   ) => (
     <ForumQuestionCard
       forumQuestion={forumQuestion}
@@ -332,7 +332,7 @@ export default function ForumQuestionPage() {
 
   const renderAcceptedAnswerSection = (
     acceptedAnswer: ForumAnswer,
-    acceptedAnswerUser: User
+    acceptedAnswerUser: User,
   ) => (
     <ForumAnswerCard
       user={acceptedAnswerUser}
@@ -346,9 +346,8 @@ export default function ForumQuestionPage() {
   );
 
   // Corrección final para renderItem en SectionList
-  const renderAnswersSection =
-    (forumAnswers: ForumAnswer[], users: User[]) =>
-    ({ item }: { item: ForumAnswer }) =>
+  const renderAnswersSection = (forumAnswers: ForumAnswer[], users: User[]) => {
+    const AnswerItem = ({ item }: { item: ForumAnswer }) =>
       !isSearching && (
         <ForumAnswerCard
           user={
@@ -362,6 +361,11 @@ export default function ForumQuestionPage() {
           onVotePress={(vote) => handleVoteAnswer(item.id, vote)}
         />
       );
+
+    AnswerItem.displayName = "AnswerItem";
+
+    return AnswerItem;
+  };
 
   // Ajustar las secciones para que sean compatibles con SectionList
   const sections = [
@@ -414,7 +418,7 @@ export default function ForumQuestionPage() {
       <Appbar.Header>
         <Appbar.BackAction onPress={() => router.back()} />
         <Appbar.Content title="Pregunta" />
-        {creator && userId == creator.id && (
+        {creator && userId === creator.id && (
           <Appbar.Action
             icon="pencil"
             onPress={() => {

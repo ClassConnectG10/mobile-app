@@ -24,7 +24,7 @@ export default function ForumAnswerPage() {
     courseId: courseIdParam,
     questionId: questionIdParam,
     answerId: answerIdParam,
-    parentAnswerId: parentAnswerIdParam,
+    // parentAnswerId: parentAnswerIdParam,
   } = useLocalSearchParams();
   const courseId = courseIdParam as string;
   const questionId = Number(questionIdParam);
@@ -41,7 +41,6 @@ export default function ForumAnswerPage() {
   const [users, setUsers] = useState<User[] | null>(null);
 
   const [creator, setCreator] = useState<User | null>(null);
-  const [isCreator, setIsCreator] = useState(false);
 
   const fetchForumAnswer = async () => {
     setIsLoading(true);
@@ -49,7 +48,7 @@ export default function ForumAnswerPage() {
       const { answer, childrenAnswers } = await getAnswer(
         courseId,
         questionId,
-        answerId
+        answerId,
       );
       setForumAnswer(answer);
 
@@ -67,16 +66,15 @@ export default function ForumAnswerPage() {
 
     try {
       const uniqueUserIds: Set<number> = new Set(
-        answers.map((answer: ForumAnswer) => answer.creatorId)
+        answers.map((answer: ForumAnswer) => answer.creatorId),
       );
       uniqueUserIds.add(forumAnswer.creatorId);
       const fetchedUsers = await getBulkUsers(Array.from(uniqueUserIds));
       setUsers(fetchedUsers);
       const questionCreator = fetchedUsers.find(
-        (user) => user.id === forumAnswer.creatorId
+        (user) => user.id === forumAnswer.creatorId,
       );
       setCreator(questionCreator);
-      setIsCreator(questionCreator?.id === userId);
     } catch (error) {
       setErrorMessage((error as Error).message);
     }
@@ -133,12 +131,12 @@ export default function ForumAnswerPage() {
   useFocusEffect(
     useCallback(() => {
       fetchForumAnswer();
-    }, [courseId, questionId])
+    }, [courseId, questionId]),
   );
 
   const updateVoteCount = (
     answer: ForumAnswer,
-    vote: 0 | 1 | -1
+    vote: 0 | 1 | -1,
   ): ForumAnswer => {
     let { upVotes, downVotes } = answer;
 
@@ -223,22 +221,26 @@ export default function ForumAnswerPage() {
     />
   );
 
-  const renderChildrenAnswersSection =
-    (childrenAnswers: ForumAnswer[], users: User[]) =>
-    ({ item }: { item: ForumAnswer }) =>
-      (
-        <ForumAnswerCard
-          user={
-            users.find((user) => user.id === item.creatorId) || ({} as User)
-          }
-          forumAnswer={item}
-          onPress={() => handleAnswerPress(item.id)}
-          onAcceptedPress={() => {}}
-          showAccepted={false}
-          accepted={false}
-          onVotePress={(vote) => handleVoteChildAnswer(item.id, vote)}
-        />
-      );
+  const renderChildrenAnswersSection = (
+    childrenAnswers: ForumAnswer[],
+    users: User[],
+  ) => {
+    const ChildrenAnswerItem = ({ item }: { item: ForumAnswer }) => (
+      <ForumAnswerCard
+        user={users.find((user) => user.id === item.creatorId) || ({} as User)}
+        forumAnswer={item}
+        onPress={() => handleAnswerPress(item.id)}
+        onAcceptedPress={() => {}}
+        showAccepted={false}
+        accepted={false}
+        onVotePress={(vote) => handleVoteChildAnswer(item.id, vote)}
+      />
+    );
+
+    ChildrenAnswerItem.displayName = "ChildrenAnswerItem";
+
+    return ChildrenAnswerItem;
+  };
 
   // Ajustar las secciones para que sean compatibles con SectionList
   const sections = [

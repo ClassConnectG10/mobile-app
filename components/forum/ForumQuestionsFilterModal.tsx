@@ -3,7 +3,6 @@ import { View } from "react-native";
 import { Divider, Button, Text } from "react-native-paper";
 import { DatePickerButton } from "../forms/DatePickerButton";
 import OptionPicker from "../forms/OptionPicker";
-import { StyleSheet } from "react-native";
 import { useForumSearchParams } from "@/hooks/useForumSearchParams";
 import { ToggleableTagsInput } from "../forms/ToggleableTagsInput";
 import { ForumSearchParams } from "@/types/forum";
@@ -95,20 +94,3 @@ export const ForumQuestionsFilterModal: React.FC<
     // </View>
   );
 };
-
-const styles = StyleSheet.create({
-  mainContainer: {
-    paddingBottom: 100,
-  },
-  modalContainer: {
-    backgroundColor: "white",
-    padding: 20,
-    margin: 20,
-    borderRadius: 8,
-    elevation: 5,
-    gap: 16,
-  },
-  modalContent: {
-    gap: 16,
-  },
-});

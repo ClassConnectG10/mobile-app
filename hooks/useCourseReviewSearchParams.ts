@@ -1,7 +1,5 @@
 import {
-  CourseFeedbackSearchParams,
   CourseReviewSearchParams,
-  FeedbackType,
 } from "@/types/course";
 import { useState } from "react";
 

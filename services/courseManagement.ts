@@ -39,7 +39,6 @@ import { User } from "@/types/user";
 import { getBulkUsers } from "./userManagement";
 import { AssistantLog } from "@/types/assistantLog";
 import { getDateFromBackend } from "./common";
-import { get } from "react-native/Libraries/TurboModule/TurboModuleRegistry";
 
 function formatDate(date: Date): string {
   return date.toISOString().split("T")[0];

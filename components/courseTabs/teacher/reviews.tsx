@@ -1,11 +1,4 @@
-import { getModules, orderModules } from "@/services/resourceManagment";
-import {
-  Course,
-  CourseFeedbackSearchParams,
-  CourseReview,
-  CourseReviewSearchParams,
-} from "@/types/course";
-import { Module } from "@/types/resources";
+import { Course, CourseReview, CourseReviewSearchParams } from "@/types/course";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useState, useCallback, useEffect } from "react";
 import { FlatList, View } from "react-native";
@@ -16,14 +9,12 @@ import {
   IconButton,
 } from "react-native-paper";
 import ErrorMessageSnackbar from "../../ErrorMessageSnackbar";
-import ModuleCard from "../../cards/ModuleCard";
 import { getCourseReviews } from "@/services/courseManagement";
 import { getBulkUsers } from "@/services/userManagement";
 import { User } from "@/types/user";
 import CourseReviewCard from "@/components/cards/CourseReviewCard";
 import { SearchBar } from "@/components/forms/SearchBar";
 import { CourseReviewFilterModal } from "@/components/courses/CourseReviewFilterModal";
-import { set } from "zod";
 
 interface ReviewsTabProps {
   course: Course;
@@ -55,7 +46,7 @@ export const ReviewsTab: React.FC<ReviewsTabProps> = ({ course }) => {
     try {
       const fetchedReviews = await getCourseReviews(
         course.courseId,
-        courseReviewSearchParams
+        courseReviewSearchParams,
       );
       setReviews(fetchedReviews);
     } catch (error) {
@@ -71,7 +62,7 @@ export const ReviewsTab: React.FC<ReviewsTabProps> = ({ course }) => {
 
     try {
       const uniqueUserIds = Array.from(
-        new Set(reviews.map((review) => review.userId))
+        new Set(reviews.map((review) => review.userId)),
       );
       const fetchedUsers = await getBulkUsers(uniqueUserIds);
       setUsers(fetchedUsers);
@@ -105,7 +96,7 @@ export const ReviewsTab: React.FC<ReviewsTabProps> = ({ course }) => {
   useFocusEffect(
     useCallback(() => {
       fetchCourseReviews();
-    }, [course.courseId, courseReviewSearchParams])
+    }, [course.courseId, courseReviewSearchParams]),
   );
 
   return (

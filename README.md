@@ -7,6 +7,7 @@ Aplicación móvil del trabajo práctico grupal ClassConnect de la materia [Inge
 - [Expo](https://expo.dev)
 - [Axios](https://axios-http.com/es/)
 - [Firebase Authentication](https://firebase.google.com/docs/auth)
+- [Firebase Storage](https://firebase.google.com/docs/storage)
 
 ## Ejecución (modo desarrollo)
 

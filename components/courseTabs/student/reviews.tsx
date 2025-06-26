@@ -1,34 +1,13 @@
-import { getModules, orderModules } from "@/services/resourceManagment";
-import {
-  Course,
-  CourseFeedbackSearchParams,
-  CourseReview,
-  CourseReviewSearchParams,
-} from "@/types/course";
-import { Module } from "@/types/resources";
-import { useFocusEffect, useRouter } from "expo-router";
-import { useState, useCallback, useEffect } from "react";
-import { FlatList, ScrollView, View } from "react-native";
-import {
-  Button,
-  useTheme,
-  Text,
-  ActivityIndicator,
-  IconButton,
-  Appbar,
-} from "react-native-paper";
+import { Course } from "@/types/course";
+import { useFocusEffect } from "expo-router";
+import { useState, useCallback } from "react";
+import { ScrollView, View } from "react-native";
+import { Button, useTheme, Text, ActivityIndicator } from "react-native-paper";
 import ErrorMessageSnackbar from "../../ErrorMessageSnackbar";
-import ModuleCard from "../../cards/ModuleCard";
 import {
   createCourseReview,
   getCourseReview,
-  getCourseReviews,
 } from "@/services/courseManagement";
-import { getBulkUsers } from "@/services/userManagement";
-import { User } from "@/types/user";
-import CourseReviewCard from "@/components/cards/CourseReviewCard";
-import { SearchBar } from "@/components/forms/SearchBar";
-import { CourseReviewFilterModal } from "@/components/courses/CourseReviewFilterModal";
 import { AlertText } from "@/components/AlertText";
 import ReviewPicker from "@/components/forms/ReviewPicker";
 import { ToggleableTextInput } from "@/components/forms/ToggleableTextInput";
@@ -40,7 +19,6 @@ interface ReviewsTabProps {
 
 export const ReviewsTab: React.FC<ReviewsTabProps> = ({ course }) => {
   const theme = useTheme();
-  const router = useRouter();
 
   const [isLoading, setIsLoading] = useState(false);
   const [showReviewSentModal, setShowReviewSentModal] = useState(false);
@@ -86,7 +64,7 @@ export const ReviewsTab: React.FC<ReviewsTabProps> = ({ course }) => {
   useFocusEffect(
     useCallback(() => {
       handleFetchReview();
-    }, [course.courseId])
+    }, [course.courseId]),
   );
 
   return (

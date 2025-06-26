@@ -19,7 +19,7 @@ import {
   removeForumQuestion,
 } from "@/services/forumManagement";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
-import { ForumOrderBy, ForumQuestion, ForumSearchParams } from "@/types/forum";
+import { ForumQuestion } from "@/types/forum";
 
 export default function EditForumQuestionPage() {
   const router = useRouter();
@@ -33,7 +33,7 @@ export default function EditForumQuestionPage() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const [forumQuestion, setForumQuestion] = useState<ForumQuestion | null>(
-    null
+    null,
   );
   const [fileChanged, setFileChanged] = useState<boolean>(false);
 
@@ -67,7 +67,7 @@ export default function EditForumQuestionPage() {
         courseId,
         questionId,
         forumQuestionInformation,
-        fileChanged
+        fileChanged,
       );
       router.back();
     } catch (error) {
@@ -98,7 +98,7 @@ export default function EditForumQuestionPage() {
   useFocusEffect(
     useCallback(() => {
       fetchForumQuestion();
-    }, [courseId, questionId])
+    }, [courseId, questionId]),
   );
 
   return (

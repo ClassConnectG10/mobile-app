@@ -1,9 +1,7 @@
-import { Icon, Text, useTheme } from "react-native-paper";
+import { Text, useTheme } from "react-native-paper";
 import { Pressable, StyleSheet, View } from "react-native";
-import { Course, CourseFeedback, CourseReview } from "@/types/course";
+import { CourseReview } from "@/types/course";
 import { formatLocalDateTime } from "@/utils/date";
-import { MINIMUM_APPROVAL_MARK } from "@/utils/constants/courseDetails";
-import { customColors } from "@/utils/constants/colors";
 import { User } from "@/types/user";
 import ReviewPicker from "../forms/ReviewPicker";
 

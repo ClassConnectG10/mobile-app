@@ -19,7 +19,7 @@ export default function NotificationsPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [notifications, setNotifications] = useState<Notification[] | null>(
-    null
+    null,
   );
   const [
     deleteAllNotificationsDialogVisible,
@@ -30,7 +30,7 @@ export default function NotificationsPage() {
     setIsLoading(true);
     try {
       const userNotifications = await getUserNotifications();
-      // setNotifications(userNotifications);
+      setNotifications(userNotifications);
     } catch (error) {
       setErrorMessage((error as Error).message);
     } finally {
@@ -54,7 +54,7 @@ export default function NotificationsPage() {
     try {
       await deleteNotification(notification.id);
       setNotifications((prev) =>
-        prev ? prev.filter((n) => n.id !== notification.id) : null
+        prev ? prev.filter((n) => n.id !== notification.id) : null,
       );
     } catch (error) {
       setErrorMessage((error as Error).message);
@@ -76,7 +76,7 @@ export default function NotificationsPage() {
   useFocusEffect(
     useCallback(() => {
       fetchNotifications();
-    }, [])
+    }, []),
   );
 
   return (

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { View, TextInput } from "react-native";
-import { Chip, Icon, IconButton, Text, useTheme } from "react-native-paper";
+import { View } from "react-native";
+import { Chip, Icon, IconButton, useTheme } from "react-native-paper";
 import { ToggleableTextInput } from "./ToggleableTextInput";
 
 interface ToggleableTagsInputProps {

@@ -35,7 +35,6 @@ export default function TeacherStudentDetialsPage() {
   const [student, setStudent] = useState<User | null>(null);
   const [mark, setMark] = useState<number | null>(null);
   const [temporaryMark, setTemporaryMark] = useState<number>(DEFAULT_MARK);
-  const [comment, setComment] = useState<string>("");
   const [temporaryComment, setTemporaryComment] = useState<string>("");
   const [
     showConfirmationUpdateMarkDialog,
@@ -50,7 +49,6 @@ export default function TeacherStudentDetialsPage() {
       const { mark: fetchedMark, comment: fetchedComment } =
         await getStudentMark(courseId, Number(studentId));
       setMark(fetchedMark);
-      setComment(fetchedComment || "");
       if (fetchedMark !== null) {
         setTemporaryMark(fetchedMark);
       }
@@ -118,10 +116,9 @@ export default function TeacherStudentDetialsPage() {
         courseId,
         Number(studentId),
         temporaryMark,
-        temporaryComment
+        temporaryComment,
       );
       setMark(temporaryMark);
-      setComment(temporaryComment);
     } catch (error) {
       setErrorMessage((error as Error).message);
     } finally {
@@ -133,7 +130,7 @@ export default function TeacherStudentDetialsPage() {
     useCallback(() => {
       fetchStudent();
       fetchMark();
-    }, [courseId, studentId])
+    }, [courseId, studentId]),
   );
 
   return (

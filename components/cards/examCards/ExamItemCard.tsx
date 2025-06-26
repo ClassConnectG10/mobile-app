@@ -11,14 +11,7 @@ import {
   TrueFalseAnswer,
   TrueFalseQuestion,
 } from "@/types/activity";
-import {
-  Button,
-  Card,
-  Icon,
-  IconButton,
-  Text,
-  useTheme,
-} from "react-native-paper";
+import { Button, Card, IconButton, Text, useTheme } from "react-native-paper";
 import { MultipleChoiceQuestionCard } from "./MultipleChoiceQuestionCard";
 import { ToggleableTextInput } from "@/components/forms/ToggleableTextInput";
 import { StyleSheet, View } from "react-native";

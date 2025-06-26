@@ -1,4 +1,4 @@
-import { Card, Icon, IconButton, Text, useTheme } from "react-native-paper";
+import { IconButton, Text, useTheme } from "react-native-paper";
 import { Pressable, StyleSheet, View } from "react-native";
 import { ForumQuestion } from "@/types/forum";
 import { User } from "@/types/user";
@@ -19,7 +19,7 @@ const ForumQuestionCard: React.FC<ForumQuestionCardProps> = ({
   fullAnswer = false,
 }) => {
   const theme = useTheme();
-  const { title, content, file } = forumQuestion.information;
+  const { title, content } = forumQuestion.information;
   const { createdAt, acceptedAnswerId } = forumQuestion;
 
   return (

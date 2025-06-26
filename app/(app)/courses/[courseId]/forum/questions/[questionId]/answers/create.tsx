@@ -1,14 +1,9 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useState } from "react";
 import { View, ScrollView } from "react-native";
-import { Appbar, Button, Divider, TextInput } from "react-native-paper";
+import { Appbar, Button, TextInput } from "react-native-paper";
 import { ToggleableFileInput } from "@/components/forms/ToggleableFileInput";
-import { ToggleableTagsInput } from "@/components/forms/ToggleableTagsInput";
-import { useForumQuestionInformation } from "@/hooks/useForumQuestionDetailsHook";
-import {
-  createForumAnswer,
-  createForumQuestion,
-} from "@/services/forumManagement";
+import { createForumAnswer } from "@/services/forumManagement";
 import { useForumAnswerInformation } from "@/hooks/useForumAnswerDetailsHook";
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 
@@ -37,7 +32,7 @@ export default function CreateForumAnswerPage() {
         courseId,
         questionId,
         parentAnswerId,
-        forumAnswerInformation
+        forumAnswerInformation,
       );
       router.back();
     } catch (error) {

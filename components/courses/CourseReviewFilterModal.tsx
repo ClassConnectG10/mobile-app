@@ -1,22 +1,16 @@
 import { View } from "react-native";
 import { Divider, Button, Text } from "react-native-paper";
 import { DatePickerButton } from "../forms/DatePickerButton";
-import OptionPicker from "../forms/OptionPicker";
 import { FullScreenModal } from "../FullScreenModal";
-import {
-  CourseFeedbackSearchParams,
-  CourseReviewSearchParams,
-} from "@/types/course";
-import { FEEDBACK_TYPES_OPTIONS } from "@/utils/constants/courseFeedbackSearchParams";
-import { useCourseFeedbackSearchParams } from "@/hooks/useCourseFeedbackSearchParams";
-import { useCourseReviewSearchParams } from "@/hooks/useCourseReviewSearchParams copy";
+import { CourseReviewSearchParams } from "@/types/course";
+import { useCourseReviewSearchParams } from "@/hooks/useCourseReviewSearchParams";
 import ReviewPicker from "../forms/ReviewPicker";
 
 interface CourseReviewFilterModalProps {
   visible: boolean;
   onDismiss: () => void;
   onApplySearchParams: (
-    courseReviewSearchParams: CourseReviewSearchParams
+    courseReviewSearchParams: CourseReviewSearchParams,
   ) => void;
 }
 

@@ -84,7 +84,7 @@ export default function StudentExamPage() {
               (studentTask.activity.activityDetails as TaskDetails)
                 .instructionsFile,
             ]
-          : []
+          : [],
       );
     } catch (error) {
       setErrorMessage((error as Error).message);
@@ -101,7 +101,7 @@ export default function StudentExamPage() {
       const response = await getTaskSubmission(
         courseId,
         Number(taskId),
-        userContext.user.id
+        userContext.user.id,
       );
 
       setStudentSubmission(response);
@@ -121,12 +121,12 @@ export default function StudentExamPage() {
       await submitTask(
         courseId,
         Number(taskId),
-        submittedFiles.length > 0 ? submittedFiles[0] : null
+        submittedFiles.length > 0 ? submittedFiles[0] : null,
       );
       const submission = await getTaskSubmission(
         courseId,
         Number(taskId),
-        userContext.user.id
+        userContext.user.id,
       );
 
       setStudentSubmission(submission);
@@ -150,7 +150,7 @@ export default function StudentExamPage() {
       const grade = await getTaskGrade(
         courseId,
         Number(taskId),
-        userContext.user?.id
+        userContext.user?.id,
       );
       setTaskGrade(grade);
     } catch (error) {
@@ -163,7 +163,8 @@ export default function StudentExamPage() {
   useFocusEffect(
     useCallback(() => {
       fetchStudentTask();
-    }, [courseId, taskId])
+      fetchCourse();
+    }, [courseId, taskId]),
   );
 
   useEffect(() => {

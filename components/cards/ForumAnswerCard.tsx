@@ -1,11 +1,4 @@
-import {
-  Button,
-  Card,
-  Icon,
-  IconButton,
-  Text,
-  useTheme,
-} from "react-native-paper";
+import { Button, IconButton, Text, useTheme } from "react-native-paper";
 import { Pressable, StyleSheet, View } from "react-native";
 import { ForumAnswer } from "@/types/forum";
 import { User } from "@/types/user";
