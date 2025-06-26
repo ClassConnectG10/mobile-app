@@ -202,8 +202,15 @@ export default function GradeExamSubmissionPage() {
     setAutocorrectionModalVisible(false);
     try {
       await autocorrectExam(courseId, Number(examId), Number(studentId));
-      console.log("Autocorrection started");
       setAutocorrectionStatus(AutocorrectionStatus.IN_PROGRESS);
+      setExamAutocorrection({
+        correctionId: null,
+        status: AutocorrectionStatus.IN_PROGRESS,
+        mark: null,
+        feedback_message: null,
+        createdAt: null,
+        correctedExamItems: [],
+      });
     } catch (error) {
       setErrorMessage((error as Error).message);
       setAutocorrectionStatus(AutocorrectionStatus.FAILED);
@@ -223,6 +230,7 @@ export default function GradeExamSubmissionPage() {
       );
       setExamAutocorrection(fetchedAutocorrection);
       setAutocorrectionStatus(fetchedAutocorrection.status);
+      return fetchedAutocorrection;
     } catch (error) {
       setErrorMessage((error as Error).message);
       setAutocorrectionStatus(AutocorrectionStatus.FAILED);
@@ -234,8 +242,6 @@ export default function GradeExamSubmissionPage() {
   const handleApplyAutocorrection = () => {
     if (!examAutocorrection) return;
     setAutocorrected(true);
-    console.log("Applying autocorrection:", examAutocorrection);
-    console.log("Mark:", examAutocorrection.mark);
 
     let examGrade = { ...temporalExamGrade } as ExamGrade;
     examGrade.mark = examAutocorrection.mark;
@@ -281,12 +287,36 @@ export default function GradeExamSubmissionPage() {
 
   useEffect(() => {
     if (examAutocorrection) {
-      temporalExamGradeHook.setMark(examAutocorrection.mark);
-      if (examAutocorrection.status !== AutocorrectionStatus.COMPLETED) {
+      if (examAutocorrection.status === AutocorrectionStatus.COMPLETED) {
+        temporalExamGradeHook.setMark(examAutocorrection.mark);
+      } else {
         setViewAutocorrectComments(false);
       }
     }
   }, [examAutocorrection]);
+
+  useEffect(() => {
+    let pollingInterval: NodeJS.Timeout | null = null;
+
+    if (autocorrectionStatus === AutocorrectionStatus.IN_PROGRESS) {
+      pollingInterval = setInterval(async () => {
+        const fetchedAutocorrection = await handleGetAutocorrection();
+
+        console.log(fetchedAutocorrection.status);
+        if (fetchedAutocorrection.status !== AutocorrectionStatus.IN_PROGRESS) {
+          clearInterval(pollingInterval!);
+          console.log("Autocorrection completed or failed");
+          setAutocorrectionModalVisible(true);
+        }
+      }, 2000); // Polling every 2 seconds
+    }
+
+    return () => {
+      if (pollingInterval) {
+        clearInterval(pollingInterval);
+      }
+    };
+  }, [autocorrectionStatus]);
 
   return (
     <>
@@ -307,17 +337,28 @@ export default function GradeExamSubmissionPage() {
           }
           onPress={async () => {
             if (!isAutocorrecting) {
-              setIsAutocorrecting(true);
               await handlePressAutocorrectButton();
-              setIsAutocorrecting(false);
             }
           }}
-          disabled={isAutocorrecting}
+          disabled={
+            isAutocorrecting ||
+            isLoading ||
+            !teacherActivity ||
+            !examSubmission ||
+            !student ||
+            !temporalExamGrade
+          }
         />
         <Appbar.Action
           icon="help-circle"
           onPress={() => setHelpModalVisible(true)}
-          disabled={isLoading}
+          disabled={
+            isLoading ||
+            !teacherActivity ||
+            !examSubmission ||
+            !student ||
+            !temporalExamGrade
+          }
         />
       </Appbar.Header>
       {isLoading ||
@@ -626,13 +667,24 @@ export default function GradeExamSubmissionPage() {
             <View style={{ gap: 16 }}>
               <Text>
                 El examen se ha corregido exitosamente. Pulse el botón 'Aceptar'
-                para traer esos datos. NOTA: esto pisará las correcciones hechas
-                manualmente.
+                para traer esos datos. NOTA: esto pisará todos los valores de
+                corrección que haya hecho en cada una.
               </Text>
+              <Button
+                mode="text"
+                onPress={async () => {
+                  // Reiniciar el proceso de autocorrección
+                  setAutocorrectionStatus(AutocorrectionStatus.NOT_STARTED);
+                  setExamAutocorrection(null);
+                  await handleAutocorrect();
+                }}
+              >
+                Corregir de nuevo
+              </Button>
               <View
                 style={{
                   flexDirection: "row",
-                  justifyContent: "flex-end",
+                  justifyContent: "space-around",
                   gap: 8,
                 }}
               >
@@ -663,12 +715,31 @@ export default function GradeExamSubmissionPage() {
                 Hubo un error al corregir automáticamente el examen. Intente
                 nuevamente.
               </Text>
-              <Button
-                mode="text"
-                onPress={() => setAutocorrectionModalVisible(false)}
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "flex-end",
+                  gap: 8,
+                }}
               >
-                Aceptar
-              </Button>
+                <Button
+                  mode="text"
+                  onPress={async () => {
+                    // Reiniciar el proceso de autocorrección
+                    setAutocorrectionStatus(AutocorrectionStatus.NOT_STARTED);
+                    setExamAutocorrection(null);
+                    await handleAutocorrect();
+                  }}
+                >
+                  Intentar de nuevo
+                </Button>
+                <Button
+                  mode="text"
+                  onPress={() => setAutocorrectionModalVisible(false)}
+                >
+                  Aceptar
+                </Button>
+              </View>
             </View>
           )}
         </View>

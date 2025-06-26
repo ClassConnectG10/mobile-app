@@ -862,22 +862,33 @@ export async function getExamAutocorrection(
     const response = await request.get("");
     const responseData = response.data.data;
 
+    if (responseData.status !== AutocorrectionStatus.COMPLETED) {
+      return new ExamAutocorrection(
+        responseData.id,
+        responseData.status,
+        null,
+        null,
+        getDateFromBackend(responseData.created_at),
+        []
+      ); // La autocorrección no ha sido completada
+    }
+
     return new ExamAutocorrection(
       responseData.id,
       responseData.status,
       responseData.mark,
       responseData.feedback,
       getDateFromBackend(responseData.created_at),
-      responseData.corrections.map((item: any) => {
+      responseData.corrections.map((item: any, index: number) => {
         return new ExamItemAutocorrection(
-          0,
+          index,
           item.score === CORRECT_AUTOCORRECTED_ANSWER,
           item.feedback
         );
       })
     );
   } catch (error) {
-    if (error.response.status === 404) {
+    if (error.response?.status === 404) {
       return new ExamAutocorrection(
         null,
         AutocorrectionStatus.NOT_STARTED,

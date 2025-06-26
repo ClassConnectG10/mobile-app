@@ -234,7 +234,6 @@ export async function createResource(
 
     return resource;
   } catch (error) {
-    console.log("Error al crear el recurso:", error.message);
     throw handleError(error, "crear un recurso del curso");
   }
 }
