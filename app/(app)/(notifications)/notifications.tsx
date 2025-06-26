@@ -9,7 +9,7 @@ import {
   deleteAllNotifications,
   deleteNotification,
   getUserNotifications,
-} from "@/services/notifications";
+} from "@/services/notificationManagment";
 import { AlertDialog } from "@/components/AlertDialog";
 
 export default function NotificationsPage() {

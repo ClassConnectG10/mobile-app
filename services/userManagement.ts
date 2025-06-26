@@ -15,7 +15,7 @@ import {
   createLogoutUserRequest,
   createProfilePictureRequest,
 } from "@/api/user";
-import { getToken } from "@/services/notifications";
+import { getToken } from "@/services/notificationManagment";
 import { deleteToken, getMessaging } from "@react-native-firebase/messaging";
 import {
   NotificationConfig,

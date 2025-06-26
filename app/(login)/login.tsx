@@ -71,7 +71,7 @@ export default function LoginPage() {
         // Inicia sesión en Firebase con la credencial de Google
         const signInMethods = await fetchSignInMethodsForEmail(
           auth,
-          googleEmail
+          googleEmail,
         );
         await signInWithCredential(auth, googleCredential);
         if (signInMethods.includes("google.com")) {

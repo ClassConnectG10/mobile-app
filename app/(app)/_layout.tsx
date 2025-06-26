@@ -1,4 +1,4 @@
-import { useNotification } from "@/services/notifications";
+import { useNotification } from "@/services/notificationManagment";
 import { useUserContext } from "@/utils/storage/userContext";
 import { getMessaging } from "@react-native-firebase/messaging";
 import axios from "axios";
@@ -25,7 +25,7 @@ export default function CoursesLayout() {
         remoteMessage.messageId || Math.random().toString(),
         remoteMessage.notification?.title || "New Notification",
         remoteMessage.notification?.body || "You have a new notification",
-        new Date(remoteMessage.sentTime || Date.now())
+        new Date(remoteMessage.sentTime || Date.now()),
       );
       setCurrentNotification(receivedNotification);
     });
