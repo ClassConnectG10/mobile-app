@@ -74,8 +74,8 @@ export default function GradeExamSubmissionPage() {
   const [autocorrectionModalVisible, setAutocorrectionModalVisible] =
     useState(false);
   const [autocorrected, setAutocorrected] = useState(false);
-
   const [isAutocorrecting, setIsAutocorrecting] = useState(false);
+  const [viewAutocorrectComments, setViewAutocorrectComments] = useState(false);
 
   const temporalExamGradeHook = useExamGrade();
   const temporalExamGrade = temporalExamGradeHook.examGrade;
@@ -170,6 +170,7 @@ export default function GradeExamSubmissionPage() {
     const newCorrectExamItems = [...temporalExamGrade?.correctExamItems];
     newCorrectExamItems[index] = correct;
     temporalExamGradeHook.setCorrectExamItems(newCorrectExamItems);
+    setAutocorrected(false);
   };
 
   const handleSaveGrade = async () => {
@@ -236,20 +237,10 @@ export default function GradeExamSubmissionPage() {
     console.log("Applying autocorrection:", examAutocorrection);
     console.log("Mark:", examAutocorrection.mark);
 
-    // Definir la variable examGrade como una copia de temporalExamGrade.
-    // Luego, cambiar los valores de examGrade.mark y examGrade.feedback_message
-    // por los correspondientes valores de examAutocorrection.mark y
-    // examAutocorrection.feedback_message.
-    // Finalmente, cambiar los valores de examGrade.correctExamItems por los
-    // correspondientes valores de examAutocorrection.correctedExamItems.
-
     let examGrade = { ...temporalExamGrade } as ExamGrade;
     examGrade.mark = examAutocorrection.mark;
     examGrade.feedback_message = examAutocorrection.feedback_message;
 
-    // Hacer una copia del arreglo temporalExamGrade.correctExamItems. En la
-    // copia, cambiar todos los valores asociados a una pregunta abierta por el
-    // correspondiente valor de examAutocorrection.correctExamItems.
     const examItems = (teacherActivity.activity.activityDetails as ExamDetails)
       .examItems;
     examAutocorrection.correctedExamItems.forEach(
@@ -262,6 +253,7 @@ export default function GradeExamSubmissionPage() {
 
     temporalExamGradeHook.setExamGrade(examGrade);
     setAutocorrectionStatus(AutocorrectionStatus.COMPLETED);
+    setViewAutocorrectComments(true);
     setAutocorrectionModalVisible(false);
   };
 
@@ -290,6 +282,9 @@ export default function GradeExamSubmissionPage() {
   useEffect(() => {
     if (examAutocorrection) {
       temporalExamGradeHook.setMark(examAutocorrection.mark);
+      if (examAutocorrection.status !== AutocorrectionStatus.COMPLETED) {
+        setViewAutocorrectComments(false);
+      }
     }
   }, [examAutocorrection]);
 
@@ -382,6 +377,15 @@ export default function GradeExamSubmissionPage() {
                     setAnswerOk={(correct) => setCorrectAnswer(index, correct)}
                     autocorrected={autocorrected}
                     setAutocorrected={setAutocorrected}
+                    autocorrectComment={
+                      !viewAutocorrectComments ||
+                      !examAutocorrection ||
+                      !examAutocorrection.correctedExamItems ||
+                      examAutocorrection.correctedExamItems.length === 0
+                        ? null
+                        : examAutocorrection.correctedExamItems[index]
+                            .feedback_message
+                    }
                   />
                 </View>
               ) : null
@@ -434,7 +438,10 @@ export default function GradeExamSubmissionPage() {
                 label="Nota"
                 value={temporalExamGrade.mark}
                 editable={true}
-                onChange={(mark) => temporalExamGradeHook.setMark(mark)}
+                onChange={(mark) => {
+                  temporalExamGradeHook.setMark(mark);
+                  setAutocorrected(false);
+                }}
                 minValue={0}
                 maxValue={10}
               />
@@ -443,9 +450,10 @@ export default function GradeExamSubmissionPage() {
                 placeholder="Escriba un comentario para el estudiante"
                 value={temporalExamGrade.feedback_message}
                 editable={true}
-                onChange={(feedback) =>
-                  temporalExamGradeHook.setFeedbackMessage(feedback)
-                }
+                onChange={(feedback) => {
+                  temporalExamGradeHook.setFeedbackMessage(feedback);
+                  setAutocorrected(false);
+                }}
               />
               <Divider />
               <Button
@@ -503,6 +511,14 @@ export default function GradeExamSubmissionPage() {
                   <Text>
                     Pregunta abierta sin calificar. Presione el ícono para
                     marcarla como correcta o incorrecta.
+                  </Text>
+                </View>
+                <View
+                  style={{ flexDirection: "row", alignItems: "center", gap: 8 }}
+                >
+                  <Icon source="robot" size={24} color={theme.colors.primary} />
+                  <Text>
+                    Pregunta abierta calificada automáticamente por IA.
                   </Text>
                 </View>
               </View>

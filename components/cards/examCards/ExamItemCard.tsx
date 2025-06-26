@@ -27,6 +27,7 @@ import { TrueFalseQuestionCard } from "./TrueFalseQuestionCard";
 import { OpenQuestionCard } from "./OpenQuestionCard";
 import { ExamItemMode } from "./examItemMode";
 import { customColors } from "@/utils/constants/colors";
+import { TextField } from "@/components/forms/TextField";
 
 interface ExamItemCardProps {
   examItem: ExamItem;
@@ -43,6 +44,7 @@ interface ExamItemCardProps {
   setAnswerOk?: (ok: boolean) => void;
   autocorrected?: boolean;
   setAutocorrected?: (autocorrected: boolean) => void;
+  autocorrectComment?: string | null;
 }
 
 export const ExamItemCard: React.FC<ExamItemCardProps> = ({
@@ -60,6 +62,7 @@ export const ExamItemCard: React.FC<ExamItemCardProps> = ({
   setAnswerOk,
   autocorrected,
   setAutocorrected,
+  autocorrectComment,
 }) => {
   const theme = useTheme();
 
@@ -228,6 +231,9 @@ export const ExamItemCard: React.FC<ExamItemCardProps> = ({
               setAnswerOk={setAnswerOk}
             />
           )
+        )}
+        {mode === ExamItemMode.REVIEW && autocorrectComment && (
+          <TextField label="Comentario de la IA" value={autocorrectComment} />
         )}
         {editableItem && (
           <Button icon="trash-can" mode="outlined" onPress={onDelete}>
