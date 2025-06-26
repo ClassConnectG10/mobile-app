@@ -25,6 +25,7 @@ Aplicación móvil del trabajo práctico grupal ClassConnect de la materia [Inge
    EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET=<firebase storage bucket>
    EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=<firebase messaging sender id>
    EXPO_PUBLIC_FIREBASE_APP_ID=<firebase app id>
+   EXPO_PUBLIC_STORAGE_PREFIX=<storage prefix>
 
    EXPO_PUBLIC_MIDDLEEND_BASE_URL=<middleend url>
    EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID=<android client id>
@@ -44,5 +45,5 @@ Aplicación móvil del trabajo práctico grupal ClassConnect de la materia [Inge
 5. Iniciar la aplicación:
 
    ```bash
-   npx expo run:android
+   npm run android
    ```
