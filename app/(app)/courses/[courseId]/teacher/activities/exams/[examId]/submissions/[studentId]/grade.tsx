@@ -102,7 +102,7 @@ export default function GradeExamSubmissionPage() {
         courseId,
         Number(examId),
         Number(studentId),
-        (teacherActivity.activity.activityDetails as ExamDetails).examItems,
+        (teacherActivity.activity.activityDetails as ExamDetails).examItems
       );
 
       setStudentSubmission(submissionData);
@@ -135,7 +135,7 @@ export default function GradeExamSubmissionPage() {
       const grade = await getExamGrade(
         courseId,
         Number(examId),
-        Number(studentId),
+        Number(studentId)
       );
       if (grade) {
         temporalExamGradeHook.setExamGrade(grade);
@@ -144,7 +144,7 @@ export default function GradeExamSubmissionPage() {
         const correctAnswers = examSubmission.submittedExamItems.map(
           (item: SubmittedExamItem) => {
             return item.correct;
-          },
+          }
         );
 
         temporalExamGradeHook.setExamGrade(
@@ -153,8 +153,8 @@ export default function GradeExamSubmissionPage() {
             Number(studentId),
             0,
             "",
-            correctAnswers,
-          ),
+            correctAnswers
+          )
         );
         setHasPreviousGrade(false);
       }
@@ -225,7 +225,7 @@ export default function GradeExamSubmissionPage() {
       const fetchedAutocorrection = await getExamAutocorrection(
         courseId,
         Number(examId),
-        Number(studentId),
+        Number(studentId)
       );
       setExamAutocorrection(fetchedAutocorrection);
       setAutocorrectionStatus(fetchedAutocorrection.status);
@@ -253,7 +253,7 @@ export default function GradeExamSubmissionPage() {
         if (examItems[index].type === ExamItemType.OPEN) {
           examGrade.correctExamItems[index] = correctedExamItem.correct;
         }
-      },
+      }
     );
 
     temporalExamGradeHook.setExamGrade(examGrade);
@@ -269,7 +269,7 @@ export default function GradeExamSubmissionPage() {
       setStudentSubmission(null);
       temporalExamGradeHook.setExamGrade(null);
       setHasPreviousGrade(false);
-    }, [courseId, examId, studentId]),
+    }, [courseId, examId, studentId])
   );
 
   useEffect(() => {
@@ -300,10 +300,8 @@ export default function GradeExamSubmissionPage() {
       pollingInterval = setInterval(async () => {
         const fetchedAutocorrection = await handleGetAutocorrection();
 
-        console.log(fetchedAutocorrection.status);
         if (fetchedAutocorrection.status !== AutocorrectionStatus.IN_PROGRESS) {
           clearInterval(pollingInterval!);
-          console.log("Autocorrection completed or failed");
           setAutocorrectionModalVisible(true);
         }
       }, 2000); // Polling every 2 seconds
@@ -427,7 +425,7 @@ export default function GradeExamSubmissionPage() {
                     }
                   />
                 </View>
-              ) : null,
+              ) : null
             )}
             <View style={{ gap: 16, paddingVertical: 16 }}>
               <Divider />
@@ -437,7 +435,7 @@ export default function GradeExamSubmissionPage() {
                   {
                     icon: "check-circle",
                     value: temporalExamGrade.correctExamItems.filter(
-                      (item) => item,
+                      (item) => item
                     ).length,
                     label: "Correctas",
                     color: customColors.success,
@@ -452,10 +450,10 @@ export default function GradeExamSubmissionPage() {
                     icon: "star",
                     value: Math.round(
                       (temporalExamGrade.correctExamItems.filter(
-                        (item) => item === true,
+                        (item) => item === true
                       ).length /
                         temporalExamGrade.correctExamItems.length) *
-                        10,
+                        10
                     ),
                     label: "Nota sugerida",
                     color: customColors.warning,
