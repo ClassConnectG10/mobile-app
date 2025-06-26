@@ -159,7 +159,12 @@ export const ExamItemCard: React.FC<ExamItemCardProps> = ({
             {mode === ExamItemMode.REVIEW &&
               autocorrected &&
               examItem.type === ExamItemType.OPEN && (
-                <Icon source="robot" size={18} />
+                <IconButton
+                  icon="robot"
+                  size={18}
+                  mode="contained"
+                  containerColor={theme.colors.secondaryContainer}
+                />
               )}
 
             {showCorrection && (

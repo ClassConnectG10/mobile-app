@@ -13,6 +13,10 @@ import {
   TaskGrade,
   ExamGrade,
   ActivitySubmission,
+  ExamAutocorrection,
+  AutocorrectionStatus,
+  ExamItemAutocorrection,
+  CORRECT_AUTOCORRECTED_ANSWER,
 } from "@/types/activity";
 import {
   examItemToJSON,
@@ -40,6 +44,8 @@ import {
   createGradeSubmissionRequest,
   createGetSubmissionsByStudentRequest,
   createDeleteTaskFileRequest,
+  createAutocorrectExamRequest,
+  createGetExamAutocorrectionRequest,
 } from "@/api/activities";
 import {
   activityDetailsSchema,
@@ -822,5 +828,65 @@ export async function getSubmissionsByStudent(
     });
   } catch (error) {
     throw handleError(error, "obtener las entregas del estudiante");
+  }
+}
+
+export async function autocorrectExam(
+  courseId: string,
+  examId: number,
+  studentId: number
+): Promise<void> {
+  try {
+    const request = await createAutocorrectExamRequest(
+      courseId,
+      examId,
+      studentId
+    );
+    await request.post("");
+  } catch (error) {
+    throw handleError(error, "corregir el examen con IA");
+  }
+}
+
+export async function getExamAutocorrection(
+  courseId: string,
+  examId: number,
+  studentId: number
+): Promise<ExamAutocorrection> {
+  try {
+    const request = await createGetExamAutocorrectionRequest(
+      courseId,
+      examId,
+      studentId
+    );
+    const response = await request.get("");
+    const responseData = response.data.data;
+
+    return new ExamAutocorrection(
+      responseData.id,
+      responseData.status,
+      responseData.mark,
+      responseData.feedback,
+      getDateFromBackend(responseData.created_at),
+      responseData.corrections.map((item: any) => {
+        return new ExamItemAutocorrection(
+          0,
+          item.score === CORRECT_AUTOCORRECTED_ANSWER,
+          item.feedback
+        );
+      })
+    );
+  } catch (error) {
+    if (error.response.status === 404) {
+      return new ExamAutocorrection(
+        null,
+        AutocorrectionStatus.NOT_STARTED,
+        null,
+        null,
+        null,
+        []
+      ); // No se inició una autocorrección todavía
+    }
+    throw handleError(error, "obtener la autocorrección del examen");
   }
 }

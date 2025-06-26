@@ -1,5 +1,7 @@
 import { File } from "@/types/file";
 
+export const CORRECT_AUTOCORRECTED_ANSWER = "1/1";
+
 export enum ActivityType {
   TASK = "TASK",
   EXAM = "EXAM",
@@ -30,6 +32,7 @@ export enum TeacherActivityFilter {
 }
 
 export enum AutocorrectionStatus {
+  NOT_STARTED = "NOT_STARTED",
   IN_PROGRESS = "IN_PROGRESS",
   COMPLETED = "COMPLETED",
   FAILED = "FAILED",
@@ -234,11 +237,19 @@ export class ExamGrade implements ActivityGrade {
 
 export class ExamAutocorrection {
   constructor(
-    public correctionId: number,
+    public correctionId: string | null,
     public status: AutocorrectionStatus,
-    public mark: number,
-    public feedback_message: string,
-    public createdAt: Date,
-    public correctExamItems: boolean[]
+    public mark: number | null,
+    public feedback_message: string | null,
+    public createdAt: Date | null,
+    public correctedExamItems: ExamItemAutocorrection[]
+  ) {}
+}
+
+export class ExamItemAutocorrection {
+  constructor(
+    public questionIndex: number,
+    public correct: boolean,
+    public feedback_message: string
   ) {}
 }

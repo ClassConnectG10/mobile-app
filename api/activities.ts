@@ -131,3 +131,43 @@ export const createGetSubmissionsByStudentRequest = (
     uri: `courses/${courseId}/activities/submissions/${studentId}`,
   });
 };
+
+export const createAutocorrectExamRequest = (
+  courseId: string,
+  examId: number,
+  studentId: number
+) => {
+  return createRequest({
+    uri: `courses/${courseId}/exams/${examId}/student/${studentId}/autocorrect`,
+  });
+};
+
+export const createGetExamAutocorrectionRequest = (
+  courseId: string,
+  examId: number,
+  studentId: number
+) => {
+  return createRequest({
+    uri: `courses/${courseId}/exams/${examId}/student/${studentId}/autocorrect/status`,
+  });
+};
+
+export const createAutocorrectTaskRequest = (
+  courseId: string,
+  taskId: number,
+  studentId: number
+) => {
+  return createRequest({
+    uri: `courses/${courseId}/tasks/${taskId}/student/${studentId}/autocorrect`,
+  });
+};
+
+export const createGetTaskAutocorrectionRequest = (
+  courseId: string,
+  taskId: number,
+  studentId: number
+) => {
+  return createRequest({
+    uri: `courses/${courseId}/tasks/${taskId}/student/${studentId}/autocorrect/status`,
+  });
+};

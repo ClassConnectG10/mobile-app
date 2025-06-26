@@ -1,5 +1,7 @@
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import {
+  autocorrectExam,
+  getExamAutocorrection,
   getExamGrade,
   getExamSubmission,
   getTeacherExam,
@@ -11,6 +13,7 @@ import {
   ExamAutocorrection,
   ExamDetails,
   ExamGrade,
+  ExamItemType,
   ExamSubmission,
   SubmittedExamItem,
   TeacherActivity,
@@ -37,6 +40,7 @@ import { useExamGrade } from "@/hooks/useExamGrade";
 import { customColors } from "@/utils/constants/colors";
 import { FullScreenModal } from "@/components/FullScreenModal";
 import { ListStatCard } from "@/components/ListStatCard";
+import { set } from "zod";
 
 export default function GradeExamSubmissionPage() {
   const theme = useTheme();
@@ -66,10 +70,12 @@ export default function GradeExamSubmissionPage() {
   const [examAutocorrection, setExamAutocorrection] =
     useState<ExamAutocorrection | null>(null);
   const [autocorrectionStatus, setAutocorrectionStatus] =
-    useState<AutocorrectionStatus | null>(null);
+    useState<AutocorrectionStatus>(AutocorrectionStatus.NOT_STARTED);
   const [autocorrectionModalVisible, setAutocorrectionModalVisible] =
     useState(false);
   const [autocorrected, setAutocorrected] = useState(false);
+
+  const [isAutocorrecting, setIsAutocorrecting] = useState(false);
 
   const temporalExamGradeHook = useExamGrade();
   const temporalExamGrade = temporalExamGradeHook.examGrade;
@@ -182,9 +188,81 @@ export default function GradeExamSubmissionPage() {
     }
   };
 
-  const handleAutocorrection = async () => {
-    if (!courseId || !examId || !studentId) return;
+  const handlePressAutocorrectButton = async () => {
+    setIsAutocorrecting(true);
+    await handleGetAutocorrection();
+    setIsAutocorrecting(false);
     setAutocorrectionModalVisible(true);
+  };
+
+  const handleAutocorrect = async () => {
+    if (!courseId || !examId || !studentId) return;
+    setIsLoading(true);
+    setAutocorrectionModalVisible(false);
+    try {
+      await autocorrectExam(courseId, Number(examId), Number(studentId));
+      console.log("Autocorrection started");
+      setAutocorrectionStatus(AutocorrectionStatus.IN_PROGRESS);
+    } catch (error) {
+      setErrorMessage((error as Error).message);
+      setAutocorrectionStatus(AutocorrectionStatus.FAILED);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGetAutocorrection = async () => {
+    if (!courseId || !examId || !studentId) return;
+    // setIsLoading(true);
+    try {
+      const fetchedAutocorrection = await getExamAutocorrection(
+        courseId,
+        Number(examId),
+        Number(studentId)
+      );
+      setExamAutocorrection(fetchedAutocorrection);
+      setAutocorrectionStatus(fetchedAutocorrection.status);
+    } catch (error) {
+      setErrorMessage((error as Error).message);
+      setAutocorrectionStatus(AutocorrectionStatus.FAILED);
+    } finally {
+      // setIsLoading(false);
+    }
+  };
+
+  const handleApplyAutocorrection = () => {
+    if (!examAutocorrection) return;
+    setAutocorrected(true);
+    console.log("Applying autocorrection:", examAutocorrection);
+    console.log("Mark:", examAutocorrection.mark);
+
+    // Definir la variable examGrade como una copia de temporalExamGrade.
+    // Luego, cambiar los valores de examGrade.mark y examGrade.feedback_message
+    // por los correspondientes valores de examAutocorrection.mark y
+    // examAutocorrection.feedback_message.
+    // Finalmente, cambiar los valores de examGrade.correctExamItems por los
+    // correspondientes valores de examAutocorrection.correctedExamItems.
+
+    let examGrade = { ...temporalExamGrade } as ExamGrade;
+    examGrade.mark = examAutocorrection.mark;
+    examGrade.feedback_message = examAutocorrection.feedback_message;
+
+    // Hacer una copia del arreglo temporalExamGrade.correctExamItems. En la
+    // copia, cambiar todos los valores asociados a una pregunta abierta por el
+    // correspondiente valor de examAutocorrection.correctExamItems.
+    const examItems = (teacherActivity.activity.activityDetails as ExamDetails)
+      .examItems;
+    examAutocorrection.correctedExamItems.forEach(
+      (correctedExamItem, index) => {
+        if (examItems[index].type === ExamItemType.OPEN) {
+          examGrade.correctExamItems[index] = correctedExamItem.correct;
+        }
+      }
+    );
+
+    temporalExamGradeHook.setExamGrade(examGrade);
+    setAutocorrectionStatus(AutocorrectionStatus.COMPLETED);
+    setAutocorrectionModalVisible(false);
   };
 
   useFocusEffect(
@@ -209,15 +287,37 @@ export default function GradeExamSubmissionPage() {
     }
   }, [examSubmission]);
 
+  useEffect(() => {
+    if (examAutocorrection) {
+      temporalExamGradeHook.setMark(examAutocorrection.mark);
+    }
+  }, [examAutocorrection]);
+
   return (
     <>
       <Appbar.Header>
         <Appbar.BackAction onPress={() => router.back()} />
         <Appbar.Content title={"Corrección del examen"} />
         <Appbar.Action
-          icon="robot"
-          onPress={handleAutocorrection}
-          disabled={isLoading}
+          icon={
+            isAutocorrecting
+              ? () => (
+                  <ActivityIndicator
+                    animating={true}
+                    size={24}
+                    color={theme.colors.primary}
+                  />
+                )
+              : "robot"
+          }
+          onPress={async () => {
+            if (!isAutocorrecting) {
+              setIsAutocorrecting(true);
+              await handlePressAutocorrectButton();
+              setIsAutocorrecting(false);
+            }
+          }}
+          disabled={isAutocorrecting}
         />
         <Appbar.Action
           icon="help-circle"
@@ -446,9 +546,17 @@ export default function GradeExamSubmissionPage() {
                 </Text>
               </View>
             </View>
-            <Button mode="outlined" onPress={() => setHelpModalVisible(false)}>
-              OK
-            </Button>
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "flex-end",
+                gap: 8,
+              }}
+            >
+              <Button mode="text" onPress={() => setHelpModalVisible(false)}>
+                OK
+              </Button>
+            </View>
           </View>
         }
       />
@@ -458,6 +566,31 @@ export default function GradeExamSubmissionPage() {
       >
         <View style={{ gap: 16 }}>
           <Text variant="titleLarge">Estado de la autocorrección</Text>
+          {autocorrectionStatus === AutocorrectionStatus.NOT_STARTED && (
+            <View style={{ gap: 16 }}>
+              <Text>
+                ¿Desea corregir el examen automáticamente con Inteligencia
+                Artificial?
+              </Text>
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "flex-end",
+                  gap: 8,
+                }}
+              >
+                <Button
+                  mode="text"
+                  onPress={() => setAutocorrectionModalVisible(false)}
+                >
+                  Cancelar
+                </Button>
+                <Button mode="text" onPress={() => handleAutocorrect()}>
+                  Aceptar
+                </Button>
+              </View>
+            </View>
+          )}
           {autocorrectionStatus === AutocorrectionStatus.IN_PROGRESS && (
             <View style={{ alignItems: "center", gap: 16 }}>
               <Text>
@@ -476,28 +609,36 @@ export default function GradeExamSubmissionPage() {
           {autocorrectionStatus === AutocorrectionStatus.COMPLETED && (
             <View style={{ gap: 16 }}>
               <Text>
-                El examen se ha corregido exitosamente. Pulse el botón 'Aceptar
-                corrección' para traer esos datos. NOTA: esto pisará todos los
-                valores de corrección que haya hecho en cada una.
+                El examen se ha corregido exitosamente. Pulse el botón 'Aceptar'
+                para traer esos datos. NOTA: esto pisará las correcciones hechas
+                manualmente.
               </Text>
-              <Button
-                mode="outlined"
-                onPress={() => {
-                  // Acción para descartar corrección
-                  setAutocorrectionModalVisible(false);
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "flex-end",
+                  gap: 8,
                 }}
               >
-                Descartar corrección
-              </Button>
-              <Button
-                mode="contained"
-                onPress={() => {
-                  // Acción para aceptar corrección
-                  setAutocorrectionModalVisible(false);
-                }}
-              >
-                Aceptar corrección
-              </Button>
+                <Button
+                  mode="text"
+                  onPress={() => {
+                    // Acción para descartar corrección
+                    setAutocorrectionModalVisible(false);
+                  }}
+                >
+                  Descartar
+                </Button>
+                <Button
+                  mode="text"
+                  onPress={() => {
+                    // Acción para aceptar corrección
+                    handleApplyAutocorrection();
+                  }}
+                >
+                  Aceptar
+                </Button>
+              </View>
             </View>
           )}
           {autocorrectionStatus === AutocorrectionStatus.FAILED && (

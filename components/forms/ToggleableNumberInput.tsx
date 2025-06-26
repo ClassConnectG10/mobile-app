@@ -1,6 +1,7 @@
 import { View } from "react-native";
 import { IconButton, TextInput } from "react-native-paper";
 import { TextField } from "./TextField";
+import { useEffect, useState } from "react";
 
 interface ToggleableNumberInputsProps {
   label: string;
@@ -19,6 +20,13 @@ export const ToggleableNumberInput: React.FC<ToggleableNumberInputsProps> = ({
   minValue = 1,
   maxValue,
 }) => {
+  // const [valueString, setValueString] = useState(value.toString());
+
+  // useEffect(() => {
+  //   setValueString(value.toString());
+  //   console.log("Value changed:", value);
+  // }, [value]);
+
   const decreaseNumStudents = () => {
     if (!minValue || value >= minValue) {
       onChange(value - 1);
