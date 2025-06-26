@@ -59,7 +59,7 @@ export const ToggleableProfilePicture: React.FC<
       }
 
       const newFile = results.map(
-        (result: any) => new File(result.name, result.type, result.uri)
+        (result: any) => new File(result.name, result.type, result.uri),
       )[0];
 
       setFileAndInitialFile(newFile);
@@ -86,7 +86,10 @@ export const ToggleableProfilePicture: React.FC<
       const firebaseRef = getStorage().ref(file.firebaseUrl);
       const firebaseUri = await firebaseRef.getDownloadURL();
 
-      const localUri = documentDirectory + file.name;
+      // Agregar timestamp para evitar caché del Image
+      const timestamp = Date.now();
+      const localUri = documentDirectory + `${file.name}_${timestamp}`;
+
       const downloaded = await downloadAsync(firebaseUri, localUri);
 
       setFileAndInitialFile({ ...file, localUri: downloaded.uri });
@@ -102,8 +105,10 @@ export const ToggleableProfilePicture: React.FC<
   }, [initialFile]);
 
   useEffect(() => {
-    downloadImage();
-  }, [file]);
+    if (file && !file.localUri && file.firebaseUrl) {
+      downloadImage();
+    }
+  }, [file?.firebaseUrl]);
 
   const openImageModal = () => {
     setIsModalVisible(true);
