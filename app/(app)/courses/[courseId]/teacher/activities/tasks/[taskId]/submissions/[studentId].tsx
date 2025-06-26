@@ -38,6 +38,7 @@ import { useTaskGrade } from "@/hooks/useTaskGrade";
 import { ToggleableNumberInput } from "@/components/forms/ToggleableNumberInput";
 import { ToggleableTextInput } from "@/components/forms/ToggleableTextInput";
 import { FullScreenModal } from "@/components/FullScreenModal";
+import { validateFilesForAutocorrection } from "@/utils/fileValidation";
 
 export default function TaskSubmissionPage() {
   const router = useRouter();
@@ -78,6 +79,12 @@ export default function TaskSubmissionPage() {
   const [autocorrected, setAutocorrected] = useState(false);
   const [isAutocorrecting, setIsAutocorrecting] = useState(false);
 
+  // Estado para el modal de error de validación de archivos
+  const [fileValidationErrorModalVisible, setFileValidationErrorModalVisible] =
+    useState(false);
+  const [fileValidationErrorMessage, setFileValidationErrorMessage] =
+    useState("");
+
   async function fetchTeacherTask() {
     if (!courseId || !taskId) return;
     setIsLoading(true);
@@ -101,7 +108,7 @@ export default function TaskSubmissionPage() {
       const response = await getTaskSubmission(
         courseId,
         Number(taskId),
-        Number(studentId)
+        Number(studentId),
       );
 
       setStudentSubmission(response);
@@ -134,14 +141,14 @@ export default function TaskSubmissionPage() {
       const grade = await getTaskGrade(
         courseId,
         Number(taskId),
-        Number(studentId)
+        Number(studentId),
       );
       if (grade) {
         temporalTaskGradeHook.setTaskGrade(grade);
         setHasPreviousGrade(true);
       } else {
         temporalTaskGradeHook.setTaskGrade(
-          new TaskGrade(Number(taskId), Number(studentId), 0, "")
+          new TaskGrade(Number(taskId), Number(studentId), 0, ""),
         );
         setHasPreviousGrade(false);
       }
@@ -176,6 +183,20 @@ export default function TaskSubmissionPage() {
   };
 
   const handlePressAutocorrectButton = async () => {
+    // Validar archivos antes de proceder con la autocorrección
+    const validation = validateFilesForAutocorrection(
+      taskDetails?.instructionsFile,
+      studentSubmission?.responseFile,
+    );
+
+    if (!validation.isValid) {
+      setFileValidationErrorMessage(
+        validation.errorMessage || "Error de validación de archivos",
+      );
+      setFileValidationErrorModalVisible(true);
+      return;
+    }
+
     setIsAutocorrecting(true);
     await handleGetAutocorrection();
     setIsAutocorrecting(false);
@@ -184,7 +205,7 @@ export default function TaskSubmissionPage() {
 
   const handleAutocorrect = async () => {
     if (!courseId || !taskId || !studentId) return;
-    setIsLoading(true);
+    // setIsLoading(true);
     setAutocorrectionModalVisible(false);
     try {
       await autocorrectTask(courseId, Number(taskId), Number(studentId));
@@ -200,7 +221,7 @@ export default function TaskSubmissionPage() {
       setErrorMessage((error as Error).message);
       setAutocorrectionStatus(AutocorrectionStatus.FAILED);
     } finally {
-      setIsLoading(false);
+      // setIsLoading(false);
     }
   };
 
@@ -211,7 +232,7 @@ export default function TaskSubmissionPage() {
       const fetchedAutocorrection = await getTaskAutocorrection(
         courseId,
         Number(taskId),
-        Number(studentId)
+        Number(studentId),
       );
       setTaskAutocorrection(fetchedAutocorrection);
       setAutocorrectionStatus(fetchedAutocorrection.status);
@@ -248,7 +269,7 @@ export default function TaskSubmissionPage() {
       setStudentSubmission(null);
       temporalTaskGradeHook.setTaskGrade(null);
       setHasPreviousGrade(false);
-    }, [courseId, taskId, studentId])
+    }, [courseId, taskId, studentId]),
   );
 
   useEffect(() => {
@@ -570,6 +591,29 @@ export default function TaskSubmissionPage() {
               </View>
             </View>
           )}
+        </View>
+      </FullScreenModal>
+      <FullScreenModal
+        visible={fileValidationErrorModalVisible}
+        onDismiss={() => setFileValidationErrorModalVisible(false)}
+      >
+        <View style={{ gap: 16 }}>
+          <Text variant="titleLarge">Error de Validación de Archivos</Text>
+          <Text>{fileValidationErrorMessage}</Text>
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "flex-end",
+              gap: 8,
+            }}
+          >
+            <Button
+              mode="text"
+              onPress={() => setFileValidationErrorModalVisible(false)}
+            >
+              Aceptar
+            </Button>
+          </View>
         </View>
       </FullScreenModal>
       <ErrorMessageSnackbar

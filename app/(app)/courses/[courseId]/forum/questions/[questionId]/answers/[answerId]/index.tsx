@@ -44,6 +44,7 @@ export default function ForumAnswerPage() {
 
   const fetchForumAnswer = async () => {
     setIsLoading(true);
+    setUsers(null);
     try {
       const { answer, childrenAnswers } = await getAnswer(
         courseId,
@@ -258,7 +259,7 @@ export default function ForumAnswerPage() {
           },
         ]
       : []),
-    ...(creator
+    ...(creator && users && answers
       ? [
           {
             title: "Respuestas",

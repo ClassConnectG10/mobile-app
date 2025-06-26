@@ -28,7 +28,7 @@ export default function CreateTaskPage() {
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [courseModulesBiMap, setCourseModulesBiMap] = useState<BiMap>(
-    new BiMap()
+    new BiMap(),
   );
 
   const courseId = courseIdParam as string;
@@ -45,7 +45,7 @@ export default function CreateTaskPage() {
         courseModules.map((module) => [
           module.courseModuleDetails.title,
           module.moduleId.toString(),
-        ])
+        ]),
       );
       setCourseModulesBiMap(bimap);
     } catch (error) {
@@ -78,7 +78,7 @@ export default function CreateTaskPage() {
   useFocusEffect(
     useCallback(() => {
       fetchCourseModules();
-    }, [courseId])
+    }, [courseId]),
   );
 
   return (
@@ -129,6 +129,7 @@ export default function CreateTaskPage() {
                 placeholder="Instrucciones"
                 value={taskDetails.instructions}
                 onChangeText={taskDetailsHook.setInstructions}
+                multiline={true}
               />
 
               <DatePickerButton

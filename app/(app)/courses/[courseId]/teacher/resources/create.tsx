@@ -31,10 +31,10 @@ export default function CreateResourcePage() {
   const resourceDetails = resourceDetailsHook.resourceDetails;
 
   const [filesAttachments, setFilesAttachments] = useState<FileAttachment[]>(
-    []
+    [],
   );
   const [linksAttachments, setLinksAttachments] = useState<LinkAttachment[]>(
-    []
+    [],
   );
 
   const handleCreateResource = async () => {
@@ -98,7 +98,7 @@ export default function CreateResourcePage() {
                   editable={true}
                   onChange={(files) => {
                     const newAttachments = files.map(
-                      (file) => new FileAttachment(file)
+                      (file) => new FileAttachment(file),
                     );
                     setFilesAttachments(newAttachments);
                     resourceDetailsHook.setAttachments([
@@ -106,7 +106,7 @@ export default function CreateResourcePage() {
                       ...linksAttachments,
                     ]);
                   }}
-                  maxFiles={5}
+                  maxFiles={1}
                 />
                 <Divider />
                 <ToggleableLinkInput
@@ -114,7 +114,7 @@ export default function CreateResourcePage() {
                   editable={true}
                   onChange={(links) => {
                     const newAttachments = links.map(
-                      (link) => new LinkAttachment(link)
+                      (link) => new LinkAttachment(link),
                     );
                     setLinksAttachments(newAttachments);
                     resourceDetailsHook.setAttachments([

@@ -72,7 +72,7 @@ export default function UserProfilePage() {
   useFocusEffect(
     useCallback(() => {
       fetchUser();
-    }, [userId])
+    }, [userId]),
   );
 
   // Inicializar datos propios en el hook de edición
@@ -135,7 +135,7 @@ export default function UserProfilePage() {
         CommonActions.reset({
           index: 0,
           routes: [{ name: "(login)/login" }],
-        })
+        }),
       );
     } catch (error) {
       setErrorMessage(`Error al cerrar sesión: ${error}`);

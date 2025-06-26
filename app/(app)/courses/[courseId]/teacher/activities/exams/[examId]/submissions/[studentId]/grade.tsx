@@ -197,7 +197,7 @@ export default function GradeExamSubmissionPage() {
 
   const handleAutocorrect = async () => {
     if (!courseId || !examId || !studentId) return;
-    setIsLoading(true);
+    // setIsLoading(true);
     setAutocorrectionModalVisible(false);
     try {
       await autocorrectExam(courseId, Number(examId), Number(studentId));
@@ -214,7 +214,7 @@ export default function GradeExamSubmissionPage() {
       setErrorMessage((error as Error).message);
       setAutocorrectionStatus(AutocorrectionStatus.FAILED);
     } finally {
-      setIsLoading(false);
+      // setIsLoading(false);
     }
   };
 

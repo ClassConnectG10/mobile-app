@@ -81,6 +81,7 @@ export default function ForumQuestionPage() {
     // setIsLoading(true);
     // setForumQuestion(null);
     // setForumAnswers(null);
+    setUsers(null);
     try {
       const searchParams = isRefreshing
         ? defaultForumSearchParams
@@ -402,7 +403,7 @@ export default function ForumQuestionPage() {
           },
         ]
       : []),
-    ...(creator
+    ...(creator && users && forumAnswers
       ? [
           {
             title: "Respuestas",
@@ -505,8 +506,8 @@ export default function ForumQuestionPage() {
               </View>
             ) : null
           }
-          // refreshing={isRefreshing}
-          // onRefresh={handleRefresh}
+          refreshing={isRefreshing}
+          onRefresh={handleRefresh}
           renderSectionFooter={({ section }) => {
             if (section.title === "Respuestas") {
               if (isSearching) {
