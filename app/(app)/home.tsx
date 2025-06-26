@@ -100,7 +100,6 @@ export default function HomePage() {
     <>
       {/* Top bar */}
       <Appbar.Header>
-        {/* <Appbar.Action icon="menu" /> */}
         <Appbar.Content title="Class Connect" />
         {/* <IconBadge
           icon="bell"
@@ -110,7 +109,7 @@ export default function HomePage() {
             router.push("/notifications");
           }}
         /> */}
-        <Appbar.Action icon="test-tube" onPress={() => router.push("/test")} />
+        {/* <Appbar.Action icon="test-tube" onPress={() => router.push("/test")} /> */}
         <Appbar.Action
           icon="bell-badge"
           onPress={() => router.push("/notifications")}
