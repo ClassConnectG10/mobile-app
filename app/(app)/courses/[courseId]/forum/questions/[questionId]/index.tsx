@@ -48,7 +48,7 @@ export default function ForumQuestionPage() {
   const [searchParamsModalVisible, setSearchParamsModalVisible] =
     useState(false);
   const [forumQuestion, setForumQuestion] = useState<ForumQuestion | null>(
-    null,
+    null
   );
   const [forumAnswers, setForumAnswers] = useState(null);
   const [users, setUsers] = useState<User[] | null>(null);
@@ -57,11 +57,11 @@ export default function ForumQuestionPage() {
   const [isCreator, setIsCreator] = useState(false);
 
   const [acceptedAnswer, setAcceptedAnswer] = useState<ForumAnswer | null>(
-    null,
+    null
   );
 
   const [acceptedAnswerUser, setAcceptedAnswerUser] = useState<User | null>(
-    null,
+    null
   );
 
   const defaultForumSearchParams: ForumSearchParams = {
@@ -73,15 +73,52 @@ export default function ForumQuestionPage() {
   };
 
   const [forumQueryParams, setForumQueryParams] = useState<ForumSearchParams>(
-    defaultForumSearchParams,
+    defaultForumSearchParams
   );
+
+  const fetchForumQuestionWithParams = async () => {
+    if (!courseId || !questionId || !forumQuestion) return;
+
+    setIsSearching(true);
+    setIsRefreshing(false);
+    // setUsers(null);
+
+    try {
+      const searchParams = isRefreshing
+        ? defaultForumSearchParams
+        : forumQueryParams;
+
+      const { answers } = await getQuestion(courseId, questionId, searchParams);
+
+      if (forumQuestion.acceptedAnswerId) {
+        if (!isSearching) {
+          const fetchedAcceptedAnswer = answers.find(
+            (answer: ForumAnswer) =>
+              answer.id === forumQuestion.acceptedAnswerId
+          );
+          setAcceptedAnswer(fetchedAcceptedAnswer);
+        }
+        const otherAnswers = answers.filter(
+          (answer: ForumAnswer) => answer.id !== forumQuestion.acceptedAnswerId
+        );
+        setForumAnswers(otherAnswers);
+      } else {
+        setAcceptedAnswer(null);
+        setForumAnswers(answers);
+      }
+    } catch (error) {
+      setErrorMessage((error as Error).message);
+    } finally {
+      setIsSearching(false);
+    }
+  };
 
   const fetchForumQuestion = async () => {
     if (!courseId || !questionId) return;
     // setIsLoading(true);
     // setForumQuestion(null);
     // setForumAnswers(null);
-    setUsers(null);
+    // setUsers(null);
     try {
       const searchParams = isRefreshing
         ? defaultForumSearchParams
@@ -90,19 +127,19 @@ export default function ForumQuestionPage() {
       const { question, answers } = await getQuestion(
         courseId,
         questionId,
-        searchParams,
+        searchParams
       );
       setForumQuestion(question);
 
       if (question.acceptedAnswerId) {
         if (!isSearching) {
           const fetchedAcceptedAnswer = answers.find(
-            (answer: ForumAnswer) => answer.id === question.acceptedAnswerId,
+            (answer: ForumAnswer) => answer.id === question.acceptedAnswerId
           );
           setAcceptedAnswer(fetchedAcceptedAnswer);
         }
         const otherAnswers = answers.filter(
-          (answer: ForumAnswer) => answer.id !== question.acceptedAnswerId,
+          (answer: ForumAnswer) => answer.id !== question.acceptedAnswerId
         );
         setForumAnswers(otherAnswers);
       } else {
@@ -122,7 +159,7 @@ export default function ForumQuestionPage() {
 
     try {
       const uniqueUserIds: Set<number> = new Set(
-        forumAnswers.map((answer: ForumAnswer) => answer.creatorId),
+        forumAnswers.map((answer: ForumAnswer) => answer.creatorId)
       );
       uniqueUserIds.add(forumQuestion.creatorId);
 
@@ -134,13 +171,13 @@ export default function ForumQuestionPage() {
 
       if (acceptedAnswer) {
         const fetchedAcceptedAnswerUser = fetchedUsers.find(
-          (user) => user.id === acceptedAnswer.creatorId,
+          (user) => user.id === acceptedAnswer.creatorId
         );
         setAcceptedAnswerUser(fetchedAcceptedAnswerUser);
       }
       setUsers(fetchedUsers);
       const questionCreator = fetchedUsers.find(
-        (user) => user.id === forumQuestion.creatorId,
+        (user) => user.id === forumQuestion.creatorId
       );
       setCreator(questionCreator);
       setIsCreator(questionCreator?.id === userId);
@@ -199,10 +236,14 @@ export default function ForumQuestionPage() {
     fetchUsers();
   }, [forumAnswers]);
 
+  useEffect(() => {
+    fetchForumQuestionWithParams();
+  }, [forumQueryParams]);
+
   useFocusEffect(
     useCallback(() => {
       fetchForumQuestion();
-    }, [courseId, questionId, forumQueryParams]),
+    }, [courseId, questionId])
   );
 
   const handleAcceptAnswer = async (newAcceptedAnswer: ForumAnswer) => {
@@ -218,11 +259,11 @@ export default function ForumQuestionPage() {
       };
 
       const newAcceptedAnswerUser = users?.find(
-        (user: User) => user.id === newAcceptedAnswer.creatorId,
+        (user: User) => user.id === newAcceptedAnswer.creatorId
       );
 
       const updatedAnswers = forumAnswers.filter(
-        (answer: ForumAnswer) => answer.id !== newAcceptedAnswerId,
+        (answer: ForumAnswer) => answer.id !== newAcceptedAnswerId
       );
 
       if (acceptedAnswer) {
@@ -242,7 +283,7 @@ export default function ForumQuestionPage() {
 
   const updateVoteCount = (
     answer: ForumAnswer,
-    vote: 0 | 1 | -1,
+    vote: 0 | 1 | -1
   ): ForumAnswer => {
     let { upVotes, downVotes } = answer;
 
@@ -308,7 +349,7 @@ export default function ForumQuestionPage() {
   // Render functions for each section
   const renderQuestionSection = (
     forumQuestion: ForumQuestion,
-    creator: User,
+    creator: User
   ) => (
     <ForumQuestionCard
       forumQuestion={forumQuestion}
@@ -333,7 +374,7 @@ export default function ForumQuestionPage() {
 
   const renderAcceptedAnswerSection = (
     acceptedAnswer: ForumAnswer,
-    acceptedAnswerUser: User,
+    acceptedAnswerUser: User
   ) => (
     <ForumAnswerCard
       user={acceptedAnswerUser}
@@ -348,20 +389,23 @@ export default function ForumQuestionPage() {
 
   // Corrección final para renderItem en SectionList
   const renderAnswersSection = (forumAnswers: ForumAnswer[], users: User[]) => {
-    const AnswerItem = ({ item }: { item: ForumAnswer }) =>
-      !isSearching && (
-        <ForumAnswerCard
-          user={
-            users.find((user) => user.id === item.creatorId) || ({} as User)
-          }
-          forumAnswer={item}
-          onPress={() => handleAnswerPress(item.id)}
-          onAcceptedPress={() => handleAcceptAnswer(item)}
-          showAccepted={isCreator}
-          accepted={false}
-          onVotePress={(vote) => handleVoteAnswer(item.id, vote)}
-        />
+    const AnswerItem = ({ item }: { item: ForumAnswer }) => {
+      const user = users.find((user) => user.id === item.creatorId);
+      if (!user) return null;
+      return (
+        !isSearching && (
+          <ForumAnswerCard
+            user={user}
+            forumAnswer={item}
+            onPress={() => handleAnswerPress(item.id)}
+            onAcceptedPress={() => handleAcceptAnswer(item)}
+            showAccepted={isCreator}
+            accepted={false}
+            onVotePress={(vote) => handleVoteAnswer(item.id, vote)}
+          />
+        )
       );
+    };
 
     AnswerItem.displayName = "AnswerItem";
 

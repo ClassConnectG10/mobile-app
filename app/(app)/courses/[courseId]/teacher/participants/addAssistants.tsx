@@ -23,6 +23,8 @@ import {
   Dialog,
 } from "react-native-paper";
 
+const MIN_SEARCH_LENGTH = 3;
+
 export default function AddAssistant() {
   const router = useRouter();
   const theme = useTheme();
@@ -34,7 +36,7 @@ export default function AddAssistant() {
   const [assistants, setAssistants] = useState<User[]>(null);
   const [students, setStudents] = useState<User[]>(null);
 
-  const [users, setUsers] = useState<User[]>(null);
+  // const [users, setUsers] = useState<User[]>(null);
   const [filteredUsers, setFilteredUsers] = useState<User[]>(null);
 
   const [isLoading, setIsLoading] = useState(false);
@@ -56,6 +58,13 @@ export default function AddAssistant() {
   const userIsAStudent = (user: User): boolean => {
     if (!students) return false;
     return students.some((student) => student.id === user.id);
+  };
+
+  const handleUserPress = (user: User) => {
+    router.push({
+      pathname: "/users/[userId]",
+      params: { userId: user.id },
+    });
   };
 
   async function fetchCourse() {
@@ -103,35 +112,6 @@ export default function AddAssistant() {
     }
   }
 
-  async function fetchUsers() {
-    if (!assistants || !students) return;
-
-    setIsLoading(true);
-    try {
-      const users = await getUsers();
-      const posibleTeachers = users.filter((user) => {
-        return (
-          !userIsAnOwner(user) &&
-          !userIsAnAssistant(user) &&
-          !userIsAStudent(user)
-        );
-      });
-      setUsers(posibleTeachers);
-      setFilteredUsers(posibleTeachers);
-    } catch (error) {
-      setErrorMessage((error as Error).message);
-      setUsers([]);
-    } finally {
-      setIsLoading(false);
-    }
-  }
-
-  useFocusEffect(
-    useCallback(() => {
-      fetchUsers();
-    }, [assistants, students])
-  );
-
   useFocusEffect(
     useCallback(() => {
       fetchCourse();
@@ -156,21 +136,41 @@ export default function AddAssistant() {
     }
   };
 
-  const handleSearch = (query: string) => {
-    if (!users) return;
+  const handleSearch = async (query: string) => {
+    if (!assistants || !students || query.trim().length < MIN_SEARCH_LENGTH) {
+      setFilteredUsers([]);
+      return;
+    }
 
-    const serachQueryFilteredUsers = users.filter((user) => {
-      const fullName = `${user.userInformation.firstName} ${user.userInformation.lastName}`;
-      const revesedFullName = `${user.userInformation.lastName} ${user.userInformation.firstName}`;
-      const email = user.userInformation.email;
-      return (
-        fullName.toLowerCase().includes(query.toLowerCase()) ||
-        revesedFullName.toLowerCase().includes(query.toLowerCase()) ||
-        email.toLowerCase().includes(query.toLowerCase())
-      );
-    });
+    setIsLoading(true);
+    try {
+      const users = await getUsers();
+      const posibleTeachers = users.filter((user) => {
+        return (
+          !userIsAnOwner(user) &&
+          !userIsAnAssistant(user) &&
+          !userIsAStudent(user)
+        );
+      });
 
-    setFilteredUsers(serachQueryFilteredUsers);
+      const serachQueryFilteredUsers = posibleTeachers.filter((user) => {
+        const fullName = `${user.userInformation.firstName} ${user.userInformation.lastName}`;
+        const revesedFullName = `${user.userInformation.lastName} ${user.userInformation.firstName}`;
+        const email = user.userInformation.email;
+        return (
+          fullName.toLowerCase().includes(query.toLowerCase()) ||
+          revesedFullName.toLowerCase().includes(query.toLowerCase()) ||
+          email.toLowerCase().includes(query.toLowerCase())
+        );
+      });
+
+      setFilteredUsers(serachQueryFilteredUsers);
+    } catch (error) {
+      setErrorMessage((error as Error).message);
+      setFilteredUsers([]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -188,73 +188,68 @@ export default function AddAssistant() {
           />
           <Appbar.Content title={"Adminsitrar asistentes"} />
         </Appbar.Header>
-        {isLoading || !filteredUsers ? (
-          <View
-            style={{
-              flex: 1,
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
-            <ActivityIndicator
-              animating={true}
-              size="large"
-              color={theme.colors.primary}
-            />
-          </View>
-        ) : (
-          <>
-            <View
-              style={{
-                padding: 16,
-                gap: 16,
-                flex: 1,
-              }}
-            >
-              <SearchBar
-                placeholder="Buscar usuarios"
-                onSearch={handleSearch}
-              />
-              <FlatList
-                data={filteredUsers}
-                keyExtractor={(item) => item.id.toString()}
-                renderItem={({ item }) => (
-                  <View
-                    style={{
-                      flexDirection: "row",
-                      alignItems: "center",
-                      gap: 8,
-                    }}
-                  >
-                    <UserCard user={item} />
-                    <IconButton
-                      icon="plus"
-                      mode="contained"
-                      size={24}
-                      onPress={() => {
-                        setShowConfirmationAdd(true);
-                        setSelectedUser(item);
-                      }}
-                    />
-                  </View>
-                )}
-                ListEmptyComponent={
-                  <View
-                    style={{
-                      flex: 1,
 
-                      justifyContent: "center",
-                      alignItems: "center",
-                    }}
-                  >
-                    <Text>No hay usuarios disponibles</Text>
-                  </View>
-                }
-                ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
-              />
-            </View>
-          </>
-        )}
+        <View
+          style={{
+            padding: 16,
+            gap: 16,
+            flex: 1,
+          }}
+        >
+          <SearchBar placeholder="Buscar usuarios" onSearch={handleSearch} />
+          <FlatList
+            data={filteredUsers}
+            keyExtractor={(item) => item.id.toString()}
+            renderItem={({ item }) => (
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 8,
+                }}
+              >
+                <UserCard user={item} onPress={() => handleUserPress(item)} />
+                <IconButton
+                  icon="plus"
+                  mode="contained"
+                  size={24}
+                  onPress={() => {
+                    setShowConfirmationAdd(true);
+                    setSelectedUser(item);
+                  }}
+                />
+              </View>
+            )}
+            ListEmptyComponent={
+              isLoading ? (
+                <View
+                  style={{
+                    flex: 1,
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
+                >
+                  <ActivityIndicator
+                    animating={true}
+                    size="large"
+                    color={theme.colors.primary}
+                  />
+                </View>
+              ) : (
+                <View
+                  style={{
+                    flex: 1,
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
+                >
+                  <Text>No hay usuarios que coincidan con la búsqueda</Text>
+                </View>
+              )
+            }
+            ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
+          />
+        </View>
       </View>
       <ErrorMessageSnackbar
         message={errorMessage}
