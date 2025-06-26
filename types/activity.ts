@@ -253,3 +253,13 @@ export class ExamItemAutocorrection {
     public feedback_message: string
   ) {}
 }
+
+export class TaskAutocorrection {
+  constructor(
+    public correctionId: string | null,
+    public status: AutocorrectionStatus,
+    public mark: number | null,
+    public feedback_message: string | null,
+    public createdAt: Date | null
+  ) {}
+}

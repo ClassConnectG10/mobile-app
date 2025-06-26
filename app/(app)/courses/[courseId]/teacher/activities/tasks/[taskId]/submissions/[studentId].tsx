@@ -1,11 +1,15 @@
 import ErrorMessageSnackbar from "@/components/ErrorMessageSnackbar";
 import {
+  autocorrectTask,
+  getTaskAutocorrection,
   getTaskGrade,
   getTaskSubmission,
   getTeacherTask,
   gradeTask,
 } from "@/services/activityManagement";
 import {
+  AutocorrectionStatus,
+  TaskAutocorrection,
   TaskDetails,
   TaskGrade,
   TaskSubmission,
@@ -13,7 +17,7 @@ import {
 } from "@/types/activity";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
-import { ScrollView, View } from "react-native";
+import { KeyboardAvoidingView, Platform, ScrollView, View } from "react-native";
 import {
   ActivityIndicator,
   Appbar,
@@ -33,6 +37,7 @@ import { AlertText } from "@/components/AlertText";
 import { useTaskGrade } from "@/hooks/useTaskGrade";
 import { ToggleableNumberInput } from "@/components/forms/ToggleableNumberInput";
 import { ToggleableTextInput } from "@/components/forms/ToggleableTextInput";
+import { FullScreenModal } from "@/components/FullScreenModal";
 
 export default function TaskSubmissionPage() {
   const router = useRouter();
@@ -63,6 +68,15 @@ export default function TaskSubmissionPage() {
 
   const temporalTaskGradeHook = useTaskGrade();
   const { taskGrade: temporalTaskGrade } = temporalTaskGradeHook;
+
+  const [taskAutocorrection, setTaskAutocorrection] =
+    useState<TaskAutocorrection | null>(null);
+  const [autocorrectionStatus, setAutocorrectionStatus] =
+    useState<AutocorrectionStatus>(AutocorrectionStatus.NOT_STARTED);
+  const [autocorrectionModalVisible, setAutocorrectionModalVisible] =
+    useState(false);
+  const [autocorrected, setAutocorrected] = useState(false);
+  const [isAutocorrecting, setIsAutocorrecting] = useState(false);
 
   async function fetchTeacherTask() {
     if (!courseId || !taskId) return;
@@ -161,6 +175,67 @@ export default function TaskSubmissionPage() {
     }
   };
 
+  const handlePressAutocorrectButton = async () => {
+    setIsAutocorrecting(true);
+    await handleGetAutocorrection();
+    setIsAutocorrecting(false);
+    setAutocorrectionModalVisible(true);
+  };
+
+  const handleAutocorrect = async () => {
+    if (!courseId || !taskId || !studentId) return;
+    setIsLoading(true);
+    setAutocorrectionModalVisible(false);
+    try {
+      await autocorrectTask(courseId, Number(taskId), Number(studentId));
+      setAutocorrectionStatus(AutocorrectionStatus.IN_PROGRESS);
+      setTaskAutocorrection({
+        correctionId: null,
+        status: AutocorrectionStatus.IN_PROGRESS,
+        mark: null,
+        feedback_message: null,
+        createdAt: null,
+      });
+    } catch (error) {
+      setErrorMessage((error as Error).message);
+      setAutocorrectionStatus(AutocorrectionStatus.FAILED);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGetAutocorrection = async () => {
+    if (!courseId || !taskId || !studentId) return;
+    // setIsLoading(true);
+    try {
+      const fetchedAutocorrection = await getTaskAutocorrection(
+        courseId,
+        Number(taskId),
+        Number(studentId)
+      );
+      setTaskAutocorrection(fetchedAutocorrection);
+      setAutocorrectionStatus(fetchedAutocorrection.status);
+      return fetchedAutocorrection;
+    } catch (error) {
+      setErrorMessage((error as Error).message);
+      setAutocorrectionStatus(AutocorrectionStatus.FAILED);
+    } finally {
+      // setIsLoading(false);
+    }
+  };
+
+  const handleApplyAutocorrection = () => {
+    if (!taskAutocorrection) return;
+    setAutocorrected(true);
+
+    let taskGrade = { ...temporalTaskGrade } as TaskGrade;
+    taskGrade.mark = taskAutocorrection.mark;
+    taskGrade.feedback_message = taskAutocorrection.feedback_message;
+    temporalTaskGradeHook.setTaskGrade(taskGrade);
+    setAutocorrectionStatus(AutocorrectionStatus.COMPLETED);
+    setAutocorrectionModalVisible(false);
+  };
+
   useEffect(() => {
     fetchStudentSubmission();
   }, [teacherTask]);
@@ -170,8 +245,34 @@ export default function TaskSubmissionPage() {
       fetchTeacherTask();
       fetchStudent();
       fetchTaskGrade();
+      setStudentSubmission(null);
+      temporalTaskGradeHook.setTaskGrade(null);
+      setHasPreviousGrade(false);
     }, [courseId, taskId, studentId])
   );
+
+  useEffect(() => {
+    let pollingInterval: NodeJS.Timeout | null = null;
+
+    if (autocorrectionStatus === AutocorrectionStatus.IN_PROGRESS) {
+      pollingInterval = setInterval(async () => {
+        const fetchedAutocorrection = await handleGetAutocorrection();
+
+        console.log(fetchedAutocorrection.status);
+        if (fetchedAutocorrection.status !== AutocorrectionStatus.IN_PROGRESS) {
+          clearInterval(pollingInterval!);
+          console.log("Autocorrection completed or failed");
+          setAutocorrectionModalVisible(true);
+        }
+      }, 2000); // Polling every 2 seconds
+    }
+
+    return () => {
+      if (pollingInterval) {
+        clearInterval(pollingInterval);
+      }
+    };
+  }, [autocorrectionStatus]);
 
   return (
     <>
@@ -182,6 +283,35 @@ export default function TaskSubmissionPage() {
           }}
         />
         <Appbar.Content title="Información de la entrega" />
+        {isEditing && (
+          <Appbar.Action
+            icon={
+              isAutocorrecting
+                ? () => (
+                    <ActivityIndicator
+                      animating={true}
+                      size={24}
+                      color={theme.colors.primary}
+                    />
+                  )
+                : "robot"
+            }
+            onPress={async () => {
+              if (!isAutocorrecting) {
+                await handlePressAutocorrectButton();
+              }
+            }}
+            disabled={
+              isAutocorrecting ||
+              isLoading ||
+              !teacherTask ||
+              !studentSubmission ||
+              !student ||
+              !taskDetails ||
+              !temporalTaskGrade
+            }
+          />
+        )}
       </Appbar.Header>
       {isLoading ||
       !teacherTask ||
@@ -197,15 +327,19 @@ export default function TaskSubmissionPage() {
             size="large"
             color={theme.colors.primary}
           />
-          {/* <Text>taskGrade {JSON.stringify(temporalTaskGrade, null, 2)}</Text> */}
         </View>
       ) : (
-        <>
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          keyboardVerticalOffset={16} // Ajusta este valor según la altura de tu Appbar/Header
+        >
           <ScrollView
             contentContainerStyle={{
               backgroundColor: theme.colors.background,
               padding: 16,
             }}
+            keyboardShouldPersistTaps="handled"
           >
             <View
               style={{
@@ -249,13 +383,20 @@ export default function TaskSubmissionPage() {
                     <AlertText text="La entrega no ha sido calificada todavía." />
                   )}
 
+                  {autocorrected && isEditing && (
+                    <AlertText text="Corrección realizada por IA." />
+                  )}
+
                   {(hasPreviousGrade || isEditing) && (
                     <View style={{ flex: 1, gap: 16 }}>
                       <ToggleableNumberInput
                         label="Nota"
                         value={temporalTaskGrade.mark}
                         editable={isEditing}
-                        onChange={(mark) => temporalTaskGradeHook.setMark(mark)}
+                        onChange={(mark) => {
+                          temporalTaskGradeHook.setMark(mark);
+                          setAutocorrected(false);
+                        }}
                         minValue={0}
                         maxValue={10}
                       />
@@ -264,9 +405,10 @@ export default function TaskSubmissionPage() {
                         placeholder="Escriba un comentario para el estudiante"
                         value={temporalTaskGrade.feedback_message}
                         editable={isEditing}
-                        onChange={(feedback) =>
-                          temporalTaskGradeHook.setFeedbackMessage(feedback)
-                        }
+                        onChange={(feedback) => {
+                          temporalTaskGradeHook.setFeedbackMessage(feedback);
+                          setAutocorrected(false);
+                        }}
                       />
                     </View>
                   )}
@@ -301,8 +443,135 @@ export default function TaskSubmissionPage() {
                 </Button>
               ))}
           </View>
-        </>
+        </KeyboardAvoidingView>
       )}
+      <FullScreenModal
+        visible={autocorrectionModalVisible}
+        onDismiss={() => setAutocorrectionModalVisible(false)}
+      >
+        <View style={{ gap: 16 }}>
+          <Text variant="titleLarge">Estado de la autocorrección</Text>
+          {autocorrectionStatus === AutocorrectionStatus.NOT_STARTED && (
+            <View style={{ gap: 16 }}>
+              <Text>
+                ¿Desea corregir la tarea automáticamente con Inteligencia
+                Artificial?
+              </Text>
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "flex-end",
+                  gap: 8,
+                }}
+              >
+                <Button
+                  mode="text"
+                  onPress={() => setAutocorrectionModalVisible(false)}
+                >
+                  Cancelar
+                </Button>
+                <Button mode="text" onPress={() => handleAutocorrect()}>
+                  Aceptar
+                </Button>
+              </View>
+            </View>
+          )}
+          {autocorrectionStatus === AutocorrectionStatus.IN_PROGRESS && (
+            <View style={{ alignItems: "center", gap: 16 }}>
+              <Text>
+                La corrección se está realizando de forma automática. Puede
+                salir de esta pantalla mientras tanto.
+              </Text>
+              <ActivityIndicator animating={true} size="large" />
+              <Button
+                mode="text"
+                onPress={() => setAutocorrectionModalVisible(false)}
+              >
+                Aceptar
+              </Button>
+            </View>
+          )}
+          {autocorrectionStatus === AutocorrectionStatus.COMPLETED && (
+            <View style={{ gap: 16 }}>
+              <Text>
+                La tarea se ha corregido exitosamente. Pulse el botón 'Aceptar'
+                para obtener el resultado de la corrección. NOTA: esto pisará la
+                corrección manual si la hubiera.
+              </Text>
+              <Button
+                mode="text"
+                onPress={async () => {
+                  // Reiniciar el proceso de autocorrección
+                  setAutocorrectionStatus(AutocorrectionStatus.NOT_STARTED);
+                  setTaskAutocorrection(null);
+                  await handleAutocorrect();
+                }}
+              >
+                Corregir de nuevo
+              </Button>
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-around",
+                  gap: 8,
+                }}
+              >
+                <Button
+                  mode="text"
+                  onPress={() => {
+                    // Acción para descartar corrección
+                    setAutocorrectionModalVisible(false);
+                  }}
+                >
+                  Descartar
+                </Button>
+                <Button
+                  mode="text"
+                  onPress={() => {
+                    // Acción para aceptar corrección
+                    handleApplyAutocorrection();
+                  }}
+                >
+                  Aceptar
+                </Button>
+              </View>
+            </View>
+          )}
+          {autocorrectionStatus === AutocorrectionStatus.FAILED && (
+            <View style={{ alignItems: "center", gap: 16 }}>
+              <Text>
+                Hubo un error al corregir automáticamente la tarea. Intente
+                nuevamente.
+              </Text>
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "flex-end",
+                  gap: 8,
+                }}
+              >
+                <Button
+                  mode="text"
+                  onPress={async () => {
+                    // Reiniciar el proceso de autocorrección
+                    setAutocorrectionStatus(AutocorrectionStatus.NOT_STARTED);
+                    setTaskAutocorrection(null);
+                    await handleAutocorrect();
+                  }}
+                >
+                  Intentar de nuevo
+                </Button>
+                <Button
+                  mode="text"
+                  onPress={() => setAutocorrectionModalVisible(false)}
+                >
+                  Aceptar
+                </Button>
+              </View>
+            </View>
+          )}
+        </View>
+      </FullScreenModal>
       <ErrorMessageSnackbar
         message={errorMessage}
         onDismiss={() => setErrorMessage("")}

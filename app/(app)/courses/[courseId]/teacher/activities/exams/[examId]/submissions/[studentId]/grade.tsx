@@ -286,12 +286,11 @@ export default function GradeExamSubmissionPage() {
   }, [examSubmission]);
 
   useEffect(() => {
-    if (examAutocorrection) {
-      if (examAutocorrection.status === AutocorrectionStatus.COMPLETED) {
-        temporalExamGradeHook.setMark(examAutocorrection.mark);
-      } else {
-        setViewAutocorrectComments(false);
-      }
+    if (
+      examAutocorrection &&
+      examAutocorrection.status !== AutocorrectionStatus.COMPLETED
+    ) {
+      setViewAutocorrectComments(false);
     }
   }, [examAutocorrection]);
 
@@ -667,8 +666,8 @@ export default function GradeExamSubmissionPage() {
             <View style={{ gap: 16 }}>
               <Text>
                 El examen se ha corregido exitosamente. Pulse el botón 'Aceptar'
-                para traer esos datos. NOTA: esto pisará todos los valores de
-                corrección que haya hecho en cada una.
+                para obtener el resultado de la corrección. NOTA: esto pisará la
+                corrección manual si la hubiera.
               </Text>
               <Button
                 mode="text"

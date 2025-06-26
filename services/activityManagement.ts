@@ -17,6 +17,7 @@ import {
   AutocorrectionStatus,
   ExamItemAutocorrection,
   CORRECT_AUTOCORRECTED_ANSWER,
+  TaskAutocorrection,
 } from "@/types/activity";
 import {
   examItemToJSON,
@@ -46,6 +47,8 @@ import {
   createDeleteTaskFileRequest,
   createAutocorrectExamRequest,
   createGetExamAutocorrectionRequest,
+  createAutocorrectTaskRequest,
+  createGetTaskAutocorrectionRequest,
 } from "@/api/activities";
 import {
   activityDetailsSchema,
@@ -898,6 +901,68 @@ export async function getExamAutocorrection(
         []
       ); // No se inició una autocorrección todavía
     }
-    throw handleError(error, "obtener la autocorrección del examen");
+    throw handleError(error, "obtener la corrección del examen con IA");
+  }
+}
+
+export async function autocorrectTask(
+  courseId: string,
+  taskId: number,
+  studentId: number
+): Promise<void> {
+  try {
+    const request = await createAutocorrectTaskRequest(
+      courseId,
+      taskId,
+      studentId
+    );
+    await request.post("");
+  } catch (error) {
+    throw handleError(error, "corregir la tarea con IA");
+  }
+}
+
+export async function getTaskAutocorrection(
+  courseId: string,
+  taskId: number,
+  studentId: number
+): Promise<TaskAutocorrection> {
+  try {
+    const request = await createGetTaskAutocorrectionRequest(
+      courseId,
+      taskId,
+      studentId
+    );
+    const response = await request.get("");
+    const responseData = response.data.data;
+
+    if (responseData.status !== AutocorrectionStatus.COMPLETED) {
+      return new TaskAutocorrection(
+        responseData.id,
+        responseData.status,
+        null,
+        null,
+        getDateFromBackend(responseData.created_at)
+      ); // La autocorrección no ha sido completada
+    }
+
+    return new TaskAutocorrection(
+      responseData.id,
+      responseData.status,
+      responseData.mark,
+      responseData.feedback,
+      getDateFromBackend(responseData.created_at)
+    );
+  } catch (error) {
+    if (error.response?.status === 404) {
+      return new TaskAutocorrection(
+        null,
+        AutocorrectionStatus.NOT_STARTED,
+        null,
+        null,
+        null
+      ); // No se inició una autocorrección todavía
+    }
+    throw handleError(error, "obtener la corrección de la tarea con IA");
   }
 }
