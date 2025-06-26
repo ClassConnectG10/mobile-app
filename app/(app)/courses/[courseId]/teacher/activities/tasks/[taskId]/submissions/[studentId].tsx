@@ -108,7 +108,7 @@ export default function TaskSubmissionPage() {
       const response = await getTaskSubmission(
         courseId,
         Number(taskId),
-        Number(studentId),
+        Number(studentId)
       );
 
       setStudentSubmission(response);
@@ -141,14 +141,14 @@ export default function TaskSubmissionPage() {
       const grade = await getTaskGrade(
         courseId,
         Number(taskId),
-        Number(studentId),
+        Number(studentId)
       );
       if (grade) {
         temporalTaskGradeHook.setTaskGrade(grade);
         setHasPreviousGrade(true);
       } else {
         temporalTaskGradeHook.setTaskGrade(
-          new TaskGrade(Number(taskId), Number(studentId), 0, ""),
+          new TaskGrade(Number(taskId), Number(studentId), 0, "")
         );
         setHasPreviousGrade(false);
       }
@@ -186,12 +186,12 @@ export default function TaskSubmissionPage() {
     // Validar archivos antes de proceder con la autocorrección
     const validation = validateFilesForAutocorrection(
       taskDetails?.instructionsFile,
-      studentSubmission?.responseFile,
+      studentSubmission?.responseFile
     );
 
     if (!validation.isValid) {
       setFileValidationErrorMessage(
-        validation.errorMessage || "Error de validación de archivos",
+        validation.errorMessage || "Error de validación de archivos"
       );
       setFileValidationErrorModalVisible(true);
       return;
@@ -232,7 +232,7 @@ export default function TaskSubmissionPage() {
       const fetchedAutocorrection = await getTaskAutocorrection(
         courseId,
         Number(taskId),
-        Number(studentId),
+        Number(studentId)
       );
       setTaskAutocorrection(fetchedAutocorrection);
       setAutocorrectionStatus(fetchedAutocorrection.status);
@@ -269,7 +269,7 @@ export default function TaskSubmissionPage() {
       setStudentSubmission(null);
       temporalTaskGradeHook.setTaskGrade(null);
       setHasPreviousGrade(false);
-    }, [courseId, taskId, studentId]),
+    }, [courseId, taskId, studentId])
   );
 
   useEffect(() => {
@@ -279,10 +279,8 @@ export default function TaskSubmissionPage() {
       pollingInterval = setInterval(async () => {
         const fetchedAutocorrection = await handleGetAutocorrection();
 
-        console.log(fetchedAutocorrection.status);
         if (fetchedAutocorrection.status !== AutocorrectionStatus.IN_PROGRESS) {
           clearInterval(pollingInterval!);
-          console.log("Autocorrection completed or failed");
           setAutocorrectionModalVisible(true);
         }
       }, 2000); // Polling every 2 seconds
