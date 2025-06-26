@@ -263,15 +263,13 @@ export async function updateResource(
     );
 
     // Sincronizar adjuntos usando la función utilitaria
-    if (resourceDetails.attachments && resourceDetails.attachments.length > 0) {
-      await syncResourceAttachments(
-        courseId,
-        moduleId,
-        resource.resourceId,
-        resourceDetails.attachments,
-        originalAttachments
-      );
-    }
+    await syncResourceAttachments(
+      courseId,
+      moduleId,
+      resource.resourceId,
+      resourceDetails.attachments,
+      originalAttachments
+    );
 
     return resource;
   } catch (error) {

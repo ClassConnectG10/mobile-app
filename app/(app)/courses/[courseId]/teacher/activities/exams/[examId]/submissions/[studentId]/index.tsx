@@ -8,6 +8,7 @@ import {
 } from "@/services/activityManagement";
 import { getUser } from "@/services/userManagement";
 import {
+  ExamAutocorrection,
   ExamDetails,
   ExamGrade,
   ExamSubmission,
@@ -107,7 +108,7 @@ export default function TeacherSubmissionPage() {
       const grade = await getExamGrade(
         courseId,
         Number(examId),
-        Number(studentId),
+        Number(studentId)
       );
       setExamGrade(grade);
       if (grade) {
@@ -145,7 +146,7 @@ export default function TeacherSubmissionPage() {
   useFocusEffect(
     useCallback(() => {
       fetchSubmission();
-    }, [teacherExam]),
+    }, [teacherExam])
   );
 
   useFocusEffect(
@@ -153,7 +154,7 @@ export default function TeacherSubmissionPage() {
       fetchTeacherExam();
       fetchStudent();
       fetchExamGrade();
-    }, [courseId, examId, studentId]),
+    }, [courseId, examId, studentId])
   );
 
   return (

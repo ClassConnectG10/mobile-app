@@ -11,7 +11,14 @@ import {
   TrueFalseAnswer,
   TrueFalseQuestion,
 } from "@/types/activity";
-import { Button, Card, IconButton, Text, useTheme } from "react-native-paper";
+import {
+  Button,
+  Card,
+  Icon,
+  IconButton,
+  Text,
+  useTheme,
+} from "react-native-paper";
 import { MultipleChoiceQuestionCard } from "./MultipleChoiceQuestionCard";
 import { ToggleableTextInput } from "@/components/forms/ToggleableTextInput";
 import { StyleSheet, View } from "react-native";
@@ -34,6 +41,8 @@ interface ExamItemCardProps {
   setStudentAnswer?: (answer: ExamItemAnswer) => void;
   answerOk?: boolean;
   setAnswerOk?: (ok: boolean) => void;
+  autocorrected?: boolean;
+  setAutocorrected?: (autocorrected: boolean) => void;
 }
 
 export const ExamItemCard: React.FC<ExamItemCardProps> = ({
@@ -49,6 +58,8 @@ export const ExamItemCard: React.FC<ExamItemCardProps> = ({
   setStudentAnswer,
   answerOk,
   setAnswerOk,
+  autocorrected,
+  setAutocorrected,
 }) => {
   const theme = useTheme();
 
@@ -65,44 +76,49 @@ export const ExamItemCard: React.FC<ExamItemCardProps> = ({
   };
 
   const getCorrectionIconColor = () => {
-    const isEditable = mode === ExamItemMode.REVIEW && examItem.type === ExamItemType.OPEN;
+    const isEditable =
+      mode === ExamItemMode.REVIEW && examItem.type === ExamItemType.OPEN;
 
     if (isEditable) {
       return answerOk === null
         ? theme.colors.primary
         : answerOk
-          ? customColors.success
-          : customColors.error;
+        ? customColors.success
+        : customColors.error;
     } else {
       return "white";
     }
   };
 
   const getCorrectionBackgroundColor = () => {
-    const isEditable = mode === ExamItemMode.REVIEW && examItem.type === ExamItemType.OPEN;
+    const isEditable =
+      mode === ExamItemMode.REVIEW && examItem.type === ExamItemType.OPEN;
     if (isEditable) {
       // Más transparente para elementos editables
       return answerOk === null
         ? theme.colors.secondaryContainer
         : answerOk
-          ? customColors.success + "40"
-          : customColors.error + "40";
+        ? customColors.success + "40"
+        : customColors.error + "40";
     } else {
       // Sólido para elementos no editables
       return answerOk === null
         ? theme.colors.primary
         : answerOk
-          ? customColors.success
-          : customColors.error;
+        ? customColors.success
+        : customColors.error;
     }
   };
 
+  const handleCorrectionButtonPress = () => {
+    if (autocorrected) {
+      setAutocorrected(false);
+    }
+    handleCorrectionPress();
+  };
+
   const correctionIcon =
-    answerOk === null
-      ? "help"
-      : answerOk
-        ? "check"
-        : "close";
+    answerOk === null ? "help" : answerOk ? "check" : "close";
 
   return (
     <Card
@@ -126,10 +142,10 @@ export const ExamItemCard: React.FC<ExamItemCardProps> = ({
             {examItem.type === ExamItemType.OPEN
               ? "Pregunta abierta"
               : examItem.type === ExamItemType.MULTIPLE_CHOICE
-                ? "Pregunta de opción múltiple"
-                : examItem.type === ExamItemType.TRUE_FALSE
-                  ? "Pregunta de verdadero/falso"
-                  : "Pregunta de selección múltiple"}
+              ? "Pregunta de opción múltiple"
+              : examItem.type === ExamItemType.TRUE_FALSE
+              ? "Pregunta de verdadero/falso"
+              : "Pregunta de selección múltiple"}
           </Text>
 
           <View style={{ flexDirection: "row" }}>
@@ -140,12 +156,18 @@ export const ExamItemCard: React.FC<ExamItemCardProps> = ({
               <IconButton icon="arrow-down" size={18} onPress={onMoveDown} />
             )}
 
+            {mode === ExamItemMode.REVIEW &&
+              autocorrected &&
+              examItem.type === ExamItemType.OPEN && (
+                <Icon source="robot" size={18} />
+              )}
+
             {showCorrection && (
               <IconButton
                 icon={correctionIcon}
                 size={18}
                 mode="contained"
-                onPress={handleCorrectionPress}
+                onPress={handleCorrectionButtonPress}
                 iconColor={getCorrectionIconColor()}
                 containerColor={getCorrectionBackgroundColor()}
               />

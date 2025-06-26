@@ -29,6 +29,11 @@ export enum TeacherActivityFilter {
   UNPUBLISHED = "UNPUBLISHED",
 }
 
+export enum AutocorrectionStatus {
+  IN_PROGRESS = "IN_PROGRESS",
+  COMPLETED = "COMPLETED",
+  FAILED = "FAILED",
+}
 export class TeacherActivity {
   constructor(public activity: Activity, public visible: boolean) {}
 }
@@ -225,4 +230,15 @@ export class ExamGrade implements ActivityGrade {
   ) {
     this.type = ActivityType.EXAM;
   }
+}
+
+export class ExamAutocorrection {
+  constructor(
+    public correctionId: number,
+    public status: AutocorrectionStatus,
+    public mark: number,
+    public feedback_message: string,
+    public createdAt: Date,
+    public correctExamItems: boolean[]
+  ) {}
 }

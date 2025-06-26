@@ -7,6 +7,8 @@ import {
 } from "@/services/activityManagement";
 import { getUser } from "@/services/userManagement";
 import {
+  AutocorrectionStatus,
+  ExamAutocorrection,
   ExamDetails,
   ExamGrade,
   ExamSubmission,
@@ -60,6 +62,14 @@ export default function GradeExamSubmissionPage() {
   const [hasPreviousGrade, setHasPreviousGrade] = useState(false);
 
   const [helpModalVisible, setHelpModalVisible] = useState(false);
+
+  const [examAutocorrection, setExamAutocorrection] =
+    useState<ExamAutocorrection | null>(null);
+  const [autocorrectionStatus, setAutocorrectionStatus] =
+    useState<AutocorrectionStatus | null>(null);
+  const [autocorrectionModalVisible, setAutocorrectionModalVisible] =
+    useState(false);
+  const [autocorrected, setAutocorrected] = useState(false);
 
   const temporalExamGradeHook = useExamGrade();
   const temporalExamGrade = temporalExamGradeHook.examGrade;
@@ -172,6 +182,11 @@ export default function GradeExamSubmissionPage() {
     }
   };
 
+  const handleAutocorrection = async () => {
+    if (!courseId || !examId || !studentId) return;
+    setAutocorrectionModalVisible(true);
+  };
+
   useFocusEffect(
     useCallback(() => {
       fetchStudent();
@@ -199,6 +214,11 @@ export default function GradeExamSubmissionPage() {
       <Appbar.Header>
         <Appbar.BackAction onPress={() => router.back()} />
         <Appbar.Content title={"Corrección del examen"} />
+        <Appbar.Action
+          icon="robot"
+          onPress={handleAutocorrection}
+          disabled={isLoading}
+        />
         <Appbar.Action
           icon="help-circle"
           onPress={() => setHelpModalVisible(true)}
@@ -260,6 +280,8 @@ export default function GradeExamSubmissionPage() {
                     setStudentAnswer={() => {}}
                     answerOk={temporalExamGrade.correctExamItems[index]}
                     setAnswerOk={(correct) => setCorrectAnswer(index, correct)}
+                    autocorrected={autocorrected}
+                    setAutocorrected={setAutocorrected}
                   />
                 </View>
               ) : null
@@ -302,6 +324,10 @@ export default function GradeExamSubmissionPage() {
 
               {!hasPreviousGrade && (
                 <AlertText text="La entrega no ha sido calificada todavía." />
+              )}
+
+              {autocorrected && (
+                <AlertText text="Corrección realizada por IA." />
               )}
 
               <ToggleableNumberInput
@@ -380,7 +406,6 @@ export default function GradeExamSubmissionPage() {
                   </Text>
                 </View>
               </View>
-
               <Text>En las preguntas con opciones:</Text>
               <View style={{ marginLeft: 16 }}>
                 <Text>
@@ -427,6 +452,70 @@ export default function GradeExamSubmissionPage() {
           </View>
         }
       />
+      <FullScreenModal
+        visible={autocorrectionModalVisible}
+        onDismiss={() => setAutocorrectionModalVisible(false)}
+      >
+        <View style={{ gap: 16 }}>
+          <Text variant="titleLarge">Estado de la autocorrección</Text>
+          {autocorrectionStatus === AutocorrectionStatus.IN_PROGRESS && (
+            <View style={{ alignItems: "center", gap: 16 }}>
+              <Text>
+                La corrección se está realizando de forma automática. Puede
+                salir de esta pantalla mientras tanto.
+              </Text>
+              <ActivityIndicator animating={true} size="large" />
+              <Button
+                mode="text"
+                onPress={() => setAutocorrectionModalVisible(false)}
+              >
+                Aceptar
+              </Button>
+            </View>
+          )}
+          {autocorrectionStatus === AutocorrectionStatus.COMPLETED && (
+            <View style={{ gap: 16 }}>
+              <Text>
+                El examen se ha corregido exitosamente. Pulse el botón 'Aceptar
+                corrección' para traer esos datos. NOTA: esto pisará todos los
+                valores de corrección que haya hecho en cada una.
+              </Text>
+              <Button
+                mode="outlined"
+                onPress={() => {
+                  // Acción para descartar corrección
+                  setAutocorrectionModalVisible(false);
+                }}
+              >
+                Descartar corrección
+              </Button>
+              <Button
+                mode="contained"
+                onPress={() => {
+                  // Acción para aceptar corrección
+                  setAutocorrectionModalVisible(false);
+                }}
+              >
+                Aceptar corrección
+              </Button>
+            </View>
+          )}
+          {autocorrectionStatus === AutocorrectionStatus.FAILED && (
+            <View style={{ alignItems: "center", gap: 16 }}>
+              <Text>
+                Hubo un error al corregir automáticamente el examen. Intente
+                nuevamente.
+              </Text>
+              <Button
+                mode="text"
+                onPress={() => setAutocorrectionModalVisible(false)}
+              >
+                Aceptar
+              </Button>
+            </View>
+          )}
+        </View>
+      </FullScreenModal>
       <ErrorMessageSnackbar
         message={errorMessage}
         onDismiss={() => setErrorMessage("")}

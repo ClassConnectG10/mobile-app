@@ -9,6 +9,8 @@ interface OpenQuestionCardProps {
   onChange: (newQuestion: OpenQuestion) => void;
   studentAnswer?: OpenAnswer;
   setStudentAnswer?: (answer: OpenAnswer) => void;
+  autocorrected?: boolean;
+  setAutocorrected?: (autocorrected: boolean) => void;
 }
 
 export const OpenQuestionCard: React.FC<OpenQuestionCardProps> = ({
