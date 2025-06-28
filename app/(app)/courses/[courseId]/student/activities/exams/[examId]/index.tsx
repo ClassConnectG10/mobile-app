@@ -89,7 +89,7 @@ export default function StudentExamPage() {
         courseId,
         examId,
         studentId,
-        examDetails.examItems
+        examDetails.examItems,
       );
       setExamSubmission(examSubmission);
     } catch (error) {
@@ -133,7 +133,7 @@ export default function StudentExamPage() {
       fetchStudentExam();
       fetchExamGrade();
       fetchCourse();
-    }, [courseId, examId])
+    }, [courseId, examId]),
   );
 
   return (

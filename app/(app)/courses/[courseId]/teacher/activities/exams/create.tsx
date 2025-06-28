@@ -129,6 +129,7 @@ export default function CreateExam() {
                 placeholder="Instrucciones"
                 value={examDetails.instructions}
                 onChangeText={examDetailsHook.setInstructions}
+                multiline={true}
               />
 
               <DatePickerButton
