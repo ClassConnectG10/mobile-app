@@ -160,6 +160,11 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course }) => {
       return;
     }
 
+    // Helper function to truncate sheet names to 31 characters
+    const truncateSheetName = (name: string): string => {
+      return name.length > 31 ? name.substring(0, 31) : name;
+    };
+
     try {
       const tables = [
         {
@@ -281,7 +286,7 @@ export const StatisticsTab: React.FC<StatisticsTabProps> = ({ course }) => {
               [columnName]: statsMap.get(date) ?? 0,
             }));
 
-            const sheetName = `Entregas por Día - ${selectedActivity.activity.activityDetails.title}`;
+            const sheetName = truncateSheetName(`Entregas - ${selectedActivity.activity.activityDetails.title}`);
             tables.push({
               sheetName,
               table: submissionsTable as any,
